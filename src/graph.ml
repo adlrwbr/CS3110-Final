@@ -1,13 +1,20 @@
 (* represents an undirected graph *)
 
-type gt = int list list
+(** RI: id is the identifier for the node *)
+
+type node = {
+  id : int;
+  neighbors : int list;
+}
+
+type gt = node list
 (** the graph abstract type *)
 
 exception UnknownNode of int
 (** raised when a node with an unknown ID is referenced in a graph *)
 
 (** [empty] is a graph with no nodes *)
-let empty = [ [] ]
+let empty = []
 
 (** [size graph] is the number of unique nodes contained in [graph] *)
 let size graph = List.length graph
