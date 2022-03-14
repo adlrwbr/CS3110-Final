@@ -11,9 +11,8 @@ let size graph = graph |> List.filter (fun x -> x <> []) |> List.length
 
 (** Gets the element of a list starting from 1 instead of 0.*)
 let ith list n = if size list < n then [] else List.nth list (n-1)
-(** Checks if [graph] satisfies invariants.*)
 
-(** Checks to see if the graph satisfies its invariants *)
+(** Checks to see if the [graph] satisfies its invariants *)
 let rep_ok graph = false
 
 (** [empty] is a [graph] with no nodes *)
