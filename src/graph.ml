@@ -1,71 +1,55 @@
 (* represents an undirected graph *)
 
-type gt = int list list
 (** the graph abstract type *)
+type gt = int list list
 
-exception UnknownNode of int
 (** raised when a node with an unknown ID is referenced in a graph *)
+exception UnknownNode of int
 
 (** [size graph] is the number of unique nodes contained in [graph] *)
-let size graph = List.length graph
+let size graph = graph |> List.filter (fun x -> x <> []) |> List.length
 
-(** shorthand for List.nth *)
+(** Gets the element of a list starting from 1 instead of 0.*)
 let ith list n = if size list < n then [] else List.nth list (n-1)
 (** Checks if [graph] satisfies invariants.*)
 
+(** Checks to see if the graph satisfies its invariants *)
 let rep_ok graph = false
 
 (** [empty] is a [graph] with no nodes *)
 let empty = [ [] ]
 
-let g = empty
-let e = empty
-
-let rec help_close (id:int) (connect_to:int list) (counter:int) graph (id_cons: int list) = 
-assert (not (List.mem id connect_to));
-assert (0 < id);
-match connect_to with
+let rec add_r id connections graph copy counter = 
+assert (not (List.mem id connections)); assert (0 < id);
+match connections with
 | current :: more -> 
-let row = ith graph counter in
-    (*if counter + 1 = id then
-        if current = counter then 
-            if List.mem id row then 
-                row @ help_close id more (counter + 1) graph id_cons
-            else 
-                (id :: row) @ help_close id more (counter + 1) graph id_cons
-        else 
-            ith graph counter @ help_close id connect_to (counter + 1) graph id_cons
-    else*)
-     if current = counter then 
+let row = List.sort_uniq compare (ith graph counter) in
+    if counter = id then 
+            List.sort_uniq compare (ith graph counter @ copy) 
+            :: add_r id connections graph copy (counter + 1)
+    else if current = counter then 
         if List.mem id row then 
-            row :: help_close id more (counter + 1) graph id_cons
-        else 
-            (id :: row) :: help_close id more (counter + 1) graph id_cons
-    else 
-        ith graph counter :: help_close id connect_to (counter + 1) graph id_cons
+            row :: add_r id more graph copy (counter + 1)
+        else (id :: row) :: add_r id more graph copy (counter + 1)
+    else ith graph counter :: add_r id connections graph copy (counter + 1)
 | [] -> 
-    if counter <= size graph then
+    if counter <= size graph || counter <= id then
         if counter = id then
-            List.sort_uniq compare (ith graph counter @ id_cons) :: help_close id [] (counter + 1) graph id_cons
+            List.sort_uniq compare (ith graph counter @ copy) 
+            :: add_r id [] graph copy (counter + 1)
         else
-            ith graph counter :: help_close id [] (counter + 1) graph id_cons
+            ith graph counter :: add_r id [] graph copy (counter + 1)
     else []
-
-(** [close_on id connect_to graph] makes sure *)
-let co graph connect_to id = help_close id connect_to 1 graph connect_to
-
-(** [add_node graph id_list] is a tuple containing the modified [graph]
-    with an additional node and that new node’s id  *)
-let add_node graph id_list =
-    if id_list = [] then assert false 
-    else if graph = empty then [id_list] 
-    else graph @ [id_list]
-
-(** [connect_nodes graph id1 id2] is the modified graph of [gt] with an
-    added connection between two existing nodes [id1] and [id2]. Raises
-    UnknownNode if either node DNE in [gt] *)
-let connect_nodes graph id1 id2 = []
+(** [add_node graph connections id] creates node [id] with bidirectional connections
+    to all [connections] in the [graph]. 
+    Requires: 
+    [id] is not in [connections], [id] > 0
+    [id] has not been previously added. *)
+let add_node graph id connections= 
+    if ith graph id <> [] then assert false else
+    let connections = (List.sort_uniq compare connections) in 
+    add_r id connections graph connections 1
 
 (** [neighbors graph id] is the list of nodes in [graph] that [id] is
     connected to *)
-let neighbors graph id = []
+let neighbors graph id = ith graph id
