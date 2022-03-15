@@ -26,7 +26,7 @@ let empty name = {
   locations = [];
 }
 
-let add world name category road pos =
+let add name category road pos world =
   match Graph.add world.g with 
   | id, ng ->
       {
