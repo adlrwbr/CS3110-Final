@@ -41,10 +41,9 @@ let row = List.sort_uniq compare (ith graph counter) in
     else []
 
 let add_node graph id connections= 
-    if ith graph id <> [] then assert false else
     let connections = (List.sort_uniq compare connections) in 
     add_r id connections graph connections 1
 
 (** [neighbors graph id] is the list of nodes in [graph] that [id] is
     connected to *)
-let neighbors graph id = ith graph id
+let neighbors graph id = List.nth graph (id-1)

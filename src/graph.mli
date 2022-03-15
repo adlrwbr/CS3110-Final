@@ -17,7 +17,7 @@ val add_node : gt -> int -> int list -> gt
     to all [connections] in the [graph]. 
     Requires: 
     [id] is not in [connections], [id] > 0
-    [id] has not been previously added. *)
+    *)
 
 (**val connect_nodes : gt -> int -> int -> gt  [TEMPORARILY DISABLED]*)
 (** [connect_nodes graph id1 id2] is the modified graph of [gt] with an
