@@ -1,12 +1,9 @@
 (* represents an undirected graph *)
 
-(** the graph abstract type *)
 type gt = int list list
 
-(** raised when a node with an unknown ID is referenced in a graph *)
 exception UnknownNode of int
 
-(** [size graph] is the number of unique nodes contained in [graph] *)
 let size graph = graph |> List.filter (fun x -> x <> []) |> List.length
 
 (** Gets the element of a list starting from 1 instead of 0.*)
@@ -15,7 +12,6 @@ let ith list n = if size list < n then [] else List.nth list (n-1)
 (** Checks to see if the [graph] satisfies its invariants *)
 let rep_ok graph = false
 
-(** [empty] is a [graph] with no nodes *)
 let empty = [ [] ]
 
 let rec add_r id connections graph copy counter = 
@@ -44,6 +40,14 @@ let add_node graph id connections=
     let connections = (List.sort_uniq compare connections) in 
     add_r id connections graph connections 1
 
-(** [neighbors graph id] is the list of nodes in [graph] that [id] is
-    connected to *)
+(*let connect_node graph id1 id2= 
+    add_r id connections graph id1 [id2] 
+    [CHECK IMPL & if even relevant UTILITY*)
+
+let rec contains graph id = match graph with
+| some :: more -> if List.mem id some then contains id more else false
+| [] -> false
+
 let neighbors graph id = List.nth graph (id-1)
+
+let set graph = List.sort_uniq compare (List.flatten graph)
