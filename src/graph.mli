@@ -15,8 +15,9 @@ exception InvalidGraph
 (** [empty] is a graph with no nodes *)
 val empty : ugt
 
-(** [add graph] is the id of a newly created node *)
-val add : ugt -> int
+(** [add graph] is the tuple ([id], [newgraph]) where [newgraph] is [graph] w/
+    the newly created node [id] *)
+val add : ugt -> int * ugt
 
 (** [connect id1 id2] is a modified unverified graph w/ an additional edge b/w
     nodes [id1] and [id2].
