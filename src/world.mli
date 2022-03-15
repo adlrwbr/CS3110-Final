@@ -11,7 +11,7 @@ type rt
 
 (** [add world name category road pos] is the tuple ([loc], [newworld]) where
     [newworld] is [world] w/ an additional location [loc] *)
-val add : wt -> string -> string -> rt -> lt * wt
+val add : wt -> string -> string -> rt -> float -> lt * wt
 
 (** [name world loc] is the name of the location [loc] *)
 val name : wt -> lt -> string
