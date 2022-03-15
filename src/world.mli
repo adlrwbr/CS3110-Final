@@ -12,8 +12,8 @@ type rt
 val empty : string -> wt
 (** [empty name] is an empty world named [name] *)
 
-val add : wt -> string -> string -> rt -> float -> lt * wt
-(** [add world name category road pos] is the tuple ([loc], [newworld])
+val add : string -> string -> rt -> float -> wt -> lt * wt
+(** [add name category road pos world] is the tuple ([loc], [newworld])
     where [newworld] is [world] w/ an additional location [loc] *)
 
 val locations : wt -> lt list
