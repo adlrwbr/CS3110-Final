@@ -17,7 +17,7 @@ exception InvalidGraph
 val empty : ugt
 
 (** [size graph] is the number of unique nodes contained in [graph] *)
-val size : gt list -> int
+val size : gt -> int
 
 (** [add graph] is the tuple ([id], [newgraph]) where [newgraph] is [graph] w/
     the newly created node [id] *)
@@ -31,7 +31,7 @@ val connect : gt -> int -> int -> ugt
 
 (** [verify graph] is the verified graph. Raises InvalidGraph if [graph] is
     not verifiable. *)
-val verify : ugt -> vgt
+val verify : gt -> vgt
 
 (** [neighbors graph id] is the list of nodes in [graph] to which [id] is
     connected *)

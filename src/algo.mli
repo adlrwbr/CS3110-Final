@@ -3,7 +3,7 @@
 val remove_all : 'a list -> 'a list -> 'a list 
 
 (** [bfs ids] Begins a breadth first search *)
-val bfs : Graph.vgt -> int list -> int list 
+val bfs : Graph.gt -> int -> int list 
 
 
 
