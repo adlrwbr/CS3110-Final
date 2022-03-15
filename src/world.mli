@@ -9,15 +9,9 @@ type lt
 type rt
 (** the abstract road type *)
 
-<<<<<<< HEAD
-(** [add world name category road pos] is the tuple ([loc], [newworld]) where
-    [newworld] is [world] w/ an additional location [loc] *)
 val add : wt -> string -> string -> rt -> float -> lt * wt
-=======
-val add : wt -> string -> string -> rt -> int -> lt * wt
 (** [add world name category road pos] is the tuple ([loc], [newworld])
     where [newworld] is [world] w/ an additional location [loc] *)
->>>>>>> 4e7a620a7bb518ede733aeb9db4baab4f11e8361
 
 val name : wt -> lt -> string
 (** [name world loc] is the name of the location [loc] *)
