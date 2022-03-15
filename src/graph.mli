@@ -1,37 +1,39 @@
 (* represents an undirected graph *)
 
-(** the graph abstract type *)
-type gt
+(** the unverified graph abstract type. Represents a bidirectional graph
+    which may contain islands *)
+type ugt
 
-(** raised when a node with an unknown ID is referenced in a graph *)
+(** the verified graph abstract type. Guarenteed to not contain islands *)
+type vgt
+
 exception UnknownNode of int
 
+(** identifies an unverified graph that cannot be verified *)
+exception InvalidGraph
+
 (** [empty] is a graph with no nodes *)
-val empty : gt
+val empty : ugt
+
+(** [add graph] is the id of a newly created node *)
+val add : ugt -> int
+
+(** [connect id1 id2] is a modified unverified graph w/ an additional edge b/w
+    nodes [id1] and [id2].
+    Requires: [id1] != [id2]
+    Raises: [UnknownNode id] if either [id1] or [id2] DNE within the graph *)
+val connect : ugt -> int -> int -> ugt
+
+(** [verify graph] is the verified graph. Raises InvalidGraph if [graph] is
+    not verifiable. *)
+val verify : ugt -> vgt
 
 (** [size graph] is the number of unique nodes contained in [graph] *)
-val size : gt -> int
+val size : 'a -> int
 
-(** [ith i] returns the node at index [i]*)
-val ith : gt -> int -> int list
+(** [neighbors graph id] is the list of nodes in [graph] to which [id] is
+    connected *)
+val neighbors : 'a -> int -> int list
 
-(** [add_node graph connections id] creates node [id] with bidirectional connections
-    to all [connections] in the [graph]. 
-    Requires: 
-    -[id] is not in [connections], 
-    -[id] > 0
-    -[id] has not been connected before (unless one wants to establish new connections)
-    *)
-val add_node : gt -> int -> int list -> gt
-
-(** [connect_nodes graph id1 id2] is the modified graph of [gt] with an
-    added connection between two existing nodes [id1] and [id2]. Raises
-    UnknownNode if either node DNE in [gt] *) 
-(**val connect_nodes : gt -> int -> int -> gt  [TEMPORARILY DISABLED]*)
-
-(** [neighbors graph id] is the list of nodes in [graph] that [id] is
-    connected to *)
-val neighbors : gt -> int -> int list
-
-(**[set graph] returns a set of all nodes contained by the graph *)
-val set : gt -> int list
+(** [set graph] is a set of all nodes contained by the graph *)
+val set : 'a -> int list
