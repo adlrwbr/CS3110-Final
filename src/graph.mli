@@ -12,11 +12,14 @@ val empty : gt
 val size : gt -> int
 (** [size graph] is the number of unique nodes contained in [graph] *)
 
-val add_node : gt -> int list -> gt * int
-(** [add_node graph id_list] is a tuple containing the modified [graph]
-    with an additional node and that new node’s id *)
+val add_node : gt -> int -> int list -> gt
+(** [add_node graph connections id] creates node [id] with bidirectional connections
+    to all [connections] in the [graph]. 
+    Requires: 
+    [id] is not in [connections], [id] > 0
+    [id] has not been previously added. *)
 
-(**val connect_nodes : gt -> int -> int -> gt  [TEMPORARILY/DEPRECATED]*)
+(**val connect_nodes : gt -> int -> int -> gt  [TEMPORARILY DISABLED]*)
 (** [connect_nodes graph id1 id2] is the modified graph of [gt] with an
     added connection between two existing nodes [id1] and [id2]. Raises
     UnknownNode if either node DNE in [gt] *) 

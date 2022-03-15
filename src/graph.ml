@@ -39,11 +39,7 @@ let row = List.sort_uniq compare (ith graph counter) in
         else
             ith graph counter :: add_r id [] graph copy (counter + 1)
     else []
-(** [add_node graph connections id] creates node [id] with bidirectional connections
-    to all [connections] in the [graph]. 
-    Requires: 
-    [id] is not in [connections], [id] > 0
-    [id] has not been previously added. *)
+
 let add_node graph id connections= 
     if ith graph id <> [] then assert false else
     let connections = (List.sort_uniq compare connections) in 
