@@ -1,5 +1,4 @@
 type rt = {
-  coords : (float * float) list;
   startPt : float * float;
   endPt : float * float;
   name : string;
@@ -14,20 +13,33 @@ type lt = {
 }
 
 type wt = {
+  name : string;
   g : Graph.vgt;
   roads : rt list;
   locations : lt list;
 }
 
+let empty name = {
+  name = name;
+  g = Graph.empty;
+  roads = [];
+  locations = [];
+}
+
 let add world name category road pos =
-  match Graph.add world.g with
-  | id, ng ->
-      { g = ng; roads = world.roads; locations = world.locations }
+  raise (Failure "Not fully implemented")
+  (* match Graph.add world.g with *)
+  (* | id, ng -> *)
+  (*     { *)
+  (*       name = world.name; *)
+  (*       g = ng; *)
+  (*       roads = world.roads; *)
+  (*       locations = world.locations *)
+  (*     } *)
 
-let name world loc = loc.name
-let category world loc = loc.category
 let locations world = world.locations
-
+let name (loc : lt) = loc.name
+let category loc = loc.category
 let loc_coord loc =
   match (loc.road.startPt, loc.road.endPt) with
   | (x1, y1), (x2, y2) ->
@@ -35,4 +47,4 @@ let loc_coord loc =
         y1 +. (loc.pos_on_road *. (y2 -. y1)) )
 
 let roads world = world.roads
-let road_coords road = road.coords
+let road_coords road = [road.startPt; road.endPt]

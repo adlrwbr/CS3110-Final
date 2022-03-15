@@ -8,4 +8,5 @@ let rec loop () =
 
 let start () =
     let _ = View.init in
+    let _ = World.empty "Hello World" in
     loop ()

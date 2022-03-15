@@ -1,4 +1,3 @@
-
 let rec remove_all list1 list2 = 
 match list2 with 
 | head :: tail -> remove_all (List.filter (fun x -> x <> head) list1) tail
@@ -14,6 +13,3 @@ let rec bsfr graph ids counter memory =
     )
 
 let bfs graph id = id :: bsfr graph [id] 0 [id]
-
-
-    
