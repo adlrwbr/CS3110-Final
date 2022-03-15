@@ -27,15 +27,14 @@ let empty name = {
 }
 
 let add world name category road pos =
-  raise (Failure "Not fully implemented")
-  (* match Graph.add world.g with *)
-  (* | id, ng -> *)
-  (*     { *)
-  (*       name = world.name; *)
-  (*       g = ng; *)
-  (*       roads = world.roads; *)
-  (*       locations = world.locations *)
-  (*     } *)
+  match Graph.add world.g with 
+  | id, ng ->
+      {
+        name = world.name;
+        g = ng;
+        roads = world.roads;
+        locations = world.locations
+  }
 
 let locations world = world.locations
 let name (loc : lt) = loc.name
