@@ -44,10 +44,6 @@ let add_node graph id connections=
     add_r id connections graph id1 [id2] 
     [CHECK IMPL & if even relevant UTILITY*)
 
-let rec contains graph id = match graph with
-| some :: more -> if List.mem id some then contains id more else false
-| [] -> false
-
 let neighbors graph id = List.nth graph (id-1)
 
 let set graph = List.sort_uniq compare (List.flatten graph)
