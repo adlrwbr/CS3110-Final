@@ -1,6 +1,8 @@
 (** [loop world] is the main event loop of the application that manages user
     input and displays [world] *)
 let rec loop (world : World.wt) =
+    (* clear graph *)
+    let _ = Graphics.clear_graph () in
     (* display world *)
     let _ = View.draw world in
     (* wait for next keypress event *)
@@ -17,5 +19,8 @@ let start () =
         World.add_road road |>
         (* add a Wendy's 70% down Jane St *)
         World.add_loc "Wendy's" "restaurant" road 0.7
-    in
-    loop world
+    in let _, world =
+        World.add_loc "Denny's" "restaurant" road 0.3 world
+    in let _, world =
+        World.add_loc "Friendly's" "restaurant" road 1. world
+    in loop world

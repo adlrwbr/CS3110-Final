@@ -18,10 +18,39 @@ let world_to_pixel ( coord : float * float ) : int * int =
     in (i_x, i_y)
 
 (** [draw_loc loc] draws the location [loc] *)
-let rec draw_loc ( loc : World.lt ) =
+let draw_loc ( loc : World.lt ) =
+    (* node coords in pixel space *)
     let x, y = World.loc_coord loc |> world_to_pixel in
-    fill_circle x y 15
+    (* draw node *)
+    let _ = fill_circle x y 15 in
+    (* draw name label *)
+    let _ = moveto x y in
+    let _ = rmoveto (-15) 20 in
+    let _ = draw_string (World.name loc) in
+    (* draw category label *)
+    let _ = moveto x y in
+    let _ = rmoveto (-20) (-30) in
+    let _ = draw_string (World.category loc) in
+    ()
+
+(** [draw_road loc] draws the location [loc] *)
+let draw_road ( road : Road.t ) =
+    let rec draw_segment prev lst =
+        let x1, y1 = prev in
+        match lst with
+        | [] -> ()
+        | coord2 :: t ->
+            let x2, y2 = world_to_pixel coord2 in
+            let _ = moveto x1 y1 in
+            let _ = lineto x2 y2 in
+            draw_segment (x2, y2) t
+    in
+    let coords = Road.coords road in
+    let hx, hy = List.hd coords in
+    let t = List.tl coords in
+    draw_segment (world_to_pixel (hx, hy)) t
 
 let draw world =
     let _ = List.map draw_loc (World.locations world) in
+    let _ = List.map draw_road (World.roads world) in
     ()
