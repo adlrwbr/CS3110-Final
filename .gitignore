@@ -9,6 +9,7 @@
 *.native
 *.byte
 _build
+_seantemp
 
 # temporary files
 *.swp
