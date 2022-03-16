@@ -2,9 +2,13 @@
     on a [road] nearest the cursor *)
 let nearest_road ( world : World.wt ) : float * Road.t =
     let point = Graphics.mouse_pos () |> View.pixel_to_world in
-    let allroads = world |> roads in
-    let midptlst roadlst = List.map midchord allroads in
-    (0.5, Algo.relate (fun a -> fun b -> (distance a point) <= distance (b point)))
+    let allroads = world |> World.roads in
+    (0.5, 
+    Algo.relate (fun a -> fun b -> 
+    (World.distance (World.midchord a) point <= World.distance (World.midchord b) point)
+    ) 
+    allroads
+    ) 
 
 
 (** [road_placement_mode world] is a world that may or may not have been
