@@ -6,15 +6,16 @@ type wt
 type lt
 (** the abstract location type *)
 
-type rt
-(** the abstract road type *)
-
 val empty : string -> wt
 (** [empty name] is an empty world named [name] *)
 
-val add : string -> string -> rt -> float -> wt -> lt * wt
-(** [add name category road pos world] is the tuple ([loc], [newworld])
-    where [newworld] is [world] w/ an additional location [loc] *)
+val add_loc : string -> string -> Road.t -> float -> wt -> lt * wt
+(** [add_loc name category road pos world] is the tuple ([loc], [newworld])
+    where [newworld] is [world] w/ an additional location [loc].
+    Requires: [world] contains [road] *)
+
+val add_road : Road.t -> wt -> wt
+(** [add_road road world] is a modified [world] with an additional [road] *)
 
 val locations : wt -> lt list
 (** [locations world] is a list of all locations contained in [world] *)
@@ -28,8 +29,5 @@ val category : lt -> string
 val loc_coord : lt -> float * float
 (** [coord loc] is the world-space (x, y) coordinate of location [loc] *)
 
-val roads : wt -> rt list
+val roads : wt -> Road.t list
 (** [roads world] is the list of all roads in the [world] *)
-
-val road_coords : rt -> (float * float) list
-(** [road_coords road] is a sequence of coordinates that define a road *)
