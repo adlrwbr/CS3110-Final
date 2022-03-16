@@ -1,41 +1,54 @@
 (* represents an undirected graph *)
-type gt 
+type gt
 
+type ugt = gt
 (** the unverified graph abstract type. Represents a bidirectional graph
     which may contain islands *)
-type ugt = gt
 
-(** the verified graph abstract type. Guarenteed to not contain islands *)
 type vgt = gt
+(** the verified graph abstract type. Guarenteed to not contain islands *)
 
 exception UnknownNode of int
 
-(** identifies an unverified graph that cannot be verified *)
 exception InvalidGraph
+(** identifies an unverified graph that cannot be verified *)
 
-(** [empty] is a graph with no nodes *)
 val empty : ugt
+(** [empty] is a graph with no nodes *)
 
+<<<<<<< HEAD
 (** [size graph] is the number of unique nodes contained in [graph] *)
 val size : gt -> int
+=======
+val size : gt list -> int
+(** [size graph] is the number of unique nodes contained in [graph] *)
+>>>>>>> 1dae923174930b2339cc0d10f1a2604b78561339
 
-(** [add graph] is the tuple ([id], [newgraph]) where [newgraph] is [graph] w/
-    the newly created node [id] *)
 val add : gt -> int * ugt
+(** [add graph] is the tuple ([id], [newgraph]) where [newgraph] is
+    [graph] w/ the newly created node [id] *)
 
-(** [connect id1 id2] is a modified unverified graph w/ an additional edge b/w
-    nodes [id1] and [id2].
-    Requires: [id1] != [id2]
-    Raises: [UnknownNode id] if either [id1] or [id2] DNE within the graph *)
+val add_no_id : gt -> ugt
+(** [add_no_id graph] is the [graph] w/ the newly created node [id] *)
+
 val connect : gt -> int -> int -> ugt
+(** [connect id1 id2] is a modified unverified graph w/ an additional
+    edge b/w nodes [id1] and [id2]. Requires: [id1] != [id2] Raises:
+    [UnknownNode id] if either [id1] or [id2] DNE within the graph *)
 
+<<<<<<< HEAD
 (** [verify graph] is the verified graph. Raises InvalidGraph if [graph] is
     not verifiable. *)
 val verify : gt -> vgt
+=======
+val verify : ugt -> vgt
+(** [verify graph] is the verified graph. Raises InvalidGraph if [graph]
+    is not verifiable. *)
+>>>>>>> 1dae923174930b2339cc0d10f1a2604b78561339
 
-(** [neighbors graph id] is the list of nodes in [graph] to which [id] is
-    connected *)
 val neighbors : gt -> int -> int list
+(** [neighbors graph id] is the list of nodes in [graph] to which [id]
+    is connected *)
 
-(** [set graph] is a set of all nodes contained by the graph *)
 val set : gt -> int list
+(** [set graph] is a set of all nodes contained by the graph *)

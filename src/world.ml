@@ -1,31 +1,60 @@
-type wt = { g : Graph.vgt }
-
-type rt = {
-  coords : (float * float) list;
-  startPt : float * float;
-  endPt : float * float;
-  name : string;
-}
-
 type lt = {
   id : int;
   name : string;
   category : string;
-  road : rt;
+  road : Road.t;
   pos_on_road : float;
 }
 
-let add world name category road pos = raise (Failure "Unimplemented")
-let name world loc = loc.name
-let category world loc = loc.category
-let locations world = raise (Failure "Unimplemented")
+type wt = {
+  name : string;
+  g : Graph.vgt; (* represents the world in simplified graph form *)
+  roads : Road.t list;
+  locations : lt list;
+}
 
+let empty name = {
+  name = name;
+  g = Graph.empty;
+  roads = [];
+  locations = [];
+}
+
+let add_loc name category road pos world =
+  match Graph.add world.g with 
+  | nid, ng ->
+    (* create location *)
+    let new_loc =
+      {id = nid; name = name; category = category; road = road; pos_on_road = pos}
+    in
+    (* add location to world *)
+    {
+      name = world.name;
+      g = ng;
+      roads = world.roads;
+      locations = new_loc :: world.locations
+    }
+
+let add_road road world =
+  {
+    name = world.name;
+    g = world.g;
+    roads = road :: world.roads;
+    locations = world.locations
+  }
+
+let locations world = world.locations
+let name (loc : lt) = loc.name
+let category loc = loc.category
 let loc_coord loc =
-  ( fst loc.road.startPt
-    +. (loc.pos_on_road *. (fst loc.road.endPt -. fst loc.road.startPt)),
-    snd loc.road.startPt
-    +. (loc.pos_on_road *. (snd loc.road.endPt -. snd loc.road.startPt))
-  )
+  (* get the start and end coordinates of the location's road *)
+  let road_coords = Road.coords loc.road in
+  let road_start = List.nth road_coords 0 in
+  let road_end = List.nth road_coords 1 in
+  (* calculate location's coordinates w/ pos_on_road *)
+  match (road_start, road_end) with
+  | (x1, y1), (x2, y2) ->
+      ( x1 +. (loc.pos_on_road *. (x2 -. x1)),
+        y1 +. (loc.pos_on_road *. (y2 -. y1)) )
 
-let roads world = raise (Failure "Unimplemented")
-let road_coords road = raise (Failure "Unimplemented")
+let roads world = world.roads
