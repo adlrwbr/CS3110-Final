@@ -37,3 +37,7 @@ val loc_coord : lt -> float * float
 
 val roads : wt -> Road.t list
 (** [roads world] is the list of all roads in the [world] *)
+
+val midchord : Road.t -> float * float
+
+val distance : float * float -> float * float -> float
