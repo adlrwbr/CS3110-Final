@@ -21,15 +21,19 @@ let empty name = {
 }
 
 let add_loc name category road pos world =
-  raise (Failure "Not fully implemented")
-  (* match Graph.add world.g with *)
-  (* | id, ng -> *)
-  (*     { *)
-  (*       name = world.name; *)
-  (*       g = ng; *)
-  (*       roads = world.roads; *)
-  (*       locations = world.locations *)
-  (*     } *)
+  match Graph.add world.g with 
+  | nid, ng ->
+    (* create location *)
+    let new_loc =
+      {id = nid; name = name; category = category; road = road; pos_on_road = pos}
+    in
+    (* add location to world *)
+    {
+      name = world.name;
+      g = ng;
+      roads = world.roads;
+      locations = new_loc :: world.locations
+    }
 
 let add_road road world =
   {
