@@ -28,12 +28,13 @@ let empty name = {
 
 let add name category road pos world =
   match Graph.add world.g with 
-  | id, ng ->
+  | nid, ng ->
       {
         name = world.name;
         g = ng;
         roads = world.roads;
-        locations = world.locations
+        locations = {id = nid; name = name; category = category; road = road; pos_on_road = pos} 
+        :: world.locations 
   }
 
 let locations world = world.locations
