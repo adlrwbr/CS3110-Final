@@ -13,6 +13,9 @@ type wt = {
   locations : lt list;
 }
 
+let size_x = 1000.
+let size_y = 1000.
+
 let empty name = {
   name = name;
   g = Graph.empty;
@@ -28,12 +31,14 @@ let add_loc name category road pos world =
       {id = nid; name = name; category = category; road = road; pos_on_road = pos}
     in
     (* add location to world *)
+    let new_world =
     {
       name = world.name;
       g = ng;
       roads = world.roads;
       locations = new_loc :: world.locations
     }
+    in (new_loc, new_world)
 
 let add_road road world =
   {
