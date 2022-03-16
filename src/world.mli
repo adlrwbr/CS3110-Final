@@ -6,6 +6,12 @@ type wt
 type lt
 (** the abstract location type *)
 
+val size_x : float
+(** the width of the world *)
+
+val size_y : float
+(** the height of the world *)
+
 val empty : string -> wt
 (** [empty name] is an empty world named [name] *)
 
@@ -27,7 +33,7 @@ val category : lt -> string
 (** [category loc] is the category of the location [loc] *)
 
 val loc_coord : lt -> float * float
-(** [coord loc] is the world-space (x, y) coordinate of location [loc] *)
+(** [loc_coord loc] is the world-space (x, y) coordinate of location [loc] *)
 
 val roads : wt -> Road.t list
 (** [roads world] is the list of all roads in the [world] *)
