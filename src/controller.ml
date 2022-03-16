@@ -1,3 +1,8 @@
+(** [nearest_road] is a tuple ([pos, road]) that specifies a position [pos]
+    on a [road] nearest the cursor *)
+let nearest_road ( world : World.wt ) : float * Road.t =
+    raise (Failure "Unimplemented")
+
 (** [road_placement_mode world] is a world that may or may not have been
     modified during Road Placement Mode *)
 let road_placement_mode ( world : World.wt ) : World.wt =
