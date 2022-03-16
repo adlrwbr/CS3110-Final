@@ -16,7 +16,7 @@ exception InvalidGraph
 val empty : ugt
 (** [empty] is a graph with no nodes *)
 
-val size : gt list -> int
+val size : gt -> int
 (** [size graph] is the number of unique nodes contained in [graph] *)
 
 val add : gt -> int * ugt
