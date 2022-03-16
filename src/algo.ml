@@ -12,12 +12,8 @@ let rec bsfr graph ids counter memory =
         next_targs
     )
 
-<<<<<<< HEAD
 let bfs graph id = let vg = Graph.verify graph in
     [id] @ bsfr vg [id] 0 [id]
 
 
     
-=======
-let bfs graph id = id :: bsfr graph [id] 0 [id]
->>>>>>> 1dae923174930b2339cc0d10f1a2604b78561339

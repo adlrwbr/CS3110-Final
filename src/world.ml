@@ -15,42 +15,38 @@ type wt = {
 
 let size_x = 1000.
 let size_y = 1000.
-
-let empty name = {
-  name = name;
-  g = Graph.empty;
-  roads = [];
-  locations = [];
-}
+let empty name = { name; g = Graph.empty; roads = []; locations = [] }
 
 let add_loc name category road pos world =
-  match Graph.add world.g with 
+  match Graph.add world.g with
   | nid, ng ->
-    (* create location *)
-    let new_loc =
-      {id = nid; name = name; category = category; road = road; pos_on_road = pos}
-    in
-    (* add location to world *)
-    let new_world =
-    {
-      name = world.name;
-      g = ng;
-      roads = world.roads;
-      locations = new_loc :: world.locations
-    }
-    in (new_loc, new_world)
+      (* create location *)
+      let new_loc =
+        { id = nid; name; category; road; pos_on_road = pos }
+      in
+      (* add location to world *)
+      let new_world =
+        {
+          name = world.name;
+          g = ng;
+          roads = world.roads;
+          locations = new_loc :: world.locations;
+        }
+      in
+      (new_loc, new_world)
 
 let add_road road world =
   {
     name = world.name;
     g = world.g;
     roads = road :: world.roads;
-    locations = world.locations
+    locations = world.locations;
   }
 
 let locations world = world.locations
 let name (loc : lt) = loc.name
 let category loc = loc.category
+
 let loc_coord loc =
   (* get the start and end coordinates of the location's road *)
   let road_coords = Road.coords loc.road in

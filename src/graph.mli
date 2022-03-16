@@ -16,13 +16,8 @@ exception InvalidGraph
 val empty : ugt
 (** [empty] is a graph with no nodes *)
 
-<<<<<<< HEAD
 (** [size graph] is the number of unique nodes contained in [graph] *)
 val size : gt -> int
-=======
-val size : gt list -> int
-(** [size graph] is the number of unique nodes contained in [graph] *)
->>>>>>> 1dae923174930b2339cc0d10f1a2604b78561339
 
 val add : gt -> int * ugt
 (** [add graph] is the tuple ([id], [newgraph]) where [newgraph] is
@@ -36,15 +31,9 @@ val connect : gt -> int -> int -> ugt
     edge b/w nodes [id1] and [id2]. Requires: [id1] != [id2] Raises:
     [UnknownNode id] if either [id1] or [id2] DNE within the graph *)
 
-<<<<<<< HEAD
-(** [verify graph] is the verified graph. Raises InvalidGraph if [graph] is
-    not verifiable. *)
-val verify : gt -> vgt
-=======
 val verify : ugt -> vgt
 (** [verify graph] is the verified graph. Raises InvalidGraph if [graph]
     is not verifiable. *)
->>>>>>> 1dae923174930b2339cc0d10f1a2604b78561339
 
 val neighbors : gt -> int -> int list
 (** [neighbors graph id] is the list of nodes in [graph] to which [id]
