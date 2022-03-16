@@ -8,7 +8,7 @@ type lt = {
 
 type wt = {
   name : string;
-  g : Graph.vgt; (* represents the world in simplified graph form *)
+  g : Graph.ugt; (* represents the world in simplified graph form *)
   roads : Road.t list;
   locations : lt list;
 }

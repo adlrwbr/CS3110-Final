@@ -1,6 +1,5 @@
-type gt = int list list
-type ugt = gt
-type vgt = gt
+type ugt = int list list
+type vgt = ugt
 
 exception UnknownNode of int
 exception InvalidGraph
@@ -27,6 +26,8 @@ let connect graph id1 id2 =
       | [] -> []
     in
     con 1 graph
+
+let rec unverify vg = vg
 
 let rec verify ug =
   match ug with
