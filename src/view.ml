@@ -6,8 +6,6 @@ let init =
     let _ = set_window_title "Pathfinder TODO: change name" in
     ()
 
-(** [world_to_pixel (x, y)] is an integer coordinate pair in pixel space from
-    the float coordinates in World *)
 let world_to_pixel ( coord : float * float ) : int * int =
     let f_x, f_y = coord in
     let i_x =
@@ -16,6 +14,14 @@ let world_to_pixel ( coord : float * float ) : int * int =
     in let i_y = f_y /. World.size_y *. (() |> Graphics.size_y |> Int.to_float)
         |> Int.of_float
     in (i_x, i_y)
+
+let pixel_to_world ( coord : int * int ) : float * float =
+    let i_x, i_y = coord in
+    let f_x =
+        Int.to_float i_x /. (Int.to_float (Graphics.size_x ())) *. World.size_x
+    in let f_y =
+        Int.to_float i_y /. (Int.to_float (Graphics.size_y ())) *. World.size_y
+    in (f_x, f_y)
 
 (** [draw_loc loc] draws the location [loc] *)
 let draw_loc ( loc : World.lt ) =

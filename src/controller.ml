@@ -1,6 +1,20 @@
+(** [road_placement_mode world] is a world that may or may not have been
+    modified during Road Placement Mode *)
+let road_placement_mode ( world : World.wt ) : World.wt =
+    let coord1 = Graphics.mouse_pos () |> View.pixel_to_world in
+    let road_event = Graphics.wait_next_event [Graphics.Key_pressed] in
+    if road_event.key == 'r' then
+        (* place road *)
+        let coord2 = Graphics.mouse_pos () |> View.pixel_to_world in
+        (* create road from coord 1 to coord 2 *)
+        let new_road = Road.create "New St" coord1 coord2 in
+        let world = World.add_road new_road world in
+        world
+    else world
+
 (** [loop world] is the main event loop of the application that manages user
     input and displays [world] *)
-let rec loop (world : World.wt) =
+let rec loop ( world : World.wt ) =
     (* clear graph *)
     let _ = Graphics.clear_graph () in
     (* display world *)
@@ -9,6 +23,9 @@ let rec loop (world : World.wt) =
     let event = Graphics.wait_next_event [Graphics.Key_pressed] in
     (* check for quit key else loop again *)
     if event.key == 'q' then exit 0
+    (* enter road placement mode *)
+    else if event.key == 'r' then
+        loop (road_placement_mode world)
     else loop world
 
 let start () =
