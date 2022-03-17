@@ -17,6 +17,19 @@ let size_x = 1000.
 let size_y = 1000.
 let empty name = { name; g = Graph.empty; roads = []; locations = [] }
 
+(** [midpt road] finds the midpoint of the [road] passed in SOLELY by
+    looking at the start and end nodes. *)
+let midchord road =
+  let fp = road |> Road.coords |> List.hd in
+  let lp = road |> Road.coords |> Algo.tl in
+  match (fp, lp) with
+  | (a, b), (c, d) -> ((a +. c) /. 2., (b +. d) /. 2.)
+
+let distance pt1 pt2 =
+  match (pt1, pt2) with
+  | (a, b), (c, d) ->
+      sqrt (((a -. c) *. (a -. c)) +. ((b -. d) *. (b -. d)))
+
 let add_loc name category road pos world =
   match Graph.add world.g with
   | nid, ng ->
@@ -59,14 +72,3 @@ let loc_coord loc =
         y1 +. (loc.pos_on_road *. (y2 -. y1)) )
 
 let roads world = world.roads
-
-(** [midpt road] finds the midpoint of the [road] passed in
-SOLELY by looking at the start and end nodes. *)
-let midchord road =
-    let fp = road |> Road.coords |> List.hd in
-    let lp = road |> Road.coords |> Algo.tl in
-    match (fp,lp) with
-    | ((a,b),(c,d)) -> ((a +. c)/. 2., (b +. d)/. 2.)
-
-let distance pt1 pt2 = match (pt1,pt2) with
-| ((a,b),(c,d)) -> sqrt ((a-.c)*.(a-.c) +. (b-.d)*.(b-.d))

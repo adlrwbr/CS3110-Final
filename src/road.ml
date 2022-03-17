@@ -5,10 +5,7 @@ type t = {
 }
 
 let create name startPoint endPoint =
-  {
-    name = name;
-    startPt = startPoint;
-    endPt = endPoint
-  }
+  { name; startPt = startPoint; endPt = endPoint }
 
-let coords road = [road.startPt; road.endPt]
+let coords road = [ road.startPt; road.endPt ]
+let name road = road.name
