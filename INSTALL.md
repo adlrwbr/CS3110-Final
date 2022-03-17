@@ -24,7 +24,8 @@ instructions on how make it work are provided below:
 2. Log-out from the system and log-in again.
 
 3. After that, you will have to **re-install all packages** you have previously
-   installed via opam. For instance, first try
+   installed via opam. The following commands will all be done in the terminal within the project directory.
+   For instance, first try
 
    ```
    opam switch
