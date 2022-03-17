@@ -13,7 +13,9 @@ let rec input ( prompt : string ) ( acc : string ) : string =
   if key == '\r' then acc
   (* backspace last character and ask for input again *)
   else if key == '\b' then
-    input prompt (String.sub acc 0 (String.length acc - 1))
+    (* limit backspace to empty string *)
+    if acc = "" then input prompt acc
+    else input prompt (String.sub acc 0 (String.length acc - 1))
   (* append to acc and ask for input again *)
   else input prompt (acc ^ (String.make 1 key))
 
