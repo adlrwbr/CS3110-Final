@@ -1,9 +1,11 @@
-1. If you do not have OCaml, install it on your machine using the CS 3110 textbook installation instructions
+1. If you do not have OCaml and/or Dune, install it on your machine using the CS 3110 textbook installation instructions
    here: https://cs3110.github.io/textbook/chapters/preface/install.html
 
 2. Install the OCaml graphics library on your machine by using the tutorial listed below, which a copied portion from the
    tutorial "Installing OCaml Graphics" under the GitHub respository "OCaml Graphics Demo" by the
    Yale-NUS College module on Data Structures and Algorithms. Link: https://github.com/ysc2229/ocaml-graphics-demo.
+
+---
 
 ## Installing OCaml Graphics
 
@@ -64,3 +66,7 @@ instructions on how make it work are provided below:
    Cygwin (https://x.cygwin.com/).
 
 2. Proceed to Step 3 for Mac OS X (above).
+
+---
+
+3. Run the system using "make play" in the terminal in the directory of the project.
