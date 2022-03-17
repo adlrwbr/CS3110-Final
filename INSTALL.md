@@ -3,7 +3,7 @@
 
 2. Install the OCaml graphics library on your machine by using the tutorial listed below, which a copied portion from the
    tutorial "Installing OCaml Graphics" under the GitHub respository "OCaml Graphics Demo" by the
-   "Yale-NUS College module on Data Structures and Algorithms." Link: https://github.com/ysc2229/ocaml-graphics-demo.
+   Yale-NUS College module on Data Structures and Algorithms. Link: https://github.com/ysc2229/ocaml-graphics-demo.
 
 ## Installing OCaml Graphics
 
