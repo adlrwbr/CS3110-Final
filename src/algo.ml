@@ -3,7 +3,7 @@ match list2 with
 | head :: tail -> remove_all (List.filter (fun x -> x <> head) list1) tail
 | [] -> list1
 
-let tl list = List.nth list (List.length list - 1);;
+let last list = List.nth list (List.length list - 1);;
 
 let rec relate f list = match list with
 | cur :: next :: more -> if f cur next then relate f (cur :: more) 

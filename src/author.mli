@@ -1,4 +1,4 @@
-(** CS 3110 Spring 2022 Assignment A2 Adventure
+(** CS 3110 Spring 2022 Final Project
 
     @author smb459, axc2, amw369 *)
 

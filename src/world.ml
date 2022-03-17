@@ -21,7 +21,7 @@ let empty name = { name; g = Graph.empty; roads = []; locations = [] }
     looking at the start and end nodes. *)
 let midchord road =
   let fp = road |> Road.coords |> List.hd in
-  let lp = road |> Road.coords |> Algo.tl in
+  let lp = road |> Road.coords |> Algo.last in
   match (fp, lp) with
   | (a, b), (c, d) -> ((a +. c) /. 2., (b +. d) /. 2.)
 
