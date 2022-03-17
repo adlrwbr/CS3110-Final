@@ -6,21 +6,26 @@ match list2 with
 let tl list = List.nth list (List.length list - 1);;
 
 let rec relate f list = match list with
-| cur :: next :: more -> if f cur next then relate f (cur :: more) else relate f (next :: more)
+| cur :: next :: more -> if f cur next then relate f (cur :: more) 
+                         else relate f (next :: more)
 | cur :: [] -> cur
 | [] -> assert false
 
-let rec bsfr graph ids counter memory =
-    let next_targs = List.sort_uniq compare (match ids with
-    | current :: more -> Graph.neighbors graph current 
-    @ bsfr graph more counter (current :: memory)
-    | [] -> []
-    ) in (
-        next_targs
+let rec bfsr graph ids counter memory output =
+    let next_targs = remove_all 
+        (List.sort_uniq compare 
+            (match ids with
+            | current :: more -> Graph.neighbors graph current 
+            @ bfsr graph more counter (current :: memory) output
+            | [] -> []
+        )) 
+        memory
+    in
+    (
+        if next_targs = [] then output
+        else bfsr graph next_targs counter (memory @ next_targs) (output @ next_targs)
+        (*if next_targs = [] then output 
+        else *)
     )
 
-(*let bfs graph id = let vg = Graph.verify graph in
-    [id] @ bsfr vg [id] 0 [id]*)
-
-
-    
+let bfs graph id = [id] @ bfsr graph [id] 0 [id] []

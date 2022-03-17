@@ -23,8 +23,8 @@ val add : ugt -> int * ugt
 val add_no_id : ugt -> ugt
 (** [add_no_id graph] is the [graph] w/ the newly created node [id] *)
 
-val connect : ugt -> int -> int -> ugt
-(** [connect id1 id2] is a modified unverified graph w/ an additional
+val connect : int -> int -> ugt -> ugt
+(** [connect id1 id2 graph] is a modified unverified graph w/ an additional
     edge b/w nodes [id1] and [id2]. Requires: [id1] != [id2] Raises:
     [UnknownNode id] if either [id1] or [id2] DNE within the graph *)
 

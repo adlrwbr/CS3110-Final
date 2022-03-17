@@ -10,6 +10,5 @@ one element that has survived the comparison chain.
 Requires: [list] contains at least one element.*)
 val relate : ('a -> 'a -> bool) -> 'a list -> 'a
 
-(* TODO: fix this spec and compilation error *)
-(* val bfs : Graph.vgt -> int list -> int list *)
+val bfs : Graph.ugt -> int -> int list
 (** [bfs ids] Begins a breadth first search *)

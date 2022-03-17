@@ -1,16 +1,17 @@
 type ugt = int list list
-type vgt = ugt
+type vgt = int list list
 
 exception UnknownNode of int
 exception InvalidGraph
 exception IndexOutofBounds
 
 let empty = []
+let evg : vgt = []
 let size x = List.length x
 let add graph = (size graph, graph @ [ [] ])
 let add_no_id graph = snd (add graph)
 
-let connect graph id1 id2 =
+let connect id1 id2 graph=
   if id1 > size graph then raise (UnknownNode id1)
   else if id2 > size graph then raise (UnknownNode id2)
   else
@@ -27,13 +28,13 @@ let connect graph id1 id2 =
     in
     con 1 graph
 
-let rec unverify vg = vg
+let rec unverify vg : ugt = List.map (fun x -> x) vg
 
-let rec verify ug =
+let rec verify ug : vgt =
   match ug with
   | [] -> []
   | [] :: t -> raise InvalidGraph
-  | h :: t -> verify t
+  | h :: t -> h :: verify t
 
 (** [get_element_at_index lst i] is the element within lst at the index
     i. Raises: IndexOutofBounds if i >= List.length lst *)

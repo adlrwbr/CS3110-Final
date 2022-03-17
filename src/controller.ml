@@ -10,7 +10,6 @@ let nearest_road ( world : World.wt ) : float * Road.t =
     allroads
     ) 
 
-
 (** [road_placement_mode world] is a world that may or may not have been
     modified during Road Placement Mode *)
 let road_placement_mode ( world : World.wt ) : World.wt =
