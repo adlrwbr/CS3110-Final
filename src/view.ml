@@ -74,3 +74,24 @@ let draw world =
   let _ = List.map draw_loc (World.locations world) in
   let _ = List.map draw_road (World.roads world) in
   ()
+
+let draw_input_popup prompt input =
+  let win_width, win_height =
+    (Int.to_float (size_x ()), Int.to_float (size_y ())) in
+  (* draw background box *)
+  let _ = rgb 170 227 255 |> set_color in
+  let box_width = win_width *. 0.66 |> Int.of_float in
+  let box_height = win_height *. 0.2 |> Int.of_float in
+  let box_ll_x = size_x () / 2 - box_width / 2 in
+  let box_ll_y = size_y () / 2 - box_height / 2 in
+  let _ = fill_rect box_ll_x box_ll_y box_width box_height in
+  (* draw prompt text *)
+  let _ = rgb 0 0 0 |> set_color in
+  let _ = moveto
+    (box_ll_x + 10) (box_ll_y + box_height - 15) in
+  let _ = draw_string (prompt ^ " (press Enter to submit):") in
+  (* draw input text *)
+  let _ = moveto (box_ll_x + 5) (size_y () / 2) in
+  let _ = rmoveto 30 (-30) in
+  let _ = draw_string input in
+  ()

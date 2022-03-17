@@ -6,6 +6,10 @@ val init : unit
 (** [draw world] draws [world] onto the GUI *)
 val draw : World.wt -> unit
 
+(** [draw_input_popup prompt input] draws an input textfield with prompt text
+    [prompt] and pending input text [input] *)
+val draw_input_popup : string -> string -> unit
+
 (** [world_to_pixel (x, y)] is an integer coordinate pair in pixel space from
     the float coordinates in World *)
 val world_to_pixel : float * float -> int * int
