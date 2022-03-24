@@ -15,9 +15,6 @@ let connect id1 id2 graph=
   if id1 > size graph then raise (UnknownNode id1)
   else if id2 > size graph then raise (UnknownNode id2)
   else
-    (*As long as no points are removed, this check is unnecessary. if
-      List.nth graph (id1-1) = [] then UnknownNode id1 else if List.nth
-      graph (id2-1) = [] then UnknownNode id2 else *)
     let rec con counter = function
       | some :: more ->
           if id1 = counter then (id2 :: some) :: con (counter + 1) more

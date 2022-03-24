@@ -1,5 +1,8 @@
 (** represents the world model in MVC pattern *)
 
+exception IllegalWorld of string
+(** IllegalWorld exception with user-friendly error message *)
+
 type wt
 (** the abstract world type *)
 
@@ -21,7 +24,8 @@ val add_loc : string -> string -> Road.t -> float -> wt -> lt * wt
     Requires: [world] contains [road] *)
 
 val add_road : Road.t -> wt -> wt
-(** [add_road road world] is a modified [world] with an additional [road] *)
+(** [add_road road world] is a modified [world] with an additional [road] and
+    intersections *)
 
 val locations : wt -> lt list
 (** [locations world] is a list of all locations contained in [world] *)
@@ -38,6 +42,14 @@ val loc_coord : lt -> float * float
 val roads : wt -> Road.t list
 (** [roads world] is the list of all roads in the [world] *)
 
-val midchord : Road.t -> float * float
+val midpt : Road.t -> float * float
+(** [midpt road] is the midpoint of the [road] *)
 
 val distance : float * float -> float * float -> float
+(** [distance point1 point2] is the euclidean distance between [point1] and
+    [point2].*)
+
+val reduce : wt -> Graph.vgt
+(** [reduce world] is a graph representing the simplified state of the world
+    where intersections and locations are nodes connected by roads
+    Raises: [IllegalWorld] if world cannot be reduced into a verified graph *)

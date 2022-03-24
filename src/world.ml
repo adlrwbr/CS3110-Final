@@ -1,3 +1,5 @@
+exception IllegalWorld of string
+
 type lt = {
   id : int;
   name : string;
@@ -17,11 +19,9 @@ let size_x = 1000.
 let size_y = 1000.
 let empty name = { name; g = Graph.empty; roads = []; locations = [] }
 
-(** [midpt road] finds the midpoint of the [road] passed in SOLELY by
-    looking at the start and end nodes. *)
-let midchord road =
-  let fp = road |> Road.coords |> List.hd in
-  let lp = road |> Road.coords |> Algo.tl in
+let midpt road =
+  let fp = road |> Road.coords |> fst in
+  let lp = road |> Road.coords |> snd in
   match (fp, lp) with
   | (a, b), (c, d) -> ((a +. c) /. 2., (b +. d) /. 2.)
 
@@ -62,9 +62,7 @@ let category loc = loc.category
 
 let loc_coord loc =
   (* get the start and end coordinates of the location's road *)
-  let road_coords = Road.coords loc.road in
-  let road_start = List.nth road_coords 0 in
-  let road_end = List.nth road_coords 1 in
+  let road_start, road_end = Road.coords loc.road in
   (* calculate location's coordinates w/ pos_on_road *)
   match (road_start, road_end) with
   | (x1, y1), (x2, y2) ->
@@ -97,3 +95,5 @@ let intersection road1 road2 =
       then Some (x, y)
       else None
   | _, _ -> raise (Invalid_argument "")
+
+let reduce = raise (Failure "Unimplemented")

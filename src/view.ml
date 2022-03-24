@@ -41,6 +41,7 @@ let draw_loc (loc : World.lt) =
   (* draw name label *)
   let _ = moveto x y in
   let _ = rmoveto (-15) 20 in
+  let _ = set_text_size 100 in
   let _ = draw_string (World.name loc) in
   (* draw category label *)
   let _ = moveto x y in
@@ -50,25 +51,16 @@ let draw_loc (loc : World.lt) =
 
 (** [draw_road loc] draws the location [loc] *)
 let draw_road (road : Road.t) =
-  let rec draw_segment prev lst =
-    let x1, y1 = prev in
-    match lst with
-    | [] -> ()
-    | coord2 :: t ->
-        let x2, y2 = world_to_pixel coord2 in
-        let _ = moveto x1 y1 in
-        let _ = lineto x2 y2 in
-        draw_segment (x2, y2) t
-  in
-  let coords = Road.coords road in
-  let hx, hy = List.hd coords in
-  let x, y = World.midchord road |> world_to_pixel in
-  let t = List.tl coords in
-  let _ = draw_segment (world_to_pixel (hx, hy)) t in
+  (* draw road line *)
+  let coord1, coord2 = Road.coords road in
+  let x1, y1 = world_to_pixel coord1 in
+  let x2, y2 = world_to_pixel coord2 in
+  moveto x1 y1;
+  lineto x2 y2;
   (* draw name label *)
-  let _ = moveto x y in
-  let _ = draw_string (Road.name road) in
-  ()
+  let x, y = World.midpt road |> world_to_pixel in
+  moveto x y;
+  draw_string (Road.name road)
 
 let draw world =
   let _ = List.map draw_loc (World.locations world) in

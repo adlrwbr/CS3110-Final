@@ -1,14 +1,14 @@
-val remove_all : 'a list -> 'a list -> 'a list
-(** [remove_all list1 list2] removes all elements [list2] from [list1] *)
+(** contains helper functions for various data structure *)
 
-(** [tl list] returns the last element in the list *)
-val tl : 'a list -> 'a
+val shortest_path : string -> string -> Graph.vgt -> string list
+(** [shortest_path start finish graph] is an inclusive list of the ids of the
+    nodes along the shortest path from [start] to [finish], inclusive.
+    Example: [ [start]; ...; [finish] ] *)
 
+(* TODO: use "is" verb *)
+val relate : ('a -> 'a -> bool) -> 'a list -> 'a
 (** [relate f list] traverses [list] comparing the first two elements with [f].
-If [f] is true, first continues, else the second continues. Finishes once there is
+If [f] is true, first continues, else the second continues. Check repeats with
+the continuing element and the third, etc. Finishes once there is
 one element that has survived the comparison chain. 
 Requires: [list] contains at least one element.*)
-val relate : ('a -> 'a -> bool) -> 'a list -> 'a
-
-val bfs : Graph.ugt -> int -> int list
-(** [bfs ids] Begins a breadth first search *)

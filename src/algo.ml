@@ -1,15 +1,18 @@
-let rec remove_all list1 list2 = 
+(** [remove_all list1 list2] is [list1] without the elements of [list2]*)
+let rec remove_all (list1 : 'a list) (list2 : 'a list) : 'a list = 
 match list2 with 
 | head :: tail -> remove_all (List.filter (fun x -> x <> head) list1) tail
 | [] -> list1
 
-let tl list = List.nth list (List.length list - 1);;
+let last (list : 'a list) : 'a = List.nth list (List.length list - 1);;
+(** [last list] is the last element in the [list] 
+    Requires: [list] is not empty. *)
 
 let rec relate f list = match list with
 | cur :: next :: more -> if f cur next then relate f (cur :: more) 
                          else relate f (next :: more)
 | cur :: [] -> cur
-| [] -> assert false
+| [] -> raise (Failure "No elements")
 
 let rec bfsr graph ids counter memory output =
     let next_targs = remove_all 
@@ -28,4 +31,9 @@ let rec bfsr graph ids counter memory output =
         else *)
     )
 
-let bfs graph id = [id] @ bfsr graph [id] 0 [id] []
+let bfs (graph : 'a) (id : int) : int list = [id] @ bfsr graph [id] 0 [id] []
+(** [bfs graph ids] is a set-like list of all nodes in [graph] sorted by number of edges
+taken to reach id in [ids].*)
+
+let shortest_path start finish graph =
+    raise (Failure "Unimplemented")
