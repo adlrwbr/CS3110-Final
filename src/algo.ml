@@ -29,3 +29,6 @@ let rec bfsr graph ids counter memory output =
     )
 
 let bfs graph id = [id] @ bfsr graph [id] 0 [id] []
+
+let shortest_path start finish graph =
+    raise (Failure "Unimplemented")

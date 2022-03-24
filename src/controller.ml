@@ -47,9 +47,9 @@ let road_placement_mode (world : World.wt) : World.wt =
   let coord1 = Graphics.mouse_pos () |> View.pixel_to_world in
   let road_event = Graphics.wait_next_event [ Graphics.Key_pressed ] in
   if road_event.key == 'r' then
-    let name = input "Enter new road name" "" in
-    (* place road *)
+    (* get input*)
     let coord2 = Graphics.mouse_pos () |> View.pixel_to_world in
+    let name = input "Enter new road name" "" in
     (* create road from coord 1 to coord 2 *)
     let new_road = Road.create name coord1 coord2 in
     let world = World.add_road new_road world in

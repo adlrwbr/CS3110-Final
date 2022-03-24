@@ -41,6 +41,7 @@ let draw_loc (loc : World.lt) =
   (* draw name label *)
   let _ = moveto x y in
   let _ = rmoveto (-15) 20 in
+  let _ = set_text_size 100 in
   let _ = draw_string (World.name loc) in
   (* draw category label *)
   let _ = moveto x y in

@@ -3,6 +3,9 @@
 type t
 (** the abstract road type *)
 
+type intersection
+(** the abstract intersection type *)
+
 val create : string -> float * float -> float * float -> t
 (** [create name startPoint endPoint] is a newly created road stretching
     b/w [startPoint] and [endPoint] *)
