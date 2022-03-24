@@ -27,8 +27,8 @@ let nearest_road (world : World.wt) : float * Road.t =
   ( 0.5,
     Algo.relate
       (fun a b ->
-        World.distance (World.midchord a) point
-        <= World.distance (World.midchord b) point)
+        World.distance (World.midpt a) point
+        <= World.distance (World.midpt b) point)
       allroads )
 
 (** [place_loc world] is a world that may or may not have been

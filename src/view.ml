@@ -63,7 +63,7 @@ let draw_road (road : Road.t) =
   in
   let coords = Road.coords road in
   let hx, hy = List.hd coords in
-  let x, y = World.midchord road |> world_to_pixel in
+  let x, y = World.midpt road |> world_to_pixel in
   let t = List.tl coords in
   let _ = draw_segment (world_to_pixel (hx, hy)) t in
   (* draw name label *)

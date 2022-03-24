@@ -21,9 +21,7 @@ let size_y = 1000.
 let empty name = {
   name; g = Graph.empty; roads = []; locations = []; intersections = [] }
 
-(** [midpt road] finds the midpoint of the [road] passed in SOLELY by
-    looking at the start and end nodes. *)
-let midchord road =
+let midpt road =
   let fp = road |> Road.coords |> List.hd in
   let lp = road |> Road.coords |> Algo.last in
   match (fp, lp) with
