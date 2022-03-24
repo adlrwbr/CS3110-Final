@@ -1,5 +1,3 @@
-exception IllegalWorld of string
-
 type lt = {
   id : int;
   name : string;
@@ -13,17 +11,15 @@ type wt = {
   g : Graph.ugt; (* represents the world in simplified graph form *)
   roads : Road.t list;
   locations : lt list;
-  intersections : Road.intersection list
 }
 
 let size_x = 1000.
 let size_y = 1000.
-let empty name = {
-  name; g = Graph.empty; roads = []; locations = []; intersections = [] }
+let empty name = { name; g = Graph.empty; roads = []; locations = [] }
 
-let midpt road =
-  let fp = road |> Road.coords |> List.hd in
-  let lp = road |> Road.coords |> Algo.last in
+let midchord road =
+  let fp = road |> fst Road.coords in
+  let lp = road |> snd Road.coords in
   match (fp, lp) with
   | (a, b), (c, d) -> ((a +. c) /. 2., (b +. d) /. 2.)
 
@@ -46,7 +42,6 @@ let add_loc name category road pos world =
           g = ng;
           roads = world.roads;
           locations = new_loc :: world.locations;
-          intersections = world.intersections
         }
       in
       (new_loc, new_world)
@@ -57,8 +52,6 @@ let add_road road world =
     g = world.g;
     roads = road :: world.roads;
     locations = world.locations;
-    intersections = [];
-    (* TODO: calculate and add new intersections (along w graph nodes) *)
   }
 
 let locations world = world.locations
@@ -77,6 +70,3 @@ let loc_coord loc =
         y1 +. (loc.pos_on_road *. (y2 -. y1)) )
 
 let roads world = world.roads
-
-let reduce world =
-  raise (Failure "Unimplemented") (* TODO *)
