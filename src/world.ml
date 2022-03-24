@@ -22,8 +22,8 @@ let empty name = {
   name; g = Graph.empty; roads = []; locations = []; intersections = [] }
 
 let midpt road =
-  let fp = road |> Road.coords |> List.hd in
-  let lp = road |> Road.coords |> Algo.last in
+  let fp = road |> Road.coords |> fst in
+  let lp = road |> Road.coords |> snd in
   match (fp, lp) with
   | (a, b), (c, d) -> ((a +. c) /. 2., (b +. d) /. 2.)
 
@@ -67,9 +67,7 @@ let category loc = loc.category
 
 let loc_coord loc =
   (* get the start and end coordinates of the location's road *)
-  let road_coords = Road.coords loc.road in
-  let road_start = List.nth road_coords 0 in
-  let road_end = List.nth road_coords 1 in
+  let road_start, road_end = Road.coords loc.road in
   (* calculate location's coordinates w/ pos_on_road *)
   match (road_start, road_end) with
   | (x1, y1), (x2, y2) ->
