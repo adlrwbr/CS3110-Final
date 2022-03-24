@@ -9,7 +9,7 @@ let rec relate f list = match list with
 | cur :: next :: more -> if f cur next then relate f (cur :: more) 
                          else relate f (next :: more)
 | cur :: [] -> cur
-| [] -> assert false
+| [] -> raise (Failure "No elements")
 
 let rec bfsr graph ids counter memory output =
     let next_targs = remove_all 

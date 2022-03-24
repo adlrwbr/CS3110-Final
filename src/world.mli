@@ -39,5 +39,8 @@ val roads : wt -> Road.t list
 (** [roads world] is the list of all roads in the [world] *)
 
 val midchord : Road.t -> float * float
+(** [midpt road] finds the midpoint of the [road] passed in SOLELY by
+    looking at the start and end nodes. *)
 
 val distance : float * float -> float * float -> float
+(** [distance point1 point2] returns the euclidean distance between two points.*)
