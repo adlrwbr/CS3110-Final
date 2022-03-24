@@ -8,13 +8,7 @@ let last (list : 'a list) : 'a = List.nth list (List.length list - 1);;
 (** [last list] is the last element in the [list] 
     Requires: [list] is not empty. *)
 
-(* TODO: use "is" verb *)
-(** [relate f list] traverses [list] comparing the first two elements with [f].
-If [f] is true, first continues, else the second continues. Check repeats with
-the continuing element and the third, etc. Finishes once there is
-one element that has survived the comparison chain. 
-Requires: [list] contains at least one element.*)
-let rec relate (f : 'a -> 'a -> bool) (list : 'a list) : 'a = match list with
+let rec relate f list = match list with
 | cur :: next :: more -> if f cur next then relate f (cur :: more) 
                          else relate f (next :: more)
 | cur :: [] -> cur

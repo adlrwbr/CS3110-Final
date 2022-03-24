@@ -1,3 +1,5 @@
+exception IllegalWorld of string
+
 type lt = {
   id : int;
   name : string;
@@ -68,3 +70,5 @@ let loc_coord loc =
         y1 +. (loc.pos_on_road *. (y2 -. y1)) )
 
 let roads world = world.roads
+
+let reduce = raise (Failure "Unimplemented")
