@@ -75,8 +75,8 @@ let in_range p p1 p2 = (p >= p1 && p <= p2) || (p >= p2 && p <= p1)
 
 let intersection road1 road2 =
   match (Road.coords road1, Road.coords road2) with
-  | ( [ (p_a1_x, p_a1_y); (p_a2_x, p_a2_y) ],
-      [ (p_b1_x, p_b1_y); (p_b2_x, p_b2_y) ] ) ->
+  | ( ((p_a1_x, p_a1_y), (p_a2_x, p_a2_y)),
+      ((p_b1_x, p_b1_y), (p_b2_x, p_b2_y)) ) ->
       let m_a = slope p_a1_x p_a1_y p_a2_x p_a2_y in
       let m_b = slope p_b1_x p_b1_y p_b2_x p_b2_y in
       (* x and y below is the intersection point of the two lines that
@@ -94,6 +94,5 @@ let intersection road1 road2 =
         && in_range y p_b1_y p_b2_y
       then Some (x, y)
       else None
-  | _, _ -> raise (Invalid_argument "")
 
 let reduce = raise (Failure "Unimplemented")
