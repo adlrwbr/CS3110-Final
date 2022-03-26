@@ -70,5 +70,29 @@ let loc_coord loc =
         y1 +. (loc.pos_on_road *. (y2 -. y1)) )
 
 let roads world = world.roads
+let slope x1 y1 x2 y2 = (y2 -. y1) /. (x2 -. x1)
+let in_range p p1 p2 = (p >= p1 && p <= p2) || (p >= p2 && p <= p1)
 
 let reduce world = Graph.verify Graph.empty (* TODO: implement *)
+
+let intersection road1 road2 =
+  match (Road.coords road1, Road.coords road2) with
+  | ( ((p_a1_x, p_a1_y), (p_a2_x, p_a2_y)),
+      ((p_b1_x, p_b1_y), (p_b2_x, p_b2_y)) ) ->
+      let m_a = slope p_a1_x p_a1_y p_a2_x p_a2_y in
+      let m_b = slope p_b1_x p_b1_y p_b2_x p_b2_y in
+      (* x and y below is the intersection point of the two lines that
+         the segments lie on. *)
+      let x =
+        (p_b1_y -. p_a1_y +. (m_a *. p_a1_x) -. (m_b *. p_b1_x))
+        /. (m_a -. m_b)
+      in
+      let y = (m_b *. (x -. p_b1_x)) +. p_b1_y in
+      (* Check if the intersection point is actually on the segments. *)
+      if
+        in_range x p_a1_x p_a2_x
+        && in_range x p_b1_x p_b2_x
+        && in_range y p_a1_y p_a2_y
+        && in_range y p_b1_y p_b2_y
+      then Some (x, y)
+      else None
