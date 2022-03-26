@@ -71,4 +71,4 @@ let loc_coord loc =
 
 let roads world = world.roads
 
-let reduce = raise (Failure "Unimplemented")
+let reduce world = Graph.verify Graph.empty (* TODO: implement *)

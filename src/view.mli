@@ -10,6 +10,9 @@ val draw : World.wt -> unit
     [prompt] and pending input text [input] *)
 val draw_input_popup : string -> string -> unit
 
+(** [draw_edit_mode] draws the GUI overlay for edit mode *)
+val draw_edit_mode : unit -> unit
+
 (** [world_to_pixel (x, y)] is an integer coordinate pair in pixel space from
     the float coordinates in World *)
 val world_to_pixel : float * float -> int * int

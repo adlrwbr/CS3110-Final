@@ -32,22 +32,44 @@ let pixel_to_world (coord : int * int) : float * float =
   in
   (f_x, f_y)
 
+type x_anchor = LEFT | CENTER | RIGHT
+type y_anchor = TOP | MIDDLE | BOTTOM
+
+(** [anchor] is a variant that specifies how an element is anchored relative
+    to its coordinates *)
+type anchor = y_anchor * x_anchor
+
+(** [draw_text x y anchor text] draws the string [text] with its [anchor] at
+    pixel-space coordinate ([x], [y]) *)
+let draw_text (x : int) (y : int) (anchor : anchor) (text : string) : unit =
+  set_text_size 100; (* TODO: why isn't this working? *)
+  (* set_font "-misc-dejavu sans mono-bold-r-normal--256-0-0-0-m-0-iso8859-1"; *)
+  moveto x y;
+  let width, height = text_size text in
+  let dy =
+    match anchor with
+    | TOP, _ -> -1 * height
+    | MIDDLE, _ -> -1 * height / 2
+    | BOTTOM, _ -> 0
+  in let dx =
+    match anchor with
+    | _, LEFT -> 0
+    | _, CENTER -> -1 * width / 2
+    | _, RIGHT -> -1 * width
+  in
+  rmoveto dx dy;
+  draw_string text
+
 (** [draw_loc loc] draws the location [loc] *)
 let draw_loc (loc : World.lt) =
   (* node coords in pixel space *)
   let x, y = World.loc_coord loc |> world_to_pixel in
   (* draw node *)
-  let _ = fill_circle x y 15 in
+  fill_circle x y 15;
   (* draw name label *)
-  let _ = moveto x y in
-  let _ = rmoveto (-15) 20 in
-  let _ = set_text_size 100 in
-  let _ = draw_string (World.name loc) in
+  loc |> World.name |> draw_text (x - 15) (y + 20) (BOTTOM, LEFT);
   (* draw category label *)
-  let _ = moveto x y in
-  let _ = rmoveto (-20) (-30) in
-  let _ = draw_string (World.category loc) in
-  ()
+  loc |> World.category |> draw_text (x - 20) (y - 30) (BOTTOM, LEFT)
 
 (** [draw_road loc] draws the location [loc] *)
 let draw_road (road : Road.t) =
@@ -59,8 +81,7 @@ let draw_road (road : Road.t) =
   lineto x2 y2;
   (* draw name label *)
   let x, y = World.midpt road |> world_to_pixel in
-  moveto x y;
-  draw_string (Road.name road)
+  road |> Road.name |> draw_text x y (BOTTOM, LEFT)
 
 let draw world =
   let _ = List.map draw_loc (World.locations world) in
@@ -76,14 +97,13 @@ let draw_input_popup prompt input =
   let box_height = win_height *. 0.2 |> Int.of_float in
   let box_ll_x = size_x () / 2 - box_width / 2 in
   let box_ll_y = size_y () / 2 - box_height / 2 in
-  let _ = fill_rect box_ll_x box_ll_y box_width box_height in
+  fill_rect box_ll_x box_ll_y box_width box_height;
   (* draw prompt text *)
-  let _ = rgb 0 0 0 |> set_color in
-  let _ = moveto
-    (box_ll_x + 10) (box_ll_y + box_height - 15) in
-  let _ = draw_string (prompt ^ " (press Enter to submit):") in
+  rgb 0 0 0 |> set_color;
+  prompt ^ " (press Enter to submit):"
+  |> draw_text (box_ll_x + 10) (box_ll_y + box_height - 15) (BOTTOM, LEFT);
   (* draw input text *)
-  let _ = moveto (box_ll_x + 5) (size_y () / 2) in
-  let _ = rmoveto 30 (-30) in
-  let _ = draw_string input in
-  ()
+  input |> draw_text (box_ll_x + 35) (size_y () / 2 - 30) (BOTTOM, LEFT)
+
+let draw_edit_mode () =
+  draw_text 0 0 (BOTTOM, LEFT) "Welcome to edit mode"

@@ -56,6 +56,25 @@ let road_placement_mode (world : World.wt) : World.wt =
     world
   else world
 
+(** [edit_mode world] is a world edited by the user that may be reduced into
+    a graph by [World.reduce] without raising an exception *)
+let rec edit_mode (world : World.wt) : World.wt =
+  (* clear graph *)
+  Graphics.clear_graph ();
+  (* draw edit mode GUI elements *)
+  View.draw world;
+  View.draw_edit_mode ();
+  (* wait for input *)
+  let event = Graphics.wait_next_event [ Graphics.Key_pressed ] in
+  if event.key == 'e' then
+    (* check if user is allowed to quit edit mode *)
+    match World.reduce world with
+    | exception World.IllegalWorld s -> print_endline s; edit_mode world
+    | _ -> world
+  else if event.key == 'r' then (road_placement_mode world)
+  else if event.key == 'l' then (place_loc world)
+  else edit_mode world
+
 (** [loop world] is the main event loop of the application that manages
     user input and displays [world] *)
 let rec loop (world : World.wt) =
@@ -65,10 +84,9 @@ let rec loop (world : World.wt) =
   let _ = View.draw world in
   (* wait for next keypress event *)
   let event = Graphics.wait_next_event [ Graphics.Key_pressed ] in
-  (* check for quit key else loop again *)
-  if event.key == 'q' then exit 0 (* enter road placement mode *)
-  else if event.key == 'r' then loop (road_placement_mode world)
-  else if event.key == 'l' then loop (place_loc world)
+  (* check for input *)
+  if event.key == 'q' then exit 0
+  else if event.key == 'e' then world |> edit_mode |> loop
   else loop world
 
 let start () =
