@@ -137,7 +137,7 @@ let seg_dist source road =
     )
 
 let nearroad source world = 
-  let rel d1 d2 = ((seg_dist source d1)) > ((seg_dist source d2)) in 
+  let rel d1 d2 = ((seg_dist source d1)) < ((seg_dist source d2)) in 
     let minrd = Algo.relate rel (roads world) in 
     (match source, Road.coords minrd with
     ((s1,s2),((p_a1_x, p_a1_y), (p_a2_x, p_a2_y))) ->
