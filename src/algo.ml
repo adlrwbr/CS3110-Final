@@ -31,7 +31,7 @@ let rec bfsr graph ids counter memory output =
         else *)
     )
 
-let bfs (graph : 'a) (id : int) : int list = [id] @ bfsr graph [id] 0 [id] []
+let bfs graph id = [id] @ bfsr graph [id] 0 [id] []
 (** [bfs graph ids] is a set-like list of all nodes in [graph] sorted by number of edges
 taken to reach id in [ids].*)
 
