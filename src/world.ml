@@ -131,7 +131,7 @@ let seg_dist source road =
     | None -> min (distance source (road |> Road.coords |> fst)) 
     (distance source (road |> Road.coords |> snd))
     | Some (x,y) -> min (min (distance source (road 
-    |> Road.coords |> fst)) (distance source (road |> Road.coords |> fst)))
+    |> Road.coords |> fst)) (distance source (road |> Road.coords |> snd)))
      (distance source (x,y))  
      )
     )
