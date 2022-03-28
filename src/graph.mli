@@ -1,3 +1,7 @@
+(** REPRESENTATION INVARIANT: There can be no duplicate connections to
+the same node. I.e. [...[2;2;3]...] is not allowed because we cannot
+connect the same node to 2 twice.*)
+
 type ugt
 (** the unverified graph abstract type. Represents a bidirectional graph
     which may contain islands *)
@@ -23,6 +27,8 @@ val add : ugt -> int * ugt
 val add_no_id : ugt -> ugt
 (** [add_no_id graph] is the [graph] w/ the newly created node [id] *)
 
+(**BUG SPOTTED OR SPEC UPDATE NEEDED - SEAN
+If you repeat a connect command, it duplicates the connections. Not setlike! *)
 val connect : int -> int -> ugt -> ugt
 (** [connect id1 id2 graph] is a modified unverified graph w/ an additional
     edge b/w nodes [id1] and [id2]. Requires: [id1] != [id2] Raises:
@@ -38,7 +44,7 @@ val verify : ugt -> vgt
 
 val neighbors : ugt -> int -> int list
 (** [neighbors graph id] is the list of nodes in [graph] to which [id]
-    is connected *)
+    is connected, sorted by least to greatest id.*)
 
 val set : ugt -> int list
 (** [set graph] is a set of all nodes contained by the graph *)

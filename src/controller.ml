@@ -19,17 +19,19 @@ let rec input ( prompt : string ) ( acc : string ) : string =
   (* append to acc and ask for input again *)
   else input prompt (acc ^ (String.make 1 key))
 
+
 (** [nearest_road] is a tuple ([pos, road]) that specifies a position
     [pos] on a [road] nearest the cursor *)
 let nearest_road (world : World.wt) : float * Road.t =
   let point = Graphics.mouse_pos () |> View.pixel_to_world in
-  let allroads = world |> World.roads in
-  ( 0.5,
+  (*let allroads = world |> World.roads in
+    ( 0.5,
     Algo.relate
       (fun a b ->
         World.distance (World.midpt a) point
         <= World.distance (World.midpt b) point)
-      allroads )
+      allroads ) DEPRECATED NAIVE APPROACH <---*)
+  World.nearroad point world
 
 (** [place_loc world] is a world that may or may not have been
     modified by a location placed on the road nearest the cursor *)

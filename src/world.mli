@@ -53,3 +53,5 @@ val reduce : wt -> Graph.vgt
 (** [reduce world] is a graph representing the simplified state of the world
     where intersections and locations are nodes connected by roads
     Raises: [IllegalWorld] if world cannot be reduced into a verified graph *)
+
+val nearroad : (float*float) -> wt -> (float*Road.t)
