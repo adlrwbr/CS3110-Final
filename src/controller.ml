@@ -59,7 +59,7 @@ let rec edit_mode (world : World.wt) : World.wt =
   (* clear graph *)
   Graphics.clear_graph ();
   (* draw edit mode GUI elements *)
-  View.draw world;
+  View.draw world false;
   View.draw_edit_mode ();
   (* wait for input *)
   let event = Graphics.wait_next_event [ Graphics.Key_pressed ] in
@@ -80,7 +80,7 @@ let rec loop (world : World.wt) =
   (* clear graph *)
   let _ = Graphics.clear_graph () in
   (* display world *)
-  let _ = View.draw world in
+  let _ = View.draw world true in
   (* wait for next keypress event *)
   let event = Graphics.wait_next_event [ Graphics.Key_pressed ] in
   (* check for input *)

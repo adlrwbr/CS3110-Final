@@ -99,11 +99,13 @@ let draw_road (road : Road.t) =
   let x, y = World.midpt road |> world_to_pixel in
   road |> Road.name |> draw_text x y (BOTTOM, CENTER)
 
-let draw world =
+let draw world display_controls =
   let _ = List.map draw_loc (World.locations world) in
   let _ = List.map draw_road (World.roads world) in
-  draw_text 5 (size_y () - 5) (TOP, LEFT) "Press q to quit";
-  draw_text 5 (size_y () - 25) (TOP, LEFT) "Press e to edit world";
+  if display_controls then (
+    draw_text 5 (size_y () - 5) (TOP, LEFT) "Press q to quit";
+    draw_text 5 (size_y () - 25) (TOP, LEFT) "Press e to edit world")
+  else ();
   ()
 
 let draw_input_popup prompt input =
