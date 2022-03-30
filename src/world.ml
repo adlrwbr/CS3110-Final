@@ -124,7 +124,7 @@ let seg_dist source road =
 (** *)
     (match source, Road.coords road with
     ((s1,s2),((p_a1_x, p_a1_y), (p_a2_x, p_a2_y))) ->
-    let m_a = -.(slope p_a1_x p_a1_y p_a2_x p_a2_y) in
+    let m_a = -.(slope p_a1_y p_a1_x p_a2_y p_a2_x) in
     let source1 = (s1 -. 10000.,s2-.(10000.*.m_a))in (**Should be good enough.*)
     let source2 = (s1 +. 10000.,s2+.(10000.*.m_a))in
     (match (inty (source1,source2) (Road.coords road)) with
@@ -141,7 +141,7 @@ let nearroad source world =
     let minrd = Algo.relate rel (roads world) in 
     (match source, Road.coords minrd with
     ((s1,s2),((p_a1_x, p_a1_y), (p_a2_x, p_a2_y))) ->
-      (distance (s1,s2) (p_a1_x,p_a1_y)) 
+      (distance (s1,s2) (p_a1_x,p_a1_y)) (** I think this is the garbage <---*)
       /. (distance (p_a1_x,p_a1_y) (p_a2_x,p_a2_y))
       , minrd)
     
