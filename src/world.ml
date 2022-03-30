@@ -119,29 +119,59 @@ let inty road1 road2 =
         then Some (x, y)
         else None
 
-(**[seg_dist] is the minimum distance of [source] to the segment [road] *)
-let seg_dist source road =   
-(** *)
-    (match source, Road.coords road with
+(**[nearest_pt_on_line fix ref_line] is the nearest point on [refline] to [fix]
+or none if the perpendicular does not intersect. (fix beyond endpoint) *)
+let nearest_pt_on_line fix ref_line = 
+(match fix, Road.coords ref_line with
     ((s1,s2),((p_a1_x, p_a1_y), (p_a2_x, p_a2_y))) ->
     let m_a = -.(slope p_a1_y p_a1_x p_a2_y p_a2_x) in
     let source1 = (s1 -. 10000.,s2-.(10000.*.m_a))in (**Should be good enough.*)
     let source2 = (s1 +. 10000.,s2+.(10000.*.m_a))in
-    (match (inty (source1,source2) (Road.coords road)) with
-    | None -> min (distance source (road |> Road.coords |> fst)) 
-    (distance source (road |> Road.coords |> snd))
-    | Some (x,y) -> min (min (distance source (road 
-    |> Road.coords |> fst)) (distance source (road |> Road.coords |> snd)))
-     (distance source (x,y))  
-     )
+    inty (source1,source2) (Road.coords ref_line)
     )
+
+(**[seg_dist] is the minimum distance of [source] to the segment [road] *)
+let seg_dist source road =   
+(** *)
+    let maybe = nearest_pt_on_line source road in
+    (match maybe with
+    | None -> min 
+    (distance source (road |> Road.coords |> fst)) 
+    (distance source (road |> Road.coords |> snd))
+    | Some (x,y) -> 
+    min 
+      (min 
+        (distance source (road |> Road.coords |> fst))
+        (distance source (road |> Road.coords |> snd)))
+      (distance source (x,y))  
+     )
 
 let nearroad source world = 
   let rel d1 d2 = ((seg_dist source d1)) < ((seg_dist source d2)) in 
     let minrd = Algo.relate rel (roads world) in 
-    (match source, Road.coords minrd with
-    ((s1,s2),((p_a1_x, p_a1_y), (p_a2_x, p_a2_y))) ->
-      (distance (s1,s2) (p_a1_x,p_a1_y)) (** I think this is the garbage <---*)
-      /. (distance (p_a1_x,p_a1_y) (p_a2_x,p_a2_y))
-      , minrd)
+    let insct = nearest_pt_on_line source minrd in
+    let ordp = (match insct with
+    | Some (x,y) -> 
+    if (distance source (x,y)) < 
+        distance source (fst (Road.coords minrd)) 
+    then 
+      if (distance source (x,y) < distance source (snd (Road.coords minrd)))
+      then (x,y)
+      else (snd (Road.coords minrd))
+    else 
+      if (distance source (fst (Road.coords minrd)) 
+              < distance source (snd (Road.coords minrd)))
+      then (fst (Road.coords minrd))
+      else (snd (Road.coords minrd))
+    | None -> 
+    if (distance source (fst (Road.coords minrd))) 
+    < (distance source (fst (Road.coords minrd))) 
+    then fst (Road.coords minrd) 
+    else snd (Road.coords minrd))
+    in
+    let interp_dist = 
+    distance ordp (fst (Road.coords minrd))/.
+    distance (fst (Road.coords minrd)) (snd (Road.coords minrd))
+    in
+    (interp_dist, minrd)
     
