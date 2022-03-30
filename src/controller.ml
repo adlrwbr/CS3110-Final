@@ -72,6 +72,8 @@ let rec edit_mode (world : World.wt) : World.wt =
         print_endline s;
         edit_mode world
     | _ -> world
+    (* After edits are made, return back to edit mode unless user
+       exits. *)
   else if event.key == 'r' then road_placement_mode world |> edit_mode
   else if event.key == 'l' then place_loc world |> edit_mode
   else edit_mode world
