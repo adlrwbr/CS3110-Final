@@ -79,7 +79,12 @@ let draw_text
 (** [draw_loc loc] draws the location [loc] *)
 let draw_loc (loc : World.lt) =
   (* node coords in pixel space *)
-  let x, y = World.loc_coord loc |> world_to_pixel in
+  let x, y =
+    match World.loc_coord loc |> world_to_pixel with
+    | exception _ ->
+        (0, 0) (* set default point to (0, 0) if exception raised *)
+    | x, y -> (x, y)
+  in
   (* draw node *)
   fill_circle x y 15;
   (* draw name label *)

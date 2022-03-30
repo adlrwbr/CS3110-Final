@@ -31,12 +31,14 @@ let nearest_road (world : World.wt) : float * Road.t =
 (** [place_loc world] is a world that may or may not have been modified
     by a location placed on the road nearest the cursor *)
 let place_loc (world : World.wt) : World.wt =
-  let pos, r = nearest_road world in
-  (* create loc at nearest road r at position pos *)
-  let name = input "Enter new location name" "" in
-  let category = input "Enter new location category" "" in
-  let _, new_world = World.add_loc name category r pos world in
-  new_world
+  match nearest_road world with
+  | exception _ -> world (* Make no changes if no roads are available *)
+  | pos, r ->
+      (* create loc at nearest road r at position pos *)
+      let name = input "Enter new location name" "" in
+      let category = input "Enter new location category" "" in
+      let _, new_world = World.add_loc name category r pos world in
+      new_world
 
 (** [road_placement_mode world] is a world that may or may not have been
     modified during Road Placement Mode *)
@@ -70,8 +72,8 @@ let rec edit_mode (world : World.wt) : World.wt =
         print_endline s;
         edit_mode world
     | _ -> world
-  else if event.key == 'r' then road_placement_mode world
-  else if event.key == 'l' then place_loc world
+  else if event.key == 'r' then road_placement_mode world |> edit_mode
+  else if event.key == 'l' then place_loc world |> edit_mode
   else edit_mode world
 
 (** [loop world] is the main event loop of the application that manages
