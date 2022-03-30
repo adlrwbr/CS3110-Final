@@ -6,10 +6,14 @@ exception InvalidGraph
 exception IndexOutofBounds
 
 let empty = []
+
 let evg : vgt = []
 let size x = List.length x
 let add graph = (size graph, graph @ [ [] ])
 let add_no_id graph = snd (add graph)
+
+let rec nempty_helper amount bin = if amount > 0 then nempty_helper (amount-1) (bin |> add_no_id) else bin 
+let nempty n = nempty_helper n empty
 
 let connect id1 id2 graph=
   if id1 > size graph then raise (UnknownNode id1)
@@ -42,7 +46,7 @@ let rec get_element_at_index lst i =
     | [] -> raise IndexOutofBounds
     | h :: t -> if i = 0 then h else get_element_at_index t (i - 1)
 
-let neighbors graph id = List.sort_uniq compare (get_element_at_index graph (id - 1))
+let neighbors graph id = List.sort_uniq compare (get_element_at_index graph ((size graph) - 1))
 
 (** [set graph] is a set-like list of all ids within [graph]*)
 let set graph =

@@ -13,5 +13,4 @@ the continuing element and the third, etc. Finishes once there is
 one element that has survived the comparison chain. 
 Requires: [list] contains at least one element.*)
 
-(*val bfsr : ugt -> int list -> 'a -> int list -> int list -> int list = <fun>*)
-val bfs : Graph.ugt -> int -> int list
+val breadth_first : Graph.ugt -> int -> int list list list

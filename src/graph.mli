@@ -17,6 +17,9 @@ exception InvalidGraph
 val empty : ugt
 (** [empty] is a graph with no nodes *)
 
+val nempty : int -> ugt
+(** [nempty] is a graph initialized  *)
+
 (** [size graph] is the number of unique nodes contained in [graph] *)
 val size : ugt -> int
 
