@@ -41,7 +41,7 @@ val verify : ugt -> vgt
 (** [verify graph] is the verified graph. Raises InvalidGraph if [graph]
     is not verifiable. *)
 
-val neighbors : ugt -> int -> int list
+val neighbors : vgt -> int -> int list
 (** [neighbors graph id] is the list of nodes in [graph] to which [id]
     is connected, sorted by least to greatest id.*)
 

@@ -22,7 +22,6 @@ let graph_tests = "graph test suite" >::: [
     "graph which is verifiable" >:: (fun _ -> let _ = verify verifiable in ());
     "graph which is not verifiable" >:: (fun _ -> assert_raises (InvalidGraph) 
     (fun () -> verify unverifiable));
-    "connect to 1-3" >:: (fun _ -> assert_equal (neighbors one_five_cycle 2) [1;3]);
 
 ]
 
