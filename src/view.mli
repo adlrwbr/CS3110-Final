@@ -22,9 +22,9 @@ val draw_input_popup : string -> string -> unit
 val draw_edit_mode : unit -> unit
 (** [draw_edit_mode] draws the GUI overlay for edit mode *)
 
-val draw_path : (float * float) list -> unit
-(** [draw_path path] draws a line segment connecting coordinates in
-    [path] specified in world space *)
+val draw_path : World.path -> unit
+(** [draw_path path] draws a line segment over the world connecting
+    [path] *)
 
 val draw_button : button -> unit
 (** [draw_button b] displays [button] as a rectangle *)

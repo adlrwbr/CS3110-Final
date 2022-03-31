@@ -15,6 +15,11 @@ type wt = {
   locations : lt list;
 }
 
+type lit = Loc of lt | Inter of Road.intersection
+(** a type that represents a location or an intersection *)
+
+type path = lit list
+
 let size_x = 1000.
 let size_y = 1000.
 let empty name = { name; g = Graph.empty; roads = []; locations = [] }
@@ -31,6 +36,9 @@ let distance pt1 pt2 =
       sqrt (((a -. c) *. (a -. c)) +. ((b -. d) *. (b -. d)))
 
 let add_loc name category road pos world =
+  raise (Failure "Fix add_loc")
+  (* TODO: deal with counter *)
+  (*
   match Graph.add world.g with
   | nid, ng ->
       (* create location *)
@@ -47,6 +55,7 @@ let add_loc name category road pos world =
         }
       in
       (new_loc, new_world)
+    *)
 
 let add_road road world =
   {
@@ -72,8 +81,6 @@ let loc_coord loc =
 let roads world = world.roads
 let slope x1 y1 x2 y2 = (y2 -. y1) /. (x2 -. x1)
 let in_range p p1 p2 = (p >= p1 && p <= p2) || (p >= p2 && p <= p1)
-
-let reduce world = Graph.verify Graph.empty (* TODO: implement *)
 
 let intersection road1 road2 =
   match (Road.coords road1, Road.coords road2) with

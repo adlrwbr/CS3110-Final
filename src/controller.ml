@@ -62,6 +62,7 @@ let place_loc (world : World.wt) : World.wt =
     | pos, r ->
         (* create loc at nearest road r at position pos *)
         let name = input "Enter new location name" "" in
+
         let category = input "Enter new location category" "" in
         let _, new_world = World.add_loc name category r pos world in
         new_world
@@ -135,11 +136,10 @@ let rec edit_mode (world : World.wt) : World.wt =
         text = "Done";
         action =
           (fun w ->
-            match World.reduce w with
-            | exception World.IllegalWorld s ->
-                print_endline s;
-                edit_mode w
-            | _ -> w);
+            w
+            (* if World.rep_ok w then w else let _ = print_endline "All
+               locations in the world must be connected by \ roads!" in
+               edit_mode w *));
         xywh = (520., 900., 100., 40.);
         enabled = true;
       };
@@ -156,13 +156,6 @@ let rec edit_mode (world : World.wt) : World.wt =
     match mouse_pos |> hit_buttons world edit_mode_buttons with
     | exception _ -> edit_mode world
     | new_world -> new_world
-    (* check if user is allowed to quit edit mode *)
-
-    (* After edits are made, return back to edit mode unless user
-       exits. *)
-    (* else if event.key == 'r' then road_placement_mode world |>
-       edit_mode else if event.key == 'l' then place_loc world |>
-       edit_mode *)
   else edit_mode world
 
 let buttons =
@@ -193,25 +186,22 @@ let buttons =
     highlights the shortest path between them. Requires: [world] can be
     reduced into graph form *)
 let direction_mode (world : World.wt) : unit =
+  print_endline "Click on two locations to get directions between them.";
   let _ = Graphics.wait_next_event [ Graphics.Button_up ] in
   let start = nearest_loc world in
   let _ = Graphics.wait_next_event [ Graphics.Button_up ] in
   let finish = nearest_loc world in
-  let _ =
-    world |> World.reduce
-    |> Algo.shortest_path (World.name start) (World.name finish)
-  in
-  ()
-(* TODO *)
+  let path = World.directions world start finish in
+  View.draw_path path
 
 (** [loop world] is the main event loop of the application that manages
     user input and displays [world] *)
 let rec loop (world : World.wt) =
   (* clear graph *)
-  let _ = Graphics.clear_graph () in
+  Graphics.clear_graph ();
   (* display world *)
-  let _ = View.draw_world world in
-  let _ = View.draw_buttons buttons in
+  View.draw_world world;
+  View.draw_buttons buttons;
   (* wait for next keypress event *)
   let event =
     Graphics.wait_next_event
