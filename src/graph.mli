@@ -44,6 +44,3 @@ val verify : ugt -> vgt
 val neighbors : vgt -> int -> int list
 (** [neighbors graph id] is the list of nodes in [graph] to which [id]
     is connected, sorted by least to greatest id.*)
-
-val set : ugt -> int list
-(** [set graph] is a set of all nodes contained by the graph *)

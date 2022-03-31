@@ -33,7 +33,7 @@ let rec bfs graph queue memory output =
     let memory = make_setlike (memory @ queue) in 
     (bfs graph queue memory output)
 
-let breadth_first (graph : Graph.vgt) id = bfs graph [id] [id] [[[id]]]
+let breadth_first graph id = bfs graph [id] [id] [[[id]]]
 
 let rec nodes_away_rec graph from towards counter =
     let path = breadth_first graph from in
