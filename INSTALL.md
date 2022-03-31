@@ -76,14 +76,16 @@ instructions on how make it work are provided below:
 
 How to use/controls:
 
-To spawn a road:
-Hover mouse over any point on the screen, press r. That’s the first point of the line that represents a road.
+To edit, press the edit button. When done editing, press the done button.
 
-Hover mouse over another point in the screen. That’s the second point. Press r.
+To spawn a road:
+While in edit mode, press the "add road" button. Click on two points to define a road.
 
 You now get a prompt to name the road. Type in the name and press enter when you are done. You should know see the road as a line with the street name.
 
 To spawn a location:
-Hover mouse over any point in the screen, and press l, and a location will spawn on the road with the nearest midpoint. Right now it just spawns at the midpoint of the road.
+While in edit mode, press the "add location" button. Click on a point to define a location. Note: this can only be
+done when there is at least one road on the screen.
 
-You now get a prompt to name the location. Type in the name and press enter when done. Then you are prompted to type a category. Type in the category name and press enter when done. You show now see the location as a circle with name and category.
+You now get a prompt to name the location. Type in the name and press enter when done. Then you are prompted to type a category. Type in the category name and press enter when done. You show now see the location as a circle with name and category, placed on the closest road
+to the point you clicked.
