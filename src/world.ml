@@ -121,7 +121,7 @@ let inty road1 road2 =
 
 (**[nearest_pt_on_line fix ref_line] is the nearest point on [refline] to [fix]
 or none if the perpendicular does not intersect. (fix beyond endpoint) *)
-let nearest_pt_on_line fix ref_line = 
+let nearest_pt_on_line fix ref_line =
 (match fix, Road.coords ref_line with
     ((s1,s2),((p_a1_x, p_a1_y), (p_a2_x, p_a2_y))) ->
     let m_a = -.(slope p_a1_y p_a1_x p_a2_y p_a2_x) in
