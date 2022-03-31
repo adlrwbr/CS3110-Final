@@ -142,7 +142,7 @@ let nearroad source world =
       else (snd (Road.road_coords minrd))
     | None ->
     if (distance source (fst (Road.road_coords minrd)))
-    < (distance source (fst (Road.road_coords minrd)))
+    < (distance source (snd (Road.road_coords minrd)))
     then fst (Road.road_coords minrd)
     else snd (Road.road_coords minrd))
     in
