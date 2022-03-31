@@ -23,14 +23,19 @@ val draw_edit_mode : unit -> unit
 (** [draw_edit_mode] draws the GUI overlay for edit mode *)
 
 val draw_path : World.path -> unit
-(** [draw_path path] draws a line segment over the world connecting [path] *)
+(** [draw_path path] draws a line segment over the world connecting
+    [path] *)
 
-val display_button : button -> unit
-(** [display_button b] displays [button] as a rectangle *)
+val draw_button : button -> unit
+(** [draw_button b] displays [button] as a rectangle *)
 
-val display_buttons : button list -> unit
-(** [display_buttons buttons ] displays all enabled buttons on the
-    screen *)
+val draw_buttons : button list -> unit
+(** [draw_buttons buttons ] displays all enabled buttons on the screen *)
 
-val draw_instructions : unit -> unit
-(** [draw_instructions () ] displays all instructions *)
+val draw_location_instructions : unit -> unit
+(** [draw_location_instructions () ] displays instructions on how to
+    draw a location *)
+
+val draw_road_instructions : unit -> unit
+(** [draw_road_instructions () ] displays instructions on how to draw a
+    road *)

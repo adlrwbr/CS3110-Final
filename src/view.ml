@@ -105,7 +105,7 @@ let draw_road (road : Road.t) =
   let x, y = World.midpt road |> world_to_pixel in
   road |> Road.name |> draw_text x y (BOTTOM, CENTER)
 
-let display_button b =
+let draw_button b =
   let x, y, w, h = b.xywh in
   let (x, y), (w, h), (text_x, text_y) =
     ( world_to_pixel (x, y),
@@ -118,13 +118,21 @@ let display_button b =
   draw_text text_x text_y (MIDDLE, CENTER) b.text;
   ()
 
-let display_buttons buttons =
-  buttons |> List.filter button_enabled |> List.iter display_button
+let draw_buttons buttons =
+  buttons |> List.filter button_enabled |> List.iter draw_button
 
-let draw_instructions () =
-  draw_text 5 (size_y () - 5) (TOP, LEFT) "Press q to quit";
-  draw_text 5 (size_y () - 25) (TOP, LEFT) "Press e to edit world";
-  print_endline "hello";
+let draw_location_instructions () =
+  draw_text
+    (size_x () / 2)
+    (size_y ()) (TOP, CENTER)
+    "Click a point close to a road to place a location.";
+  ()
+
+let draw_road_instructions () =
+  draw_text
+    (size_x () / 2)
+    (size_y ()) (TOP, CENTER)
+    "Click two points on the screen to place a road";
   ()
 
 let draw_world world =
@@ -157,19 +165,17 @@ let draw_edit_mode () =
   (* draw welcome text *)
   let title = "Welcome to edit mode." in
   draw_text 5 (size_y ()) (TOP, LEFT) ~size:15 title;
-  let _, title_height = text_size title in
-  (* draw keybinding guide *)
-  let keybind_height = "P" |> text_size |> snd in
-  draw_text 5
-    (size_y () - title_height - (1 * (keybind_height + 5)))
-    (TOP, LEFT) "Press r to place road endpoints";
-  draw_text 5
-    (size_y () - title_height - (2 * (keybind_height + 5)))
-    (TOP, LEFT) "Press l to place a location";
-  draw_text 5
-    (size_y () - title_height - (3 * (keybind_height + 5)))
-    (TOP, LEFT) "Press e to exit"
+  ()
+(* let _, title_height = text_size title in *)
+(* draw keybinding guide *)
+(* let keybind_height = "P" |> text_size |> snd in draw_text 5 (size_y
+   () - title_height - (1 * (keybind_height + 5))) (TOP, LEFT) "Press r
+   to place road endpoints"; draw_text 5 (size_y () - title_height - (2
+   * (keybind_height + 5))) (TOP, LEFT) "Press l to place a location"
+   (draw_text 5 (size_y () - title_height - (3 * (keybind_height + 5)))
+   (TOP, LEFT) "Press e to exit" *)
 
 let draw_path (path : World.path) =
-  path |> World.path_coords |> List.map (fun c -> world_to_pixel c)
-    |> Array.of_list |> draw_poly_line
+  path |> World.path_coords
+  |> List.map (fun c -> world_to_pixel c)
+  |> Array.of_list |> draw_poly_line
