@@ -157,7 +157,15 @@ let rec edit_mode (world : World.wt) : World.wt =
     | exception _ -> edit_mode world
     | new_world -> new_world
     (* check if user is allowed to quit edit mode *)
+<<<<<<< HEAD
 
+=======
+    if World.rep_ok world
+    then world
+    else (print_endline
+      "All locations in the world must be connected by roads!";
+      edit_mode world)
+>>>>>>> 3a9a4c27cb5285f33fd78fbf7717421d286ee736
     (* After edits are made, return back to edit mode unless user
        exits. *)
     (* else if event.key == 'r' then road_placement_mode world |>
@@ -193,25 +201,28 @@ let buttons =
     highlights the shortest path between them. Requires: [world] can be
     reduced into graph form *)
 let direction_mode (world : World.wt) : unit =
+  print_endline "Click on two locations to get directions between them.";
   let _ = Graphics.wait_next_event [ Graphics.Button_up ] in
   let start = nearest_loc world in
   let _ = Graphics.wait_next_event [ Graphics.Button_up ] in
   let finish = nearest_loc world in
-  let _ =
-    world |> World.reduce
-    |> Algo.shortest_path (World.name start) (World.name finish)
-  in
-  ()
-(* TODO *)
+  let path = World.directions world start finish in
+  View.draw_path path
 
 (** [loop world] is the main event loop of the application that manages
     user input and displays [world] *)
 let rec loop (world : World.wt) =
   (* clear graph *)
-  let _ = Graphics.clear_graph () in
+  Graphics.clear_graph ();
   (* display world *)
+<<<<<<< HEAD
   let _ = View.draw_world world in
   let _ = View.draw_buttons buttons in
+=======
+  View.draw_world world;
+  View.draw_instructions ();
+  View.display_buttons buttons;
+>>>>>>> 3a9a4c27cb5285f33fd78fbf7717421d286ee736
   (* wait for next keypress event *)
   let event =
     Graphics.wait_next_event
