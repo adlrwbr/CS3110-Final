@@ -15,7 +15,7 @@ type wt = {
   locations : lt list;
 }
 
-type lit = Loc of lt | Inter of Road.intersection
+type lit = Loc of lt | Inter of Road.it
 (** a type that represents a location or an intersection *)
 
 type path = lit list
@@ -23,12 +23,6 @@ type path = lit list
 let size_x = 1000.
 let size_y = 1000.
 let empty name = { name; g = Graph.empty; roads = []; locations = [] }
-
-let midpt road =
-  let fp = road |> Road.coords |> fst in
-  let lp = road |> Road.coords |> snd in
-  match (fp, lp) with
-  | (a, b), (c, d) -> ((a +. c) /. 2., (b +. d) /. 2.)
 
 let distance pt1 pt2 =
   match (pt1, pt2) with
@@ -58,6 +52,7 @@ let add_loc name category road pos world =
     *)
 
 let add_road road world =
+  (* TODO: check for intersections with new road and existing roads *)
   {
     name = world.name;
     g = world.g;
@@ -71,7 +66,7 @@ let category loc = loc.category
 
 let loc_coord loc =
   (* get the start and end coordinates of the location's road *)
-  let road_start, road_end = Road.coords loc.road in
+  let road_start, road_end = Road.road_coords loc.road in
   (* calculate location's coordinates w/ pos_on_road *)
   match (road_start, road_end) with
   | (x1, y1), (x2, y2) ->
@@ -79,37 +74,13 @@ let loc_coord loc =
         y1 +. (loc.pos_on_road *. (y2 -. y1)) )
 
 let roads world = world.roads
-let slope x1 y1 x2 y2 = (y2 -. y1) /. (x2 -. x1)
-let in_range p p1 p2 = (p >= p1 && p <= p2) || (p >= p2 && p <= p1)
-
-let intersection road1 road2 =
-  match (Road.coords road1, Road.coords road2) with
-  | ( ((p_a1_x, p_a1_y), (p_a2_x, p_a2_y)),
-      ((p_b1_x, p_b1_y), (p_b2_x, p_b2_y)) ) ->
-      let m_a = slope p_a1_x p_a1_y p_a2_x p_a2_y in
-      let m_b = slope p_b1_x p_b1_y p_b2_x p_b2_y in
-      (* x and y below is the intersection point of the two lines that
-         the segments lie on. *)
-      let x =
-        (p_b1_y -. p_a1_y +. (m_a *. p_a1_x) -. (m_b *. p_b1_x))
-        /. (m_a -. m_b)
-      in
-      let y = (m_b *. (x -. p_b1_x)) +. p_b1_y in
-      (* Check if the intersection point is actually on the segments. *)
-      if
-        in_range x p_a1_x p_a2_x
-        && in_range x p_b1_x p_b2_x
-        && in_range y p_a1_y p_a2_y
-        && in_range y p_b1_y p_b2_y
-      then Some (x, y)
-      else None
 
 let inty road1 road2 =
     match (road1, road2) with (**Copies [intersection] from [world.ml] code w/o typechecking.*)
     | ( ((p_a1_x, p_a1_y), (p_a2_x, p_a2_y)),
         ((p_b1_x, p_b1_y), (p_b2_x, p_b2_y)) ) ->
-        let m_a = slope p_a1_x p_a1_y p_a2_x p_a2_y in
-        let m_b = slope p_b1_x p_b1_y p_b2_x p_b2_y in
+        let m_a = Algo.slope p_a1_x p_a1_y p_a2_x p_a2_y in
+        let m_b = Algo.slope p_b1_x p_b1_y p_b2_x p_b2_y in
         (* x and y below is the intersection point of the two lines that
           the segments lie on. *)
         let x =
@@ -119,69 +90,69 @@ let inty road1 road2 =
         let y = (m_b *. (x -. p_b1_x)) +. p_b1_y in
         (* Check if the intersection point is actually on the segments. *)
         if
-          in_range x p_a1_x p_a2_x
-          && in_range x p_b1_x p_b2_x
-          && in_range y p_a1_y p_a2_y
-          && in_range y p_b1_y p_b2_y
+          Algo.in_range x p_a1_x p_a2_x
+          && Algo.in_range x p_b1_x p_b2_x
+          && Algo.in_range y p_a1_y p_a2_y
+          && Algo.in_range y p_b1_y p_b2_y
         then Some (x, y)
         else None
 
 (**[nearest_pt_on_line fix ref_line] is the nearest point on [refline] to [fix]
 or none if the perpendicular does not intersect. (fix beyond endpoint) *)
-let nearest_pt_on_line fix ref_line = 
-(match fix, Road.coords ref_line with
+let nearest_pt_on_line fix ref_line =
+(match fix, Road.road_coords ref_line with
     ((s1,s2),((p_a1_x, p_a1_y), (p_a2_x, p_a2_y))) ->
-    let m_a = -.(slope p_a1_y p_a1_x p_a2_y p_a2_x) in
+    let m_a = -.(Algo.slope p_a1_y p_a1_x p_a2_y p_a2_x) in
     let source1 = (s1 -. 10000.,s2-.(10000.*.m_a))in (**Should be good enough.*)
     let source2 = (s1 +. 10000.,s2+.(10000.*.m_a))in
-    inty (source1,source2) (Road.coords ref_line)
+    inty (source1,source2) (Road.road_coords ref_line)
     )
 
 (**[seg_dist] is the minimum distance of [source] to the segment [road] *)
-let seg_dist source road =   
+let seg_dist source road =
     let maybe = nearest_pt_on_line source road in
     (match maybe with
-    | None -> min 
-    (distance source (road |> Road.coords |> fst)) 
-    (distance source (road |> Road.coords |> snd))
-    | Some (x,y) -> 
-    min 
-      (min 
-        (distance source (road |> Road.coords |> fst))
-        (distance source (road |> Road.coords |> snd)))
-      (distance source (x,y))  
+    | None -> min
+    (distance source (road |> Road.road_coords |> fst))
+    (distance source (road |> Road.road_coords |> snd))
+    | Some (x,y) ->
+    min
+      (min
+        (distance source (road |> Road.road_coords |> fst))
+        (distance source (road |> Road.road_coords |> snd)))
+      (distance source (x,y))
      )
 
-let nearroad source world = 
-  let rel d1 d2 = ((seg_dist source d1)) < ((seg_dist source d2)) in 
-    let minrd = Algo.relate rel (roads world) in 
+let nearroad source world =
+  let rel d1 d2 = ((seg_dist source d1)) < ((seg_dist source d2)) in
+    let minrd = Algo.relate rel (roads world) in
     let insct = nearest_pt_on_line source minrd in
     let ordp = (match insct with
-    | Some (x,y) -> 
-    if (distance source (x,y)) < 
-        distance source (fst (Road.coords minrd)) 
-    then 
-      if (distance source (x,y) < distance source (snd (Road.coords minrd)))
+    | Some (x,y) ->
+    if (distance source (x,y)) <
+        distance source (fst (Road.road_coords minrd))
+    then
+      if (distance source (x,y) < distance source (snd (Road.road_coords minrd)))
       then (x,y)
-      else (snd (Road.coords minrd))
-    else 
-      if (distance source (fst (Road.coords minrd)) 
-              < distance source (snd (Road.coords minrd)))
-      then (fst (Road.coords minrd))
-      else (snd (Road.coords minrd))
-    | None -> 
-    if (distance source (fst (Road.coords minrd))) 
-    < (distance source (fst (Road.coords minrd))) 
-    then fst (Road.coords minrd) 
-    else snd (Road.coords minrd))
+      else (snd (Road.road_coords minrd))
+    else
+      if (distance source (fst (Road.road_coords minrd))
+              < distance source (snd (Road.road_coords minrd)))
+      then (fst (Road.road_coords minrd))
+      else (snd (Road.road_coords minrd))
+    | None ->
+    if (distance source (fst (Road.road_coords minrd)))
+    < (distance source (fst (Road.road_coords minrd)))
+    then fst (Road.road_coords minrd)
+    else snd (Road.road_coords minrd))
     in
-    let interp_dist = 
-    distance ordp (fst (Road.coords minrd))/.
-    distance (fst (Road.coords minrd)) (snd (Road.coords minrd))
+    let interp_dist =
+    distance ordp (fst (Road.road_coords minrd))/.
+    distance (fst (Road.road_coords minrd)) (snd (Road.road_coords minrd))
     in
     (interp_dist, minrd)
 
-(** [neighbors world node] is a list of all intersecitons and locations that
+(** [neighbors world node] is a list of all intersections and locations that
     immediately connect to [node] in the [world] *)
 let neighbors (world : wt) (node : lit) : lit list =
   raise (Failure "Unimplemented") (* TODO *)
@@ -193,12 +164,11 @@ let next =
     incr ctr;
     !ctr
 
-(** [reduce world] is a graph representing the simplified state of the world
-    where intersections and locations are nodes connected by edges
-    (road segments) *)
-let reduce (world : wt) : Graph.vgt =
-  (* map Graph ids to [lit]s *)
-  let hashtbl = Hashtbl.create 10 in
+(** [reduce tbl world] is a graph representing the simplified state of the
+    world where intersections and locations are nodes connected by edges (road
+    segments). [tbl] maps the resulting graph's nodes' ids to the corresponding
+    [lit]s in [world]. *)
+let reduce (hashtbl : (int, lit) Hashtbl.t) (world : wt) : Graph.vgt =
   (** [spread acc queue] is a fully formed graph. [queue] is composed of pairs
       [(cur, prev)], where [prev] connects to [cur]'s value in [hashtbl],
       and [acc] is the accumulating graph *)
@@ -208,7 +178,7 @@ let reduce (world : wt) : Graph.vgt =
     | [] -> acc
     | (cur, prev_id) :: t ->
       (* try to add node to graph *)
-      let cur_id = next () in 
+      let cur_id = next () in
       (* map Graph ids to [lit]s *)
       Hashtbl.add hashtbl cur_id cur;
       match Graph.add cur_id acc with
@@ -239,10 +209,27 @@ let reduce (world : wt) : Graph.vgt =
     in Graph.verify unverified
 
 let rep_ok world =
-  raise (Failure "Unimplemented") (* TODO *)
+  match reduce (Hashtbl.create 10) world with
+  | exception _ -> false
+  | _ -> true
 
 let directions world start finish =
-  raise (Failure "Unimplemented") (* TODO *)
+  assert (rep_ok world);
+  (* convert to graph and find shortest path *)
+  let hashtbl = Hashtbl.create 10 in
+  let graph = reduce hashtbl world in
+  let key_val_pairs = hashtbl |> Hashtbl.to_seq |> List.of_seq in
+  let start_id = List.find (fun (_, node) -> node = Loc start) key_val_pairs
+            |> fst in
+  let finish_id = List.find (fun (_, node) -> node = Loc finish) key_val_pairs
+            |> fst in
+  let id_path = Algo.shortest_path start_id finish_id graph in
+  (* convert ids back to [lit]s and return a [path] type *)
+  List.map (fun id -> Hashtbl.find hashtbl id) id_path
 
 let path_coords (p : path) =
-  raise (Failure "Unimplemented") (* TODO *)
+  let lit_to_coords = fun (node : lit) : (float * float) ->
+    match node with
+    | Loc loc -> loc_coord loc
+    | Inter inter -> Road.inter_coords inter
+  in List.map lit_to_coords p

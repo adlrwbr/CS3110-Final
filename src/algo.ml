@@ -1,3 +1,6 @@
+let slope x1 y1 x2 y2 = (y2 -. y1) /. (x2 -. x1)
+let in_range p p1 p2 = (p >= p1 && p <= p2) || (p >= p2 && p <= p1)
+
 (** [remove_all list1 list2] is [list1] without the elements of [list2]*)
 let rec remove_all (list1 : 'a list) (list2 : 'a list) : 'a list = 
 match list2 with 

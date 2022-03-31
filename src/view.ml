@@ -96,13 +96,13 @@ let draw_loc (loc : World.lt) =
 (** [draw_road loc] draws the location [loc] *)
 let draw_road (road : Road.t) =
   (* draw road line *)
-  let coord1, coord2 = Road.coords road in
+  let coord1, coord2 = Road.road_coords road in
   let x1, y1 = world_to_pixel coord1 in
   let x2, y2 = world_to_pixel coord2 in
   moveto x1 y1;
   lineto x2 y2;
   (* draw name label *)
-  let x, y = World.midpt road |> world_to_pixel in
+  let x, y = Road.midpt road |> world_to_pixel in
   road |> Road.name |> draw_text x y (BOTTOM, CENTER)
 
 let display_button b =

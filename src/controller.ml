@@ -25,9 +25,6 @@ let rec input (prompt : string) (acc : string) : string =
     position [pos] on a [road] in [world] nearest the cursor *)
 let nearest_road (world : World.wt) : float * Road.t =
   let point = Graphics.mouse_pos () |> View.pixel_to_world in
-  (*let allroads = world |> World.roads in ( 0.5, Algo.relate (fun a b
-    -> World.distance (World.midpt a) point <= World.distance
-    (World.midpt b) point) allroads ) DEPRECATED NAIVE APPROACH <---*)
   World.nearroad point world
 
 (** [nearest_loc world] is a location in [world] nearest the cursor *)

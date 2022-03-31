@@ -45,9 +45,6 @@ val loc_coord : lt -> float * float
 val roads : wt -> Road.t list
 (** [roads world] is the list of all roads in the [world] *)
 
-val midpt : Road.t -> float * float
-(** [midpt road] is the midpoint of the [road] *)
-
 val distance : float * float -> float * float -> float
 (** [distance point1 point2] is the euclidean distance between [point1] and
     [point2]. *)
@@ -65,6 +62,6 @@ val path_coords : path -> (float * float) list
 (** [path_coords p] is a list of all world coordinates along the path [p] *)
 
 val nearroad : (float * float) -> wt -> (float * Road.t)
-(** Sorry for crappy spec it's late:
-This satisfies the spec for [controller.ml]'s [nearest_road], I just needed
-access to helper methods and I did not want to bother with privacy changes. *)
+(** [nearroad c world] is a tuple ([pos, road]) that specifies a position [pos]
+    on a road [road] in [world] nearest the provided world-space coordinate
+    pair [c]. *)
