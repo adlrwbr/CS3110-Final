@@ -10,7 +10,6 @@ type lt = {
 
 type wt = {
   name : string;
-  g : Graph.ugt; (* represents the world in simplified graph form *)
   roads : Road.t list;
   locations : lt list;
 }
@@ -22,40 +21,37 @@ type path = lit list
 
 let size_x = 1000.
 let size_y = 1000.
-let empty name = { name; g = Graph.empty; roads = []; locations = [] }
+let empty name = { name; roads = []; locations = [] }
 
 let distance pt1 pt2 =
   match (pt1, pt2) with
   | (a, b), (c, d) ->
       sqrt (((a -. c) *. (a -. c)) +. ((b -. d) *. (b -. d)))
 
+(** [next] is the next integer in a 0-based counter *)
+let next =
+  let ctr = ref 0 in
+  fun () ->
+    incr ctr;
+    !ctr
+
 let add_loc name category road pos world =
-  raise (Failure "Fix add_loc")
-  (* TODO: deal with counter *)
-  (*
-  match Graph.add world.g with
-  | nid, ng ->
-      (* create location *)
-      let new_loc =
-        { id = nid; name; category; road; pos_on_road = pos }
-      in
-      (* add location to world *)
-      let new_world =
-        {
-          name = world.name;
-          g = ng;
-          roads = world.roads;
-          locations = new_loc :: world.locations;
-        }
-      in
-      (new_loc, new_world)
-    *)
+  (* create location *)
+  let new_loc = { id = next (); name; category; road; pos_on_road = pos } in
+  (* add location to world *)
+  let new_world =
+    {
+      name = world.name;
+      roads = world.roads;
+      locations = new_loc :: world.locations;
+    }
+  in
+  (new_loc, new_world)
 
 let add_road road world =
   (* TODO: check for intersections with new road and existing roads *)
   {
     name = world.name;
-    g = world.g;
     roads = road :: world.roads;
     locations = world.locations;
   }
@@ -156,13 +152,6 @@ let nearroad source world =
     immediately connect to [node] in the [world] *)
 let neighbors (world : wt) (node : lit) : lit list =
   raise (Failure "Unimplemented") (* TODO *)
-
-(** [next] is the next integer in a 0-based counter *)
-let next =
-  let ctr = ref 0 in
-  fun () ->
-    incr ctr;
-    !ctr
 
 (** [reduce tbl world] is a graph representing the simplified state of the
     world where intersections and locations are nodes connected by edges (road
