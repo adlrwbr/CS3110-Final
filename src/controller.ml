@@ -1,5 +1,7 @@
 open Button
 
+exception NoButtonFound
+
 (** [input prompt acc] is a user-entered string in response to a popup
     input field with the prompt message [prompt] where [acc] is the
     pending input before the user presses enter *)
@@ -51,29 +53,61 @@ let nearest_loc (world : World.wt) : World.lt =
 (** [place_loc world] is a world that may or may not have been modified
     by a location placed on the road nearest the cursor *)
 let place_loc (world : World.wt) : World.wt =
-  match nearest_road world with
-  | exception _ -> world (* Make no changes if no roads are available *)
-  | pos, r ->
-      (* create loc at nearest road r at position pos *)
-      let name = input "Enter new location name" "" in
-      let category = input "Enter new location category" "" in
-      let _, new_world = World.add_loc name category r pos world in
-      new_world
+  let _ = View.draw_location_instructions () in
+  let event = Graphics.wait_next_event [ Graphics.Button_down ] in
+  if event.button then
+    match nearest_road world with
+    | exception _ ->
+        world (* Make no changes if no roads are available *)
+    | pos, r ->
+        (* create loc at nearest road r at position pos *)
+        let name = input "Enter new location name" "" in
+        let category = input "Enter new location category" "" in
+        let _, new_world = World.add_loc name category r pos world in
+        new_world
+  else world
 
 (** [road_placement_mode world] is a world that may or may not have been
     modified during Road Placement Mode *)
 let road_placement_mode (world : World.wt) : World.wt =
-  let coord1 = Graphics.mouse_pos () |> View.pixel_to_world in
-  let road_event = Graphics.wait_next_event [ Graphics.Key_pressed ] in
-  if road_event.key == 'r' then
-    (* get input*)
-    let coord2 = Graphics.mouse_pos () |> View.pixel_to_world in
-    let name = input "Enter new road name" "" in
-    (* create road from coord 1 to coord 2 *)
-    let new_road = Road.create name coord1 coord2 in
-    let world = World.add_road new_road world in
-    world
+  let _ = View.draw_road_instructions () in
+  let click1 = Graphics.wait_next_event [ Graphics.Button_down ] in
+  if click1.button then
+    let coord1 = Graphics.mouse_pos () |> View.pixel_to_world in
+    let click2 = Graphics.wait_next_event [ Graphics.Button_down ] in
+    if click2.button then
+      (* get input*)
+      let coord2 = Graphics.mouse_pos () |> View.pixel_to_world in
+      let name = input "Enter new road name" "" in
+      (* create road from coord 1 to coord 2 *)
+      let new_road = Road.create name coord1 coord2 in
+      let world = World.add_road new_road world in
+      world
+    else world
   else world
+
+(* let edit_mode_buttons = [ (* { text = "Random Road"; action = (fun w
+   -> print_endline "HELLO"; let road = Road.create "" (40. +.
+   Random.float 900., 40. +. Random.float 900.) (40. +. Random.float
+   900., 40. +. Random.float 900.) in w |> World.add_road road); xywh =
+   (40., 800., 200., 40.); enabled = true; }; *) ] *)
+
+let button_touching_point coord b =
+  let x, y = coord in
+  let x_r, y_r, w_r, h_r = b.xywh in
+  x >= x_r && x <= x_r +. w_r && y >= y_r && y <= y_r +. h_r
+
+let invoke_action w b = b.action w
+
+let hit_buttons w buttons coord =
+  List.fold_left invoke_action w
+    (match
+       buttons
+       |> List.filter button_enabled
+       |> List.filter (button_touching_point coord)
+     with
+    | [] -> raise NoButtonFound
+    | l -> l)
 
 (** [edit_mode world] is a world edited by the user that may be reduced
     into a graph by [World.reduce] without raising an exception *)
@@ -83,71 +117,77 @@ let rec edit_mode (world : World.wt) : World.wt =
   (* draw edit mode GUI elements *)
   View.draw_world world;
   View.draw_edit_mode ();
+  let edit_mode_buttons =
+    [
+      {
+        text = "Add Location";
+        action = (fun w -> w |> place_loc |> edit_mode);
+        xywh = (270., 900., 150., 40.);
+        enabled = true;
+      };
+      {
+        text = "Add Road";
+        action = (fun w -> w |> road_placement_mode |> edit_mode);
+        xywh = (20., 900., 150., 40.);
+        enabled = true;
+      };
+      {
+        text = "Done";
+        action =
+          (fun w ->
+            match World.reduce w with
+            | exception World.IllegalWorld s ->
+                print_endline s;
+                edit_mode w
+            | _ -> w);
+        xywh = (520., 900., 100., 40.);
+        enabled = true;
+      };
+    ]
+  in
+  View.draw_buttons edit_mode_buttons;
   (* wait for input *)
-  let event = Graphics.wait_next_event [ Graphics.Key_pressed ] in
-  if event.key == 'e' then
+  let event =
+    Graphics.wait_next_event
+      [ Graphics.Key_pressed; Graphics.Button_down ]
+  in
+  if event.button then
+    let mouse_pos = Graphics.mouse_pos () |> View.pixel_to_world in
+    match mouse_pos |> hit_buttons world edit_mode_buttons with
+    | exception _ -> edit_mode world
+    | new_world -> new_world
     (* check if user is allowed to quit edit mode *)
-    match World.reduce world with
-    | exception World.IllegalWorld s ->
-        print_endline s;
-        edit_mode world
-    | _ -> world
+
     (* After edits are made, return back to edit mode unless user
        exits. *)
-  else if event.key == 'r' then road_placement_mode world |> edit_mode
-  else if event.key == 'l' then place_loc world |> edit_mode
+    (* else if event.key == 'r' then road_placement_mode world |>
+       edit_mode else if event.key == 'l' then place_loc world |>
+       edit_mode *)
   else edit_mode world
 
 let buttons =
   [
+    (* { text = "Random Road"; action = (fun w -> print_endline "HELLO";
+       let road = Road.create "" (40. +. Random.float 900., 40. +.
+       Random.float 900.) (40. +. Random.float 900., 40. +. Random.float
+       900.) in w |> World.add_road road); xywh = (40., 800., 200.,
+       40.); enabled = true; }; *)
     {
-      text = "Random Road";
+      text = "Quit";
       action =
         (fun w ->
-          print_endline "HELLO";
-          let road =
-            Road.create ""
-              (40. +. Random.float 900., 40. +. Random.float 900.)
-              (40. +. Random.float 900., 40. +. Random.float 900.)
-          in
-          w |> World.add_road road);
-      xywh = (40., 800., 200., 40.);
+          let _ = exit 0 in
+          w);
+      xywh = (20., 900., 100., 40.);
       enabled = true;
     };
     {
-      text = "Overlapping button";
-      action =
-        (fun w ->
-          print_endline "BYE";
-          let road =
-            Road.create ""
-              (40. +. Random.float 900., 40. +. Random.float 900.)
-              (40. +. Random.float 900., 40. +. Random.float 900.)
-          in
-          w |> World.add_road road);
-      xywh = (180., 800., 200., 40.);
-      enabled = true;
-    };
-    {
-      text = "Overlapping button";
+      text = "Edit";
       action = (fun w -> w |> edit_mode);
-      xywh = (180., 800., 200., 40.);
+      xywh = (180., 900., 100., 40.);
       enabled = true;
     };
   ]
-
-let button_touching_point coord b =
-  let x, y = coord in
-  let x_r, y_r, w_r, h_r = b.xywh in
-  x >= x_r && x <= x_r +. w_r && y >= y_r && y <= y_r +. h_r
-
-let invoke_action w b = b.action w
-
-let hit_buttons w coord =
-  List.fold_left invoke_action w
-    (buttons
-    |> List.filter button_enabled
-    |> List.filter (button_touching_point coord))
 
 (** [direction_mode world] prompts the user to select two locations and
     highlights the shortest path between them. Requires: [world] can be
@@ -171,21 +211,18 @@ let rec loop (world : World.wt) =
   let _ = Graphics.clear_graph () in
   (* display world *)
   let _ = View.draw_world world in
-  let _ = View.draw_instructions () in
-  let _ = View.display_buttons buttons in
+  let _ = View.draw_buttons buttons in
   (* wait for next keypress event *)
   let event =
     Graphics.wait_next_event
       [ Graphics.Key_pressed; Graphics.Button_down ]
   in
   (* check for input *)
-  if event.key == 'q' then exit 0
-  else if event.key == 'e' then world |> edit_mode |> loop
-    (* else if !edit_mode_on then world |> edit_mode |> loop *)
-  else if (*loop world; *)
-          event.button then
+  if event.button then
     let mouse_pos = Graphics.mouse_pos () |> View.pixel_to_world in
-    mouse_pos |> hit_buttons world |> loop
+    match mouse_pos |> hit_buttons world buttons |> loop with
+    | exception _ -> loop world
+    | new_world -> new_world
   else loop world
 
 let start () =

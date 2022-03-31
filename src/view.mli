@@ -9,8 +9,6 @@ val pixel_to_world : int * int -> float * float
 (** [pixel_to_world (x, y)] is a float coordinate pair in world space
     from the integer pixel coordinates in View *)
 
-val buttons : button list
-
 val init : unit
 (** [init] instantiates a blank map *)
 
@@ -28,12 +26,16 @@ val draw_path : (float * float) list -> unit
 (** [draw_path path] draws a line segment connecting coordinates in
     [path] specified in world space *)
 
-val display_button : button -> unit
-(** [display_button b] displays [button] as a rectangle *)
+val draw_button : button -> unit
+(** [draw_button b] displays [button] as a rectangle *)
 
-val display_buttons : button list -> unit
-(** [display_buttons buttons ] displays all enabled buttons on the
-    screen *)
+val draw_buttons : button list -> unit
+(** [draw_buttons buttons ] displays all enabled buttons on the screen *)
 
-val draw_instructions : unit -> unit
-(** [draw_instructions () ] displays all instructions *)
+val draw_location_instructions : unit -> unit
+(** [draw_location_instructions () ] displays instructions on how to
+    draw a location *)
+
+val draw_road_instructions : unit -> unit
+(** [draw_road_instructions () ] displays instructions on how to draw a
+    road *)
