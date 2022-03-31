@@ -36,6 +36,9 @@ let distance pt1 pt2 =
       sqrt (((a -. c) *. (a -. c)) +. ((b -. d) *. (b -. d)))
 
 let add_loc name category road pos world =
+  raise (Failure "Fix add_loc")
+  (* TODO: deal with counter *)
+  (*
   match Graph.add world.g with
   | nid, ng ->
       (* create location *)
@@ -52,6 +55,7 @@ let add_loc name category road pos world =
         }
       in
       (new_loc, new_world)
+    *)
 
 let add_road road world =
   {

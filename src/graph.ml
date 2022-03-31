@@ -9,11 +9,8 @@ let empty = []
 
 let evg : vgt = []
 let size x = List.length x
-let add graph = (size graph, graph @ [ [] ])
-let add_no_id graph = snd (add graph)
-
-let rec nempty_helper amount bin = if amount > 0 then nempty_helper (amount-1) (bin |> add_no_id) else bin 
-let nempty n = nempty_helper n empty
+let add (id : int) (graph : ugt) = graph
+(* TODO (size graph, graph @ [ [] ]) *)
 
 let connect id1 id2 graph=
   if id1 > size graph then raise (UnknownNode id1)
