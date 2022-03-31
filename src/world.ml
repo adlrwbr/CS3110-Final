@@ -73,11 +73,8 @@ let roads world = world.roads
 let slope x1 y1 x2 y2 = (y2 -. y1) /. (x2 -. x1)
 let in_range p p1 p2 = (p >= p1 && p <= p2) || (p >= p2 && p <= p1)
 
-<<<<<<< HEAD
-=======
 let reduce world = Graph.verify Graph.empty (* TODO: implement *)
 
->>>>>>> parent of 319d41c (resolve merge conflicts)
 let intersection road1 road2 =
   match (Road.coords road1, Road.coords road2) with
   | ( ((p_a1_x, p_a1_y), (p_a2_x, p_a2_y)),
@@ -176,7 +173,6 @@ let nearroad source world =
     distance (fst (Road.coords minrd)) (snd (Road.coords minrd))
     in
     (interp_dist, minrd)
-<<<<<<< HEAD
 
 (** [neighbors world node] is a list of all intersecitons and locations that
     immediately connect to [node] in the [world] *)
@@ -243,5 +239,3 @@ let directions world start finish =
 
 let path_coords (p : path) =
   raise (Failure "Unimplemented") (* TODO *)
-=======
->>>>>>> parent of 319d41c (resolve merge conflicts)
