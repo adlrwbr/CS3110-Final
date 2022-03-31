@@ -12,3 +12,5 @@ If [f] is true, first continues, else the second continues. Check repeats with
 the continuing element and the third, etc. Finishes once there is
 one element that has survived the comparison chain. 
 Requires: [list] contains at least one element.*)
+
+val breadth_first : Graph.ugt -> int -> int list list list

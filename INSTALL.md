@@ -71,3 +71,19 @@ instructions on how make it work are provided below:
 ---
 
 3. Run the system using "make play" in the terminal in the directory of the project.
+
+---
+
+How to use/controls:
+
+To spawn a road:
+Hover mouse over any point on the screen, press r. That’s the first point of the line that represents a road.
+
+Hover mouse over another point in the screen. That’s the second point. Press r.
+
+You now get a prompt to name the road. Type in the name and press enter when you are done. You should know see the road as a line with the street name.
+
+To spawn a location:
+Hover mouse over any point in the screen, and press l, and a location will spawn on the road with the nearest midpoint. Right now it just spawns at the midpoint of the road.
+
+You now get a prompt to name the location. Type in the name and press enter when done. Then you are prompted to type a category. Type in the category name and press enter when done. You show now see the location as a circle with name and category.
