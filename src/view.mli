@@ -1,5 +1,9 @@
 (** represents the view in MVC pattern *)
 
+type button
+
+val buttons : button list
+
 val init : unit
 (** [init] instantiates a blank map *)
 
@@ -21,3 +25,20 @@ val world_to_pixel : float * float -> int * int
 val pixel_to_world : int * int -> float * float
 (** [pixel_to_world (x, y)] is a float coordinate pair in world space
     from the integer pixel coordinates in View *)
+
+val button_touching_point : float * float -> button -> bool
+(** [button_touching_point coord b] is whether or not the point [coord]
+    is touching the button [b] *)
+
+val button_enabled : button -> bool
+(** [button enabled b] is whether or not [b] is enabled *)
+
+val hit_buttons : World.wt -> float * float -> World.wt
+(** [hit_buttons coord] attempts to hit all enabled buttons that are at
+    point [coord] *)
+
+val display_button : button -> unit
+(** [display_button b] displays [button] as a rectangle *)
+
+val display_buttons : unit -> unit
+(** [display_buttons () ] displays all enabled buttons on the screen *)

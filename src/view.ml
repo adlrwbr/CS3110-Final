@@ -1,5 +1,26 @@
 open Graphics
 
+type button = {
+  text : string;
+  action : World.wt -> World.wt;
+  xywh : float * float * float * float;
+  enabled : bool;
+}
+
+let buttons =
+  [
+    {
+      text = "Test";
+      action =
+        (fun w ->
+          print_endline "HELLO";
+          let road = Road.create "" (40., 40.) (200., 200.) in
+          w |> World.add_road road);
+      xywh = (40., 800., 80., 40.);
+      enabled = true;
+    };
+  ]
+
 let init =
   (* initialize default window *)
   let _ = open_graph "" in
@@ -104,6 +125,36 @@ let draw_road (road : Road.t) =
   let x, y = World.midpt road |> world_to_pixel in
   road |> Road.name |> draw_text x y (BOTTOM, CENTER)
 
+let button_touching_point coord b =
+  let x, y = coord in
+  let x_r, y_r, w_r, h_r = b.xywh in
+  x >= x_r && x <= x_r +. w_r && y >= y_r && y <= y_r +. h_r
+
+let button_enabled b = b.enabled
+let invoke_action w b = b.action w
+
+let hit_buttons w coord =
+  List.fold_left invoke_action w
+    (buttons
+    |> List.filter button_enabled
+    |> List.filter (button_touching_point coord))
+
+let display_button b =
+  let x, y, w, h = b.xywh in
+  let (x, y), (w, h), (text_x, text_y) =
+    ( world_to_pixel (x, y),
+      world_to_pixel (w, h),
+      world_to_pixel (x +. (w /. 2.), y +. (h /. 2.)) )
+  in
+  rgb 170 227 255 |> set_color;
+  fill_rect x y w h;
+  rgb 0 0 0 |> set_color;
+  draw_text text_x text_y (MIDDLE, CENTER) b.text;
+  ()
+
+let display_buttons () =
+  buttons |> List.filter button_enabled |> List.iter display_button
+
 let draw world display_controls =
   let _ = List.map draw_loc (World.locations world) in
   let _ = List.map draw_road (World.roads world) in
@@ -111,6 +162,7 @@ let draw world display_controls =
     draw_text 5 (size_y () - 5) (TOP, LEFT) "Press q to quit";
     draw_text 5 (size_y () - 25) (TOP, LEFT) "Press e to edit world")
   else ();
+  display_buttons ();
   ()
 
 let draw_input_popup prompt input =

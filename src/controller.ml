@@ -1,3 +1,6 @@
+let edit_mode_on = ref false
+let turn_edit_on () = edit_mode_on := true
+
 (** [input prompt acc] is a user-entered string in response to a popup
     input field with the prompt message [prompt] where [acc] is the
     pending input before the user presses enter *)
@@ -86,10 +89,18 @@ let rec loop (world : World.wt) =
   (* display world *)
   let _ = View.draw world true in
   (* wait for next keypress event *)
-  let event = Graphics.wait_next_event [ Graphics.Key_pressed ] in
+  let event =
+    Graphics.wait_next_event
+      [ Graphics.Key_pressed; Graphics.Button_down ]
+  in
   (* check for input *)
   if event.key == 'q' then exit 0
   else if event.key == 'e' then world |> edit_mode |> loop
+    (* else if !edit_mode_on then world |> edit_mode |> loop *)
+  else if (*loop world; *)
+          event.button then
+    let mouse_pos = Graphics.mouse_pos () |> View.pixel_to_world in
+    mouse_pos |> View.hit_buttons world |> loop
   else loop world
 
 let start () =
