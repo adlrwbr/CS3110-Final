@@ -10,13 +10,17 @@ type button = {
 let buttons =
   [
     {
-      text = "Test";
+      text = "Random Road";
       action =
         (fun w ->
           print_endline "HELLO";
-          let road = Road.create "" (40., 40.) (200., 200.) in
+          let road =
+            Road.create ""
+              (40. +. Random.float 900., 40. +. Random.float 900.)
+              (40. +. Random.float 900., 40. +. Random.float 900.)
+          in
           w |> World.add_road road);
-      xywh = (40., 800., 80., 40.);
+      xywh = (40., 800., 200., 40.);
       enabled = true;
     };
   ]

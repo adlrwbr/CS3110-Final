@@ -1,6 +1,3 @@
-let edit_mode_on = ref false
-let turn_edit_on () = edit_mode_on := true
-
 (** [input prompt acc] is a user-entered string in response to a popup
     input field with the prompt message [prompt] where [acc] is the
     pending input before the user presses enter *)
