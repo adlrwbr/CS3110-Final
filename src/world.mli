@@ -9,9 +9,6 @@ type wt
 type lt
 (** the abstract location type *)
 
-type path
-(** an abstract type that represents a path from one [lt] to another *)
-
 val size_x : float
 (** the width of the world *)
 
@@ -52,17 +49,10 @@ val distance : float * float -> float * float -> float
 (** [distance point1 point2] is the euclidean distance between [point1] and
     [point2]. *)
 
-val rep_ok : wt -> bool
-(** [rep_ok world] is whether or not all locations in the [world] connect to
-    each other via roads in the [world] *)
-
-val directions : wt -> lt -> lt -> path
-(** [directions world start finish] is a path from [start] to [finish] within
-    [world]
-    Requires: [rep_ok world] *)
-
-val path_coords : path -> (float * float) list
-(** [path_coords p] is a list of all world coordinates along the path [p] *)
+val reduce : wt -> Graph.vgt
+(** [reduce world] is a graph representing the simplified state of the world
+    where intersections and locations are nodes connected by roads
+    Raises: [IllegalWorld] if world cannot be reduced into a verified graph *)
 
 val nearroad : (float * float) -> wt -> (float * Road.t)
 (** Sorry for crappy spec it's late:

@@ -66,19 +66,6 @@ let rec isolate_path start finish graph =
     let subset = (lop (first_position finish heap 0) heap) in
     (subset)
 
-let rec listworth elem list = 
-    match list with 
-    | some :: more -> if List.mem elem some then 0
-    else 1 + listworth elem more
-    | [] -> 0
+let shortest_path start finish graph = 
+    raise (Failure "Unimplemented")
 
-let rec traceback start finish graph= 
-    let reduced = isolate_path start finish graph in
-    let origin = reduced |> List.hd in
-    let pos = (listworth finish origin) in
-    let next_pos = List.nth (List.nth reduced 1 |> List.flatten) pos in
-    (if next_pos = start then [finish] @ [start]
-    else [finish] @ traceback start next_pos graph
-        )
-        
-let shortest_path start finish graph = traceback finish start graph
