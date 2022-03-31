@@ -157,22 +157,20 @@ let direction_mode (world : World.wt) : unit =
   let start = nearest_loc world in
   let _ = Graphics.wait_next_event [ Graphics.Button_up ] in
   let finish = nearest_loc world in
-  let _ =
-    world |> World.reduce
-    |> Algo.shortest_path (World.name start) (World.name finish)
-  in
-  ()
-(* TODO *)
+  let _ = world |> World.reduce
+    |> Algo.shortest_path (World.name start) (World.name finish) in
+  let _ = View.draw_path in ()
+  (* TODO *)
 
 (** [loop world] is the main event loop of the application that manages
     user input and displays [world] *)
 let rec loop (world : World.wt) =
   (* clear graph *)
-  let _ = Graphics.clear_graph () in
+  Graphics.clear_graph ();
   (* display world *)
-  let _ = View.draw_world world in
-  let _ = View.draw_instructions () in
-  let _ = View.display_buttons buttons in
+  View.draw_world world;
+  View.draw_instructions ();
+  View.display_buttons buttons;
   (* wait for next keypress event *)
   let event =
     Graphics.wait_next_event

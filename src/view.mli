@@ -9,8 +9,6 @@ val pixel_to_world : int * int -> float * float
 (** [pixel_to_world (x, y)] is a float coordinate pair in world space
     from the integer pixel coordinates in View *)
 
-val buttons : button list
-
 val init : unit
 (** [init] instantiates a blank map *)
 
