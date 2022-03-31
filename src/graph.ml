@@ -1,54 +1,33 @@
-type ugt = int list list
-type vgt = int list list
+
+type ugt = (int, int list) Hashtbl.t
+type vgt = (int, int list) Hashtbl.t
 
 exception UnknownNode of int
 exception InvalidGraph
 exception IndexOutofBounds
 
-let empty = []
+let empty = Hashtbl.create 16
 
-let evg : vgt = []
-let size x = List.length x
-let add (id : int) (graph : ugt) = graph
-(* TODO (size graph, graph @ [ [] ]) *)
+let evg : vgt = Hashtbl.create 16
 
-let connect id1 id2 graph=
-  if id1 > size graph then raise (UnknownNode id1)
-  else if id2 > size graph then raise (UnknownNode id2)
-  else
-    let rec con counter = function
-      | some :: more ->
-          if id1 = counter then (id2 :: some) :: con (counter + 1) more
-          else if id2 = counter then
-            (id1 :: some) :: con (counter + 1) more
-          else some :: con (counter + 1) more
-      | [] -> []
-    in
-    con 1 graph
+let size graph = Hashtbl.length graph
 
-let rec unverify vg : ugt = List.map (fun x -> x) vg
+let add (id : int) (graph : ugt) = (Hashtbl.add graph id []); graph
 
-let rec verify ug : vgt =
-  match ug with
-  | [] -> []
-  | [] :: t -> raise InvalidGraph
-  | h :: t -> h :: verify t
+let connect id1 id2 graph : ugt =
+  if not (List.mem id2 (Hashtbl.find graph id1))
+    then Hashtbl.add graph id1 (id2 :: Hashtbl.find graph id1);
+  if not (List.mem id1 (Hashtbl.find graph id2)) 
+    then Hashtbl.add graph id2 (id1 :: Hashtbl.find graph id2);
+  graph
 
-(** [get_element_at_index lst i] is the element within lst at the index
-    i. Raises: IndexOutofBounds if i >= List.length lst *)
-let rec get_element_at_index lst i =
-  if i >= List.length lst then raise IndexOutofBounds
-  else
-    match lst with
-    | [] -> raise IndexOutofBounds
-    | h :: t -> if i = 0 then h else get_element_at_index t (i - 1)
+let unverify (vg : vgt) : ugt = vg
 
-let neighbors graph id = List.sort_uniq compare (get_element_at_index graph (id - 1))
+let rec help_verify ug queue = 
+  match queue with
+  | some :: more -> Hashtbl.remove ug some
+  | [] -> ()
 
-(** [set graph] is a set-like list of all ids within [graph]*)
-let set graph =
-  let rec range c u =
-    if c > 0 then (u - c + 1) :: range (c - 1) u else []
-  in
-  let sz = size graph in
-  range sz sz
+let verify (ug : ugt) : vgt = ug (** TODO Find way to verify graph. *)
+
+let neighbors graph id = List.sort_uniq compare (Hashtbl.find graph id)
