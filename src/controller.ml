@@ -87,11 +87,11 @@ let rec edit_mode (world : World.wt) : World.wt =
   let event = Graphics.wait_next_event [ Graphics.Key_pressed ] in
   if event.key == 'e' then
     (* check if user is allowed to quit edit mode *)
-    match World.reduce world with
-    | exception World.IllegalWorld s ->
-        print_endline s;
-        edit_mode world
-    | _ -> world
+    if World.rep_ok world
+    then world
+    else (print_endline
+      "All locations in the world must be connected by roads!";
+      edit_mode world)
     (* After edits are made, return back to edit mode unless user
        exits. *)
   else if event.key == 'r' then road_placement_mode world |> edit_mode
@@ -153,14 +153,13 @@ let hit_buttons w coord =
     highlights the shortest path between them. Requires: [world] can be
     reduced into graph form *)
 let direction_mode (world : World.wt) : unit =
+  print_endline "Click on two locations to get directions between them.";
   let _ = Graphics.wait_next_event [ Graphics.Button_up ] in
   let start = nearest_loc world in
   let _ = Graphics.wait_next_event [ Graphics.Button_up ] in
   let finish = nearest_loc world in
-  let _ = world |> World.reduce
-    |> Algo.shortest_path (World.name start) (World.name finish) in
-  let _ = View.draw_path in ()
-  (* TODO *)
+  let path = World.directions world start finish in
+  View.draw_path path
 
 (** [loop world] is the main event loop of the application that manages
     user input and displays [world] *)

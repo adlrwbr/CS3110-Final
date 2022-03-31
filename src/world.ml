@@ -15,6 +15,11 @@ type wt = {
   locations : lt list;
 }
 
+type lit = Loc of lt | Inter of Road.intersection
+(** a type that represents a location or an intersection *)
+
+type path = lit list
+
 let size_x = 1000.
 let size_y = 1000.
 let empty name = { name; g = Graph.empty; roads = []; locations = [] }
@@ -73,6 +78,8 @@ let roads world = world.roads
 let slope x1 y1 x2 y2 = (y2 -. y1) /. (x2 -. x1)
 let in_range p p1 p2 = (p >= p1 && p <= p2) || (p >= p2 && p <= p1)
 
+(** [reduce world] is a graph representing the simplified state of the world
+    where intersections and locations are nodes connected by roads *)
 let reduce world = Graph.verify Graph.empty (* TODO: implement *)
 
 let intersection road1 road2 =
@@ -173,3 +180,12 @@ let nearroad source world =
     distance (fst (Road.coords minrd)) (snd (Road.coords minrd))
     in
     (interp_dist, minrd)
+
+let rep_ok world =
+  raise (Failure "Unimplemented") (* TODO *)
+
+let directions world start finish =
+  raise (Failure "Unimplemented") (* TODO *)
+
+let path_coords (p : path) =
+  raise (Failure "Unimplemented") (* TODO *)
