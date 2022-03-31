@@ -1,5 +1,13 @@
 (** represents the view in MVC pattern *)
 
+(** [world_to_pixel (x, y)] is an integer coordinate pair in pixel space from
+    the float coordinates in World *)
+val world_to_pixel : float * float -> int * int
+
+(** [pixel_to_world (x, y)] is a float coordinate pair in world space from
+    the integer pixel coordinates in View *)
+val pixel_to_world : int * int -> float * float
+
 (** [init] instantiates a blank map *)
 val init : unit
 
@@ -13,10 +21,6 @@ val draw_input_popup : string -> string -> unit
 (** [draw_edit_mode] draws the GUI overlay for edit mode *)
 val draw_edit_mode : unit -> unit
 
-(** [world_to_pixel (x, y)] is an integer coordinate pair in pixel space from
-    the float coordinates in World *)
-val world_to_pixel : float * float -> int * int
-
-(** [pixel_to_world (x, y)] is a float coordinate pair in world space from
-    the integer pixel coordinates in View *)
-val pixel_to_world : int * int -> float * float
+(** [draw_path path] draws a line segment connecting coordinates in [path]
+    specified in world space *)
+val draw_path : (float * float) list -> unit

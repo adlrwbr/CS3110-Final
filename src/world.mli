@@ -47,7 +47,7 @@ val midpt : Road.t -> float * float
 
 val distance : float * float -> float * float -> float
 (** [distance point1 point2] is the euclidean distance between [point1] and
-    [point2].*)
+    [point2]. *)
 
 val reduce : wt -> Graph.vgt
 (** [reduce world] is a graph representing the simplified state of the world

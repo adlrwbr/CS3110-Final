@@ -122,3 +122,7 @@ let draw_edit_mode () =
     "Press l to place a location";
   draw_text 5 (size_y () - title_height - 3 * (keybind_height + 5)) (TOP, LEFT)
     "Press e to exit"
+
+let draw_path (path : (float * float) list) =
+  path |> List.map (fun c -> world_to_pixel c) |> Array.of_list
+    |> draw_poly_line
