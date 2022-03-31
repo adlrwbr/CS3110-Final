@@ -23,6 +23,20 @@ let buttons =
       xywh = (40., 800., 200., 40.);
       enabled = true;
     };
+    {
+      text = "Overlapping button";
+      action =
+        (fun w ->
+          print_endline "BYE";
+          let road =
+            Road.create ""
+              (40. +. Random.float 900., 40. +. Random.float 900.)
+              (40. +. Random.float 900., 40. +. Random.float 900.)
+          in
+          w |> World.add_road road);
+      xywh = (180., 800., 200., 40.);
+      enabled = true;
+    };
   ]
 
 let init =
