@@ -1,3 +1,5 @@
+open Button
+
 (** [input prompt acc] is a user-entered string in response to a popup
     input field with the prompt message [prompt] where [acc] is the
     pending input before the user presses enter *)
@@ -61,7 +63,7 @@ let rec edit_mode (world : World.wt) : World.wt =
   (* clear graph *)
   Graphics.clear_graph ();
   (* draw edit mode GUI elements *)
-  View.draw world false;
+  View.draw_world world;
   View.draw_edit_mode ();
   (* wait for input *)
   let event = Graphics.wait_next_event [ Graphics.Key_pressed ] in
@@ -78,13 +80,66 @@ let rec edit_mode (world : World.wt) : World.wt =
   else if event.key == 'l' then place_loc world |> edit_mode
   else edit_mode world
 
+let buttons =
+  [
+    {
+      text = "Random Road";
+      action =
+        (fun w ->
+          print_endline "HELLO";
+          let road =
+            Road.create ""
+              (40. +. Random.float 900., 40. +. Random.float 900.)
+              (40. +. Random.float 900., 40. +. Random.float 900.)
+          in
+          w |> World.add_road road);
+      xywh = (40., 800., 200., 40.);
+      enabled = true;
+    };
+    {
+      text = "Overlapping button";
+      action =
+        (fun w ->
+          print_endline "BYE";
+          let road =
+            Road.create ""
+              (40. +. Random.float 900., 40. +. Random.float 900.)
+              (40. +. Random.float 900., 40. +. Random.float 900.)
+          in
+          w |> World.add_road road);
+      xywh = (180., 800., 200., 40.);
+      enabled = true;
+    };
+    {
+      text = "Overlapping button";
+      action = (fun w -> w |> edit_mode);
+      xywh = (180., 800., 200., 40.);
+      enabled = true;
+    };
+  ]
+
+let button_touching_point coord b =
+  let x, y = coord in
+  let x_r, y_r, w_r, h_r = b.xywh in
+  x >= x_r && x <= x_r +. w_r && y >= y_r && y <= y_r +. h_r
+
+let invoke_action w b = b.action w
+
+let hit_buttons w coord =
+  List.fold_left invoke_action w
+    (buttons
+    |> List.filter button_enabled
+    |> List.filter (button_touching_point coord))
+
 (** [loop world] is the main event loop of the application that manages
     user input and displays [world] *)
 let rec loop (world : World.wt) =
   (* clear graph *)
   let _ = Graphics.clear_graph () in
   (* display world *)
-  let _ = View.draw world true in
+  let _ = View.draw_world world in
+  let _ = View.draw_instructions () in
+  let _ = View.display_buttons buttons in
   (* wait for next keypress event *)
   let event =
     Graphics.wait_next_event
@@ -97,7 +152,7 @@ let rec loop (world : World.wt) =
   else if (*loop world; *)
           event.button then
     let mouse_pos = Graphics.mouse_pos () |> View.pixel_to_world in
-    mouse_pos |> View.hit_buttons world |> loop
+    mouse_pos |> hit_buttons world |> loop
   else loop world
 
 let start () =
