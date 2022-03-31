@@ -5,9 +5,9 @@ open Button
     pending input before the user presses enter *)
 let rec input (prompt : string) (acc : string) : string =
   (* clear graph *)
-  let _ = Graphics.clear_graph () in
+  Graphics.clear_graph ();
   (* draw popup *)
-  let _ = View.draw_input_popup prompt acc in
+  View.draw_input_popup prompt acc;
   (* get next key *)
   let event = Graphics.wait_next_event [ Graphics.Key_pressed ] in
   let key = event.key in
@@ -21,14 +21,32 @@ let rec input (prompt : string) (acc : string) : string =
       (* append to acc and ask for input again *)
   else input prompt (acc ^ String.make 1 key)
 
-(** [nearest_road] is a tuple ([pos, road]) that specifies a position
-    [pos] on a [road] nearest the cursor *)
+(** [nearest_road world] is a tuple ([pos, road]) that specifies a
+    position [pos] on a [road] in [world] nearest the cursor *)
 let nearest_road (world : World.wt) : float * Road.t =
   let point = Graphics.mouse_pos () |> View.pixel_to_world in
   (*let allroads = world |> World.roads in ( 0.5, Algo.relate (fun a b
     -> World.distance (World.midpt a) point <= World.distance
     (World.midpt b) point) allroads ) DEPRECATED NAIVE APPROACH <---*)
   World.nearroad point world
+
+(** [nearest_loc world] is a location in [world] nearest the cursor *)
+let nearest_loc (world : World.wt) : World.lt =
+  (* cursor pos *)
+  let cx, cy = Graphics.mouse_pos () |> View.pixel_to_world in
+  let distance loc =
+    let x, y = World.loc_coord loc in
+    let dx, dy = (cx -. x, cy -. y) in
+    sqrt ((dx *. dx) +. (dy *. dy))
+  in
+  let rec nearest_loc_rec smallest = function
+    | [] -> smallest
+    | h :: t ->
+        if distance h < distance smallest then nearest_loc_rec h t
+        else nearest_loc_rec smallest t
+  in
+  let locs = world |> World.locations in
+  nearest_loc_rec (List.hd locs) locs
 
 (** [place_loc world] is a world that may or may not have been modified
     by a location placed on the road nearest the cursor *)
@@ -130,6 +148,21 @@ let hit_buttons w coord =
     (buttons
     |> List.filter button_enabled
     |> List.filter (button_touching_point coord))
+
+(** [direction_mode world] prompts the user to select two locations and
+    highlights the shortest path between them. Requires: [world] can be
+    reduced into graph form *)
+let direction_mode (world : World.wt) : unit =
+  let _ = Graphics.wait_next_event [ Graphics.Button_up ] in
+  let start = nearest_loc world in
+  let _ = Graphics.wait_next_event [ Graphics.Button_up ] in
+  let finish = nearest_loc world in
+  let _ =
+    world |> World.reduce
+    |> Algo.shortest_path (World.name start) (World.name finish)
+  in
+  ()
+(* TODO *)
 
 (** [loop world] is the main event loop of the application that manages
     user input and displays [world] *)

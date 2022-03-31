@@ -132,7 +132,6 @@ let nearest_pt_on_line fix ref_line =
 
 (**[seg_dist] is the minimum distance of [source] to the segment [road] *)
 let seg_dist source road =   
-(** *)
     let maybe = nearest_pt_on_line source road in
     (match maybe with
     | None -> min 
@@ -174,4 +173,3 @@ let nearroad source world =
     distance (fst (Road.coords minrd)) (snd (Road.coords minrd))
     in
     (interp_dist, minrd)
-    

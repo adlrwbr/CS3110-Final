@@ -1,6 +1,15 @@
 open Button
-
 (** represents the view in MVC pattern *)
+
+val world_to_pixel : float * float -> int * int
+(** [world_to_pixel (x, y)] is an integer coordinate pair in pixel space
+    from the float coordinates in World *)
+
+val pixel_to_world : int * int -> float * float
+(** [pixel_to_world (x, y)] is a float coordinate pair in world space
+    from the integer pixel coordinates in View *)
+
+val buttons : button list
 
 val init : unit
 (** [init] instantiates a blank map *)
@@ -15,13 +24,9 @@ val draw_input_popup : string -> string -> unit
 val draw_edit_mode : unit -> unit
 (** [draw_edit_mode] draws the GUI overlay for edit mode *)
 
-val world_to_pixel : float * float -> int * int
-(** [world_to_pixel (x, y)] is an integer coordinate pair in pixel space
-    from the float coordinates in World *)
-
-val pixel_to_world : int * int -> float * float
-(** [pixel_to_world (x, y)] is a float coordinate pair in world space
-    from the integer pixel coordinates in View *)
+val draw_path : (float * float) list -> unit
+(** [draw_path path] draws a line segment connecting coordinates in
+    [path] specified in world space *)
 
 val display_button : button -> unit
 (** [display_button b] displays [button] as a rectangle *)

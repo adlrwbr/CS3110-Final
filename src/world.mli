@@ -47,14 +47,14 @@ val midpt : Road.t -> float * float
 
 val distance : float * float -> float * float -> float
 (** [distance point1 point2] is the euclidean distance between [point1] and
-    [point2].*)
+    [point2]. *)
 
 val reduce : wt -> Graph.vgt
 (** [reduce world] is a graph representing the simplified state of the world
     where intersections and locations are nodes connected by roads
     Raises: [IllegalWorld] if world cannot be reduced into a verified graph *)
 
-val nearroad : (float*float) -> wt -> (float*Road.t)
+val nearroad : (float * float) -> wt -> (float * Road.t)
 (** Sorry for crappy spec it's late:
 This satisfies the spec for [controller.ml]'s [nearest_road], I just needed
 access to helper methods and I did not want to bother with privacy changes. *)
