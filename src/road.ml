@@ -15,8 +15,7 @@ let create name startPoint endPoint =
   { name; startPt = startPoint; endPt = endPoint }
 
 let name road = road.name
-
-let road_coords road = road.startPt, road.endPt
+let road_coords road = (road.startPt, road.endPt)
 
 let midpt road =
   let fp = road |> road_coords |> fst in
@@ -27,14 +26,10 @@ let midpt road =
 let intersection (r1 : t) (r2 : t) : it option =
   (* TODO *)
   let _ =
-  Some
-  {
-    road1 = r1;
-    road2 = r2;
-    pos_on_road1 = 0.;
-    pos_on_road2 = 0.;
-  }
-  in raise (Failure "Unimplemented")
+    Some
+      { road1 = r1; road2 = r2; pos_on_road1 = 0.; pos_on_road2 = 0. }
+  in
+  raise (Failure "Unimplemented")
 
 let inter_coords inter =
   match (road_coords inter.road1, road_coords inter.road2) with
@@ -57,4 +52,5 @@ let inter_coords inter =
         && Algo.in_range y p_b1_y p_b2_y
       then (x, y)
       else
-        raise (Failure "Intersection provided to [inter_coords] is invalid!")
+        raise
+          (Failure "Intersection provided to [inter_coords] is invalid!")
