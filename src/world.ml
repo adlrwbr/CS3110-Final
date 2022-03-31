@@ -82,10 +82,6 @@ let roads world = world.roads
 let slope x1 y1 x2 y2 = (y2 -. y1) /. (x2 -. x1)
 let in_range p p1 p2 = (p >= p1 && p <= p2) || (p >= p2 && p <= p1)
 
-(** [reduce world] is a graph representing the simplified state of the world
-    where intersections and locations are nodes connected by roads *)
-let reduce world = Graph.verify Graph.empty (* TODO: implement *)
-
 let intersection road1 road2 =
   match (Road.coords road1, Road.coords road2) with
   | ( ((p_a1_x, p_a1_y), (p_a2_x, p_a2_y)),
@@ -184,6 +180,63 @@ let nearroad source world =
     distance (fst (Road.coords minrd)) (snd (Road.coords minrd))
     in
     (interp_dist, minrd)
+
+(** [neighbors world node] is a list of all intersecitons and locations that
+    immediately connect to [node] in the [world] *)
+let neighbors (world : wt) (node : lit) : lit list =
+  raise (Failure "Unimplemented") (* TODO *)
+
+(** [next] is the next integer in a 0-based counter *)
+let next =
+  let ctr = ref 0 in
+  fun () ->
+    incr ctr;
+    !ctr
+
+(** [reduce world] is a graph representing the simplified state of the world
+    where intersections and locations are nodes connected by edges
+    (road segments) *)
+let reduce (world : wt) : Graph.vgt =
+  (* map Graph ids to [lit]s *)
+  let hashtbl = Hashtbl.create 10 in
+  (** [spread acc queue] is a fully formed graph. [queue] is composed of pairs
+      [(cur, prev)], where [prev] connects to [cur]'s value in [hashtbl],
+      and [acc] is the accumulating graph *)
+  let rec spread (acc : Graph.ugt) (queue : (lit * int option) list)
+  : Graph.ugt =
+    match queue with
+    | [] -> acc
+    | (cur, prev_id) :: t ->
+      (* try to add node to graph *)
+      let cur_id = next () in 
+      (* map Graph ids to [lit]s *)
+      Hashtbl.add hashtbl cur_id cur;
+      match Graph.add cur_id acc with
+      (* [cur] is already in [acc] *)
+      | exception Failure id ->
+          spread acc t
+      (* this node has not yet been seen *)
+      | new_graph ->
+          (* connect nodes if [prev_id] exists *)
+          let new_graph =
+            match prev_id with
+            | None -> new_graph
+            | Some prev_id ->
+                let _ = assert (prev_id <> cur_id) in
+                Graph.connect prev_id cur_id new_graph
+          (* search around [next] for neighbor [lit]s *)
+          in let neighbors = List.map (fun n -> (n, Some cur_id))
+            (neighbors world cur) in
+          spread new_graph (List.append neighbors queue)
+  (* check if world has more than one location *)
+  in if List.length world.locations = 0
+  then Graph.verify Graph.empty
+  else
+    let loc = Loc (world.locations |> List.hd) in
+    (* verify the graph *)
+    let unverified = spread Graph.empty [loc, None]
+      (* create a list of tuples for (loc, neighbor) for all locations *)
+    in Graph.verify unverified
 
 let rep_ok world =
   raise (Failure "Unimplemented") (* TODO *)
