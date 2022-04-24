@@ -4,9 +4,15 @@ val slope : float -> float -> float -> float -> float
 (** [slope x1 y1 x2 y2] is the slope between two coordinate pairs (x1, y1) and
     (x2, y2). *)
 
+val distance : (float * float) -> (float * float) -> float
+(** [distance p1 p2] is the distance between coordinate pairs [p1] and [p2] *)
+
 val in_range : float -> float -> float -> bool
 (** [in_range p p1 p2] is whether or not [p] is between [p1] and [p2],
     inclusive. *)
+
+val remove_all : 'a list -> 'a list -> 'a list
+(** [remove_all list1 list2] is [list1] without the elements of [list2]*)
 
 val shortest_path : int -> int -> Graph.vgt -> int list
 (** [shortest_path start finish graph] is a list of the ids of the nodes along

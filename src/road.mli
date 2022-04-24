@@ -28,5 +28,6 @@ val intersection : t -> t -> it option
 (** [intersection r1 r2] is an intersection between [r1] and [r2] or [None] if
     the two roads do not intersect. *)
 
-val inter_coords : it -> float * float
-(** [inter_coords inter] is the coordinate pair of the intersection [inter] *)
+val inter_coords : t -> t -> (float * float) option
+(** [inter_coords r1 r2] is the coordinate pair of the intersection between
+    roads [r1] and [r2] if it exists, or None if DNE *)

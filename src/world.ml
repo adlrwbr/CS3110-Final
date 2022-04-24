@@ -12,6 +12,7 @@ type lt = {
 type wt = {
   name : string;
   roads : Road.t list;
+  intersections : Road.it list;
   locations : lt list;
 }
 
@@ -22,7 +23,7 @@ type path = lit list
 
 let size_x = 1000.
 let size_y = 1000.
-let empty name = { name; roads = []; locations = [] }
+let empty name = { name; roads = []; intersections = []; locations = [] }
 
 let distance pt1 pt2 =
   match (pt1, pt2) with
@@ -44,16 +45,26 @@ let add_loc name category road pos world =
     {
       name = world.name;
       roads = world.roads;
+      intersections = world.intersections;
       locations = new_loc :: world.locations;
     }
   in
   (new_loc, new_world)
 
 let add_road road world =
-  (* TODO: check for intersections with new road and existing roads *)
+  (* check for intersections with new road and all existing roads *)
+  let rec new_intersns acc rd_lst =
+    match rd_lst with
+    | [] -> acc
+    | road2 :: t ->
+        match Road.intersection road road2 with
+        | None -> new_intersns acc t
+        | Some intersn -> new_intersns (intersn :: acc) t
+  in
   {
     name = world.name;
     roads = road :: world.roads;
+    intersections = List.rev_append (new_intersns [] world.roads) world.intersections;
     locations = world.locations;
   }
 
@@ -149,10 +160,42 @@ let nearroad source world =
     in
     (interp_dist, minrd)
 
-(** [neighbors world node] is a list of all intersections and locations that
-    immediately connect to [node] in the [world] *)
-let neighbors (world : wt) (node : lit) : lit list =
-  raise (Failure "Unimplemented") (* TODO *)
+(** [closest loc intersxns] is the closest intersection in [intersxns]
+    to [loc] *)
+let closest (loc : lt) (intersxns : Road.it list) : Road.it =
+  raise (Failure "TODO: Unimplemented")
+  (*
+      List.fold_left (fun (closest : Road.it) (inter : Road.it) ->
+        let inter_coords (i : Road.it) =
+          match Road.inter_coords i.road1 i.road2 with
+          | None -> raise (Failure "Invalid intersection.")
+          | Some pair -> pair *)
+
+
+(** [nextdoor_neighbors world node] is a list of all intersections and
+    locations that immediately connect to [node] in the [world] *)
+let nextdoor_neighbors (world : wt) (node : lit) : lit list =
+  raise (Failure "TODO: for andrew :) ty")
+      (*
+  match node with
+  | Loc loc ->
+      let r = loc.road in
+      (* intersections on the same road as loc *)
+      let inters_on_road = List.filter (fun (inter : Road.it) -> r = inter.road1 || r = inter.road2) world.intersections in
+      (* intersections on the same road as loc, closer to the end *)
+      let inters_above = List.filter
+      (fun (inter : Road.it) ->
+        let pos = if inter.road1 = r then inter.pos_on_road1 else inter.pos_on_road2 in
+        pos > loc.pos_on_road) inters_on_road in
+      let inters_below = Algo.remove_all inters_on_road inters_above in
+        if Algo.distance (loc_coord loc) (inter_coords inter) < Algo.distance (loc_coord loc) (inter_coords closest)
+        then inter else closest
+        
+      ) (List.hd inters_above) inters_above
+
+
+  | Inter inter -> raise (Failure "Unimplemented")
+  *)
 
 (** [reduce tbl world] is a graph representing the simplified state of the
     world where intersections and locations are nodes connected by edges (road
@@ -186,7 +229,7 @@ let reduce (hashtbl : (int, lit) Hashtbl.t) (world : wt) : Graph.vgt =
                 Graph.connect prev_id cur_id new_graph
           (* search around [next] for neighbor [lit]s *)
           in let neighbors = List.map (fun n -> (n, Some cur_id))
-            (neighbors world cur) in
+            (nextdoor_neighbors world cur) in
           spread new_graph (List.append neighbors queue)
   (* check if world has more than one location *)
   in if List.length world.locations = 0
@@ -223,5 +266,10 @@ let path_coords (p : path) =
   let lit_to_coords = fun (node : lit) : (float * float) ->
     match node with
     | Loc loc -> loc_coord loc
-    | Inter inter -> Road.inter_coords inter
+    | Inter inter ->
+        begin
+        match Road.inter_coords inter.road1 inter.road2 with
+        | None -> raise (Failure "Invalid path: intersection does not exist.")
+        | Some coord -> coord
+        end
   in List.map lit_to_coords p
