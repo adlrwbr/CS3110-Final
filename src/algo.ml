@@ -89,6 +89,6 @@ let rec traceback start finish graph=
     let next_pos = List.nth (List.nth reduced 1 |> List.flatten) pos in
     (if next_pos = start then [finish] @ [start]
     else [finish] @ traceback start next_pos graph
-        )
+    )
         
 let shortest_path start finish graph = traceback finish start graph
