@@ -63,7 +63,7 @@ let add_road road world =
   {
     name = world.name;
     roads = road :: world.roads;
-    intersections = List.rev_append (new_intersns [] []) world.intersections;
+    intersections = List.rev_append (new_intersns [] world.roads) world.intersections;
     locations = world.locations;
   }
 
@@ -159,10 +159,42 @@ let nearroad source world =
     in
     (interp_dist, minrd)
 
-(** [neighbors world node] is a list of all intersections and locations that
-    immediately connect to [node] in the [world] *)
-let neighbors (world : wt) (node : lit) : lit list =
-  raise (Failure "Unimplemented") (* TODO *)
+(** [closest loc intersxns] is the closest intersection in [intersxns]
+    to [loc] *)
+let closest (loc : lt) (intersxns : Road.it list) : Road.it =
+  raise (Failure "TODO: Unimplemented")
+  (*
+      List.fold_left (fun (closest : Road.it) (inter : Road.it) ->
+        let inter_coords (i : Road.it) =
+          match Road.inter_coords i.road1 i.road2 with
+          | None -> raise (Failure "Invalid intersection.")
+          | Some pair -> pair *)
+
+
+(** [nextdoor_neighbors world node] is a list of all intersections and
+    locations that immediately connect to [node] in the [world] *)
+let nextdoor_neighbors (world : wt) (node : lit) : lit list =
+  raise (Failure "TODO: for andrew :) ty")
+      (*
+  match node with
+  | Loc loc ->
+      let r = loc.road in
+      (* intersections on the same road as loc *)
+      let inters_on_road = List.filter (fun (inter : Road.it) -> r = inter.road1 || r = inter.road2) world.intersections in
+      (* intersections on the same road as loc, closer to the end *)
+      let inters_above = List.filter
+      (fun (inter : Road.it) ->
+        let pos = if inter.road1 = r then inter.pos_on_road1 else inter.pos_on_road2 in
+        pos > loc.pos_on_road) inters_on_road in
+      let inters_below = Algo.remove_all inters_on_road inters_above in
+        if Algo.distance (loc_coord loc) (inter_coords inter) < Algo.distance (loc_coord loc) (inter_coords closest)
+        then inter else closest
+        
+      ) (List.hd inters_above) inters_above
+
+
+  | Inter inter -> raise (Failure "Unimplemented")
+  *)
 
 (** [reduce tbl world] is a graph representing the simplified state of the
     world where intersections and locations are nodes connected by edges (road
@@ -196,7 +228,7 @@ let reduce (hashtbl : (int, lit) Hashtbl.t) (world : wt) : Graph.vgt =
                 Graph.connect prev_id cur_id new_graph
           (* search around [next] for neighbor [lit]s *)
           in let neighbors = List.map (fun n -> (n, Some cur_id))
-            (neighbors world cur) in
+            (nextdoor_neighbors world cur) in
           spread new_graph (List.append neighbors queue)
   (* check if world has more than one location *)
   in if List.length world.locations = 0

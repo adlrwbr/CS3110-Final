@@ -11,6 +11,9 @@ val in_range : float -> float -> float -> bool
 (** [in_range p p1 p2] is whether or not [p] is between [p1] and [p2],
     inclusive. *)
 
+val remove_all : 'a list -> 'a list -> 'a list
+(** [remove_all list1 list2] is [list1] without the elements of [list2]*)
+
 val shortest_path : int -> int -> Graph.vgt -> int list
 (** [shortest_path start finish graph] is a list of the ids of the nodes along
     the shortest path from [start] to [finish], inclusive.
