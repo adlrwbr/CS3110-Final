@@ -155,6 +155,19 @@ let rec edit_mode (world : World.wt) : World.wt =
     | new_world -> new_world
   else edit_mode world
 
+(** [direction_mode world] prompts the user to select two locations and
+    highlights the shortest path between them. Requires: [world] can be
+    reduced into graph form *)
+let direction_mode (world : World.wt) : World.wt =
+  print_endline "Click on two locations to get directions between them.";
+  let _ = Graphics.wait_next_event [ Graphics.Button_up ] in
+  let start = nearest_loc world in
+  let _ = Graphics.wait_next_event [ Graphics.Button_up ] in
+  let finish = nearest_loc world in
+  let path = World.directions world start finish in
+  let _ = View.draw_path path in
+  world
+
 let buttons =
   [
     (* { text = "Random Road"; action = (fun w -> print_endline "HELLO";
@@ -177,19 +190,13 @@ let buttons =
       xywh = (180., 900., 100., 40.);
       enabled = true;
     };
+    {
+      text = "Directions";
+      action = (fun w -> w |> direction_mode);
+      xywh = (300., 900., 200., 40.);
+      enabled = true;
+    };
   ]
-
-(** [direction_mode world] prompts the user to select two locations and
-    highlights the shortest path between them. Requires: [world] can be
-    reduced into graph form *)
-let direction_mode (world : World.wt) : unit =
-  print_endline "Click on two locations to get directions between them.";
-  let _ = Graphics.wait_next_event [ Graphics.Button_up ] in
-  let start = nearest_loc world in
-  let _ = Graphics.wait_next_event [ Graphics.Button_up ] in
-  let finish = nearest_loc world in
-  let path = World.directions world start finish in
-  View.draw_path path
 
 (** [loop world] is the main event loop of the application that manages
     user input and displays [world] *)

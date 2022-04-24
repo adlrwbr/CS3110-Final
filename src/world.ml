@@ -1,4 +1,5 @@
 exception IllegalWorld of string
+open Printf
 
 type lt = {
   id : int;
@@ -213,6 +214,8 @@ let directions world start finish =
   let finish_id = List.find (fun (_, node) -> node = Loc finish) key_val_pairs
             |> fst in
   let id_path = Algo.shortest_path start_id finish_id graph in
+  (* print id_path, for debugging purposes only*)
+  let _ = List.iter (printf "%d ") id_path in
   (* convert ids back to [lit]s and return a [path] type *)
   List.map (fun id -> Hashtbl.find hashtbl id) id_path
 
