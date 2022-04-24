@@ -4,6 +4,9 @@ val slope : float -> float -> float -> float -> float
 (** [slope x1 y1 x2 y2] is the slope between two coordinate pairs (x1, y1) and
     (x2, y2). *)
 
+val distance : (float * float) -> (float * float) -> float
+(** [distance p1 p2] is the distance between coordinate pairs [p1] and [p2] *)
+
 val in_range : float -> float -> float -> bool
 (** [in_range p p1 p2] is whether or not [p] is between [p1] and [p2],
     inclusive. *)

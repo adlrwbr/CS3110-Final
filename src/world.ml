@@ -11,6 +11,7 @@ type lt = {
 type wt = {
   name : string;
   roads : Road.t list;
+  intersections : Road.it list;
   locations : lt list;
 }
 
@@ -21,7 +22,7 @@ type path = lit list
 
 let size_x = 1000.
 let size_y = 1000.
-let empty name = { name; roads = []; locations = [] }
+let empty name = { name; roads = []; intersections = []; locations = [] }
 
 let distance pt1 pt2 =
   match (pt1, pt2) with
@@ -43,16 +44,26 @@ let add_loc name category road pos world =
     {
       name = world.name;
       roads = world.roads;
+      intersections = world.intersections;
       locations = new_loc :: world.locations;
     }
   in
   (new_loc, new_world)
 
 let add_road road world =
-  (* TODO: check for intersections with new road and existing roads *)
+  (* check for intersections with new road and all existing roads *)
+  let rec new_intersns acc rd_lst =
+    match rd_lst with
+    | [] -> acc
+    | road2 :: t ->
+        match Road.intersection road road2 with
+        | None -> new_intersns acc t
+        | Some intersn -> new_intersns (intersn :: acc) t
+  in
   {
     name = world.name;
     roads = road :: world.roads;
+    intersections = List.rev_append (new_intersns [] []) world.intersections;
     locations = world.locations;
   }
 
@@ -220,5 +231,10 @@ let path_coords (p : path) =
   let lit_to_coords = fun (node : lit) : (float * float) ->
     match node with
     | Loc loc -> loc_coord loc
-    | Inter inter -> Road.inter_coords inter
+    | Inter inter ->
+        begin
+        match Road.inter_coords inter.road1 inter.road2 with
+        | None -> raise (Failure "Invalid path: intersection does not exist.")
+        | Some coord -> coord
+        end
   in List.map lit_to_coords p

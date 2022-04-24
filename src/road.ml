@@ -23,34 +23,40 @@ let midpt road =
   match (fp, lp) with
   | (a, b), (c, d) -> ((a +. c) /. 2., (b +. d) /. 2.)
 
-let intersection (r1 : t) (r2 : t) : it option =
-  (* TODO *)
-  let _ =
-    Some
-      { road1 = r1; road2 = r2; pos_on_road1 = 0.; pos_on_road2 = 0. }
-  in
-  raise (Failure "Unimplemented")
-
-let inter_coords inter =
-  match (road_coords inter.road1, road_coords inter.road2) with
-  | ( ((p_a1_x, p_a1_y), (p_a2_x, p_a2_y)),
-      ((p_b1_x, p_b1_y), (p_b2_x, p_b2_y)) ) ->
-      let m_a = Algo.slope p_a1_x p_a1_y p_a2_x p_a2_y in
-      let m_b = Algo.slope p_b1_x p_b1_y p_b2_x p_b2_y in
-      (* x and y below is the intersection point of the two lines that
-         the segments lie on. *)
+let inter_coords road1 road2 : (float * float) option =
+  match (road_coords road1, road_coords road2) with
+  | ( ((start1_x, start1_y), (end1_x, end1_y)),
+      ((start2_x, start2_y), (end2_x, end2_y)) ) ->
+      (* calculate the slopes of lines 1 and 2 *)
+      let m1 = Algo.slope start1_x start1_y end1_x end1_y in
+      let m2 = Algo.slope start2_x start2_y end2_x end2_y in
+      (* x and y is the intersection of the two lines extended from line 
+         segments 1 and 2 *)
+      (* for now, we are saying that it is impossible for two roads with the
+         same slope to intersect *)
+      if m1 = m2 then None
+      else
       let x =
-        (p_b1_y -. p_a1_y +. (m_a *. p_a1_x) -. (m_b *. p_b1_x))
-        /. (m_a -. m_b)
+        (start2_y -. start1_y +. (m1 *. start1_x) -. (m2 *. start2_x))
+        /. (m1 -. m2)
       in
-      let y = (m_b *. (x -. p_b1_x)) +. p_b1_y in
+      let y = (m2 *. (x -. start2_x)) +. start2_y in
       (* Check if the intersection point is actually on the segments. *)
       if
-        Algo.in_range x p_a1_x p_a2_x
-        && Algo.in_range x p_b1_x p_b2_x
-        && Algo.in_range y p_a1_y p_a2_y
-        && Algo.in_range y p_b1_y p_b2_y
-      then (x, y)
-      else
-        raise
-          (Failure "Intersection provided to [inter_coords] is invalid!")
+        Algo.in_range x start1_x end1_x
+        && Algo.in_range x start2_x end2_x
+        && Algo.in_range y start1_y end1_y
+        && Algo.in_range y start2_y end2_y
+      then Some (x, y)
+      else None
+
+let intersection (r1 : t) (r2 : t) : it option =
+  match inter_coords r1 r2 with
+  | None -> None
+  | Some intersect -> 
+      let r1_dist = Algo.distance r1.startPt r1.endPt in
+      let pos_on_road1 = Algo.distance intersect r1.startPt /. r1_dist in
+      let r2_dist = Algo.distance r2.startPt r2.endPt in
+      let pos_on_road2 = Algo.distance intersect r2.startPt /. r2_dist in
+        Some
+        { road1 = r1; road2 = r2; pos_on_road1 = pos_on_road1; pos_on_road2 = pos_on_road2 }
