@@ -33,6 +33,8 @@ val connect : int -> int -> float -> ugt -> ugt
     Requires: [id1] != [id2]
     Raises: [UnknownNode id] if either [id1] or [id2] DNE within the graph *)
 
+val weight : int -> int -> float
+
 val unverify : vgt -> ugt
 (** [unverify graph] converts the verified graph into one that is
     no longer guaranteed to be  *)

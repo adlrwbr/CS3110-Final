@@ -1,4 +1,3 @@
-
 type ugt = (int, int list) Hashtbl.t
 type vgt = (int, int list) Hashtbl.t
 
@@ -8,23 +7,26 @@ exception IndexOutofBounds
 
 let empty = Hashtbl.create 16
 
+let weights = Hashtbl.create 16
+
 let evg : vgt = Hashtbl.create 16
 
 let size graph = Hashtbl.length graph
 
-let add (id : int) (graph : ugt) =
-  match Hashtbl.find graph id with
-  | exception Not_found ->
-      (Hashtbl.add graph id []; graph)
-  (* id has already been added *)
-  | _ -> Int.to_string id |> failwith
+let add (id : int) (graph : ugt) = (Hashtbl.add graph id []); graph
+
+let edge id1 id2 = if id1 < id2 then (id1, id2) else (id2, id1)
+
+let weight id1 id2 = if Hashtbl.mem weights (edge id1 id2) 
+  then (Hashtbl.find weights (edge id1 id2)) 
+  else raise (Failure "Unknown")
 
 let connect id1 id2 weight graph : ugt =
-  (* TODO: implement edge weights *)
-  if not (List.mem id2 (Hashtbl.find graph id1))
-    then Hashtbl.add graph id1 (id2 :: Hashtbl.find graph id1);
-  if not (List.mem id1 (Hashtbl.find graph id2)) 
-    then Hashtbl.add graph id2 (id1 :: Hashtbl.find graph id2);
+  if not @@ Hashtbl.mem graph id1 then raise (UnknownNode id1) else
+  if not @@ Hashtbl.mem graph id2 then raise (UnknownNode id2) else
+   Hashtbl.add weights (edge id1 id2) weight;
+   Hashtbl.replace graph id1 (List.sort_uniq compare @@ id2 :: Hashtbl.find graph id1);
+   Hashtbl.replace graph id2 (List.sort_uniq compare @@ id1 :: Hashtbl.find graph id2);
   graph
 
 let unverify (vg : vgt) : ugt = vg
@@ -35,5 +37,11 @@ let rec help_verify ug queue =
   | [] -> ()
 
 let verify (ug : ugt) : vgt = ug (** TODO Find way to verify graph. *)
+        
 
-let neighbors graph id = List.sort_uniq compare (Hashtbl.find graph id)
+let neighbors graph id = if Hashtbl.mem graph id = false then [] else 
+(*let rec string_of_intl = function [] -> 
+            "" | some :: [] -> (string_of_int some) |
+            some :: more-> (string_of_int some)^","^string_of_intl more in 
+let _ = print_endline (string_of_int id ^ "-->" ^string_of_intl @@ Hashtbl.find graph id) in*)
+Hashtbl.find graph id

@@ -1,3 +1,15 @@
+let rec relate f list = match list with
+    | cur :: next :: more -> if f cur next then relate f (cur :: more) 
+                            else relate f (next :: more)
+    | cur :: [] -> cur
+    | [] -> raise (Failure "No elements")
+
+let rec relate_option f list = match list with
+    | cur :: next :: more -> if f cur next then relate_option f (cur :: more) 
+                            else relate_option f (next :: more)
+    | cur :: [] -> Some cur
+    | [] -> None
+
 let slope x1 y1 x2 y2 = (y2 -. y1) /. (x2 -. x1)
 
 let distance p1 p2 =
@@ -9,86 +21,72 @@ let distance p1 p2 =
 
 let in_range p p1 p2 = (p >= p1 && p <= p2) || (p >= p2 && p <= p1)
 
-let rec remove_all (list1 : 'a list) (list2 : 'a list) : 'a list = 
-match list2 with 
-| head :: tail -> remove_all (List.filter (fun x -> x <> head) list1) tail
-| [] -> list1
+let rec remove_all list1 = function
+    head :: tail -> remove_all (List.filter (fun x -> x <> head) list1) tail
+    | [] -> list1
 
-let last (list : 'a list) : 'a = List.nth list (List.length list - 1);;
-(** [last list] is the last element in the [list] 
-    Requires: [list] is not empty. *)
+let breadth_first (graph : Graph.vgt) start_id end_id distance_f = 
+    let debugging = false in
+    (**Helper functions.*)
+        let string_of_triplet = function (x,y,z) -> 
+            string_of_int(x)^":"^string_of_int(y)^"="^string_of_float(z) in 
+        let rec string_of_intl = function [] -> 
+            "" | some :: [] -> (string_of_int some) |
+            some :: more-> (string_of_int some)^","^string_of_intl more in 
+        let rec string_of_heap = function [] -> 
+            "" | triplet :: more -> "("^string_of_triplet triplet^")" ^ string_of_heap more in
+        let src_of = function (src, _, _) -> src in
+        let dest_of = function (_, dest, _) -> dest in
+        let distance_of = function (_, _, dist) -> dist in
+        let source_minimum id memory =  (*Remove all destinations in memory then find the minimum. *)
+            let edges = remove_all (Graph.neighbors graph id) memory in 
+                let min = relate_option (fun x y -> distance_f id x < distance_f id y) edges in
+                match min with None -> None | Some min -> Some (id, min, distance_f id min) 
+            in
+        let rec compile_minimums ids memory = match ids with 
+            | id :: more -> 
+            (match source_minimum id memory with 
+                Some s -> s :: compile_minimums more memory
+                | None -> compile_minimums more memory)
+            | [] -> [] in
+        let global_minimum id_minimums = relate_option 
+            (fun c1 c2 -> distance_of c1 < distance_of c2) id_minimums in
+        let minimum ids memory = 
+            global_minimum (compile_minimums ids memory) in
+        let rec pathtrace heap memory look_for = match heap with
+        | (src,dest,dist) :: more -> 
+        if dest = look_for then dest :: pathtrace more (dest :: memory) src
+        else pathtrace more (memory) look_for
+        | [] -> [start_id]
+        in
+        let reduce_heap heap = 
+            List.rev @@ pathtrace heap [] end_id
+        in 
+    (**End helper.*)
+    let rec dijkstras frontier memory heap = (
+        match frontier with [] -> raise (Failure "DIJKSTRAS..id not found")
+        | _ -> (match minimum frontier memory with
+            Some min ->
+            if dest_of min = end_id then (min :: heap) else
+            (**Debugging *)
+                let _ = if debugging then print_endline @@ "====cycle_of{"^string_of_triplet min^"}====";
+                print_endline @@ "Frontier  ["^string_of_intl frontier^"]";
+                print_endline @@ "Memory  ["^string_of_intl memory^"]";
+                print_endline @@ "Heap  ["^string_of_heap heap^"]" in
+            dijkstras
+                ((dest_of min) :: frontier)
+                ((dest_of min) :: memory) 
+                (min :: heap)
+            | None -> raise (Failure ("DIJKSTRA..no minimum..death occured @ node"^(string_of_int @@ List.hd frontier)))
+        )
+    ) 
+    in
+    let djk = dijkstras [start_id] [start_id] [] in
+    let _ = print_endline @@ string_of_heap djk in
+    reduce_heap djk
 
-let rec relate f list = match list with
-| cur :: next :: more -> if f cur next then relate f (cur :: more) 
-                         else relate f (next :: more)
-| cur :: [] -> cur
-| [] -> raise (Failure "No elements")
+(** Test graph. 
+let myg12 = empty |> add 1 |> add 2 |> add 3 |> add 4 |> add 5 |> add 6 |> add 7 |> add 8 |> add 9 |> add 10 |> add 11 |> add 12 |> connect 1 2 0.5 |> connect 1 3 0.5 |> connect 2 4 0.5 |> connect 2 5 0.5 |> connect 3 5 0.5 |> connect 3 6 0.5 |> connect 4 7 0.5 |> connect 4 8 0.5 |> connect 5 8 0.5 |> connect 5 9 0.5 |> connect 6 7 0.5 |> connect 6 8 0.5 |> connect 7 11 0.5 |> connect 9 10 0.5 |> connect 10 12 0.5 |> connect 11 12 0.5 |> verify;; *)
 
-(** [gather_neighbors graph queue] is a list of pairs where:
-the first component is the id of some node
-the second component is the list of all its connections.  *)
-let rec gather_neighbors graph queue except =
-    match queue with    (**This remove_all prevents back_tracking but isn't necessary.*)
-    | elem :: more -> 
-        (remove_all (Graph.neighbors graph elem) except) :: gather_neighbors graph more except
-    | [] -> []
 
-let make_setlike list = List.sort_uniq compare list
-
-let rec bfs graph queue memory output = 
-    let links = gather_neighbors graph queue memory in
-    let output = output @ [links] in 
-    let queue = make_setlike (List.flatten links) in 
-    if (remove_all queue memory) = [] then output else
-    let memory = make_setlike (memory @ queue) in 
-    (bfs graph queue memory output)
-
-let breadth_first graph id = bfs graph [id] [id] [[[id]]]
-
-let rec nodes_away_rec graph from towards counter =
-    let path = breadth_first graph from in
-    (match path with
-    | single_source :: more -> 
-    if single_source |> List.flatten |> List.mem towards then counter
-    else nodes_away_rec graph from towards (counter + 1)
-    | [] -> -1
-    )
-let nodes_away graph from towards = nodes_away_rec graph from towards 0
-(** [nodes_away graph from towards] is the number of nodes between 
-[from] and [towards] *)
-
-let rec first_position elem heap counter =
-    match heap with
-    | depth_set :: more -> 
-        if List.mem elem (List.flatten depth_set) then
-            counter
-        else
-            first_position elem more (counter + 1)
-    | [] -> raise (Failure "Item not found.")
-
-let rec lop n list = match list with
-| some :: more -> if n > 0 then lop (n-1) more else
-    some :: lop 0 more
-| [] -> []
-
-let rec isolate_path start finish graph = 
-    let heap = List.rev (breadth_first graph start) in 
-    let subset = (lop (first_position finish heap 0) heap) in
-    (subset)
-
-let rec listworth elem list = 
-    match list with 
-    | some :: more -> if List.mem elem some then 0
-    else 1 + listworth elem more
-    | [] -> 0
-
-let rec traceback start finish graph= 
-    let reduced = isolate_path start finish graph in
-    let origin = reduced |> List.hd in
-    let pos = (listworth finish origin) in
-    let next_pos = List.nth (List.nth reduced 1 |> List.flatten) pos in
-    (if next_pos = start then [finish] @ [start]
-    else [finish] @ traceback start next_pos graph
-    )
-        
-let shortest_path start finish graph = traceback finish start graph
+let shortest_path start finish graph = raise (Failure "Unimplemented")
