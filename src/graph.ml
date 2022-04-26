@@ -12,7 +12,12 @@ let evg : vgt = Hashtbl.create 16
 
 let size graph = Hashtbl.length graph
 
-let add (id : int) (graph : ugt) = (Hashtbl.add graph id []); graph
+let add (id : int) (graph : ugt) =
+  match Hashtbl.find graph id with
+  | exception Not_found ->
+      (Hashtbl.add graph id []; graph)
+  (* id has already been added *)
+  | _ -> Int.to_string id |> failwith
 
 let connect id1 id2 graph : ugt =
   if not (List.mem id2 (Hashtbl.find graph id1))

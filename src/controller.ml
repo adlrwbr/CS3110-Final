@@ -171,7 +171,13 @@ let rec edit_mode (world : World.wt) : World.wt =
     let mouse_pos = Graphics.mouse_pos () |> View.pixel_to_world in
     match mouse_pos |> hit_buttons world edit_mode_buttons with
     | exception _ -> edit_mode world
-    | new_world -> new_world
+    | new_world ->
+        if World.rep_ok new_world then
+          (print_endline "Valid world!";
+          new_world)
+        else
+          (print_endline "Invalid world! All roads must connect.";
+          edit_mode new_world)
   else edit_mode world
 
 (** [direction_mode world] prompts the user to select two locations and
@@ -179,11 +185,12 @@ let rec edit_mode (world : World.wt) : World.wt =
     reduced into graph form *)
 let direction_mode (world : World.wt) : World.wt =
   print_endline "Click on two locations to get directions between them.";
-  let _ = Graphics.wait_next_event [ Graphics.Button_up ] in
+  let _ = Graphics.wait_next_event [ Graphics.Button_down ] in
   let start = nearest_loc world in
-  let _ = Graphics.wait_next_event [ Graphics.Button_up ] in
+  let _ = Graphics.wait_next_event [ Graphics.Button_down ] in
   let finish = nearest_loc world in
   let path = World.directions world start finish in
+  print_endline "path calculated";
   let _ = View.draw_path path in
   world
 

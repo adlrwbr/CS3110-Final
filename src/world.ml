@@ -222,63 +222,88 @@ let nextdoor_neighbors (world : wt) (node : lit) : lit list =
   match node with
   | Loc loc -> helper (loc_coord loc) loc.pos_on_road loc.road
   | Inter inter -> helper (inter_coord inter) inter.pos_on_road1 inter.road1 @ helper (inter_coord inter) inter.pos_on_road2 inter.road2
-  
 
-(** [reduce tbl world] is a graph representing the simplified state of the
-    world where intersections and locations are nodes connected by edges (road
-    segments). [tbl] maps the resulting graph's nodes' ids to the corresponding
-    [lit]s in [world]. *)
-let reduce (hashtbl : (int, lit) Hashtbl.t) (world : wt) : Graph.vgt =
-  (** [spread acc queue] is a fully formed graph. [queue] is composed of pairs
-      [(cur, prev)], where [prev] connects to [cur]'s value in [hashtbl],
-      and [acc] is the accumulating graph *)
-  let rec spread (acc : Graph.ugt) (queue : (lit * int option) list)
-  : Graph.ugt =
-    match queue with
-    | [] -> acc
-    | (cur, prev_id) :: t ->
-      (* try to add node to graph *)
-      let cur_id = next () in
-      (* map Graph ids to [lit]s *)
-      Hashtbl.add hashtbl cur_id cur;
-      match Graph.add cur_id acc with
-      (* [cur] is already in [acc] *)
-      | exception Failure id ->
-          spread acc t
-      (* this node has not yet been seen *)
-      | new_graph ->
-          (* connect nodes if [prev_id] exists *)
-          let new_graph =
-            match prev_id with
-            | None -> new_graph
-            | Some prev_id ->
-                let _ = assert (prev_id <> cur_id) in
-                Graph.connect prev_id cur_id new_graph
-          (* search around [next] for neighbor [lit]s *)
-          in let neighbors = List.map (fun n -> (n, Some cur_id))
-            (nextdoor_neighbors world cur) in
-          spread new_graph (List.append neighbors queue)
-  (* check if world has more than one location *)
-  in if List.length world.locations = 0
-  then Graph.verify Graph.empty
-  else
-    let loc = Loc (world.locations |> List.hd) in
-    (* verify the graph *)
-    let unverified = spread Graph.empty [loc, None]
-      (* create a list of tuples for (loc, neighbor) for all locations *)
-    in Graph.verify unverified
+(** [reduce_aux world] is a tuple containing an unverified graph form of
+    [world] and a map from that graph's ids to the [world]'s [lit]s *)
+let reduce_aux (world : wt) : (Graph.ugt * (int, lit) Hashtbl.t ) =
+  let id_to_lit = Hashtbl.create 10 in
+  let seen = Hashtbl.create 10 in
+  (** [spread acc queue] is a fully formed graph. Every node in [queue] has been
+      "seen" or added to the graph [acc]. *)
+  let rec spread (acc : Graph.ugt) (queue : lit list) : Graph.ugt =
+      List.length queue |> print_int; print_newline (); (* TODO: remove me *)
+      if not (List.for_all (fun n -> Hashtbl.mem seen n) queue) then (* TODO: comment out for optimization *)
+        failwith "Loop invariant: all nodes in queue must have been added to the graph"
+      else
+      match queue with
+      | [] -> acc
+      | cur :: t ->
+        let cur_id = Hashtbl.find seen cur in
+        let neighbors = nextdoor_neighbors world cur in
+        "Neighbors found: " ^ (neighbors |> List.length |> Int.to_string) |> print_endline;
+        let acc = ref acc in
+        let t = ref t in
+        (* for all neighbors *)
+        let _ = List.map (fun n ->
+          (* if neighbor hasn't been seen, add to seen, graph, and append to queue *)
+          if not (Hashtbl.mem seen n) then 
+            let id = next () in
+            Hashtbl.add seen n id;
+            (* add neighbor to graph and queue *)
+            acc := Graph.add id !acc;
+            t := n :: !t;
+          (* connect neighbor to cur *)
+          let n_id = Hashtbl.find seen n in
+          acc := Graph.connect cur_id n_id !acc
+        ) neighbors in
+        (* recursive call *)
+        spread !acc !t
+  (* call spread with a queue that contains an intersection *)
+  in
+  let inter = Inter (world.intersections |> List.hd) in
+  let id = next () in
+  Hashtbl.add seen inter id;
+  let g = Graph.add id Graph.empty in
+  (spread g [inter], id_to_lit)
+
+(** [reduce world] is a tuple containing a graph representing the simplified
+    [world] where intersections and locations are nodes connected by edges
+    (road segments) and a map from that graph's ids to the [world]'s [lit]s *)
+let reduce (world : wt) : (Graph.vgt * (int, lit) Hashtbl.t ) =
+    (* check if there are any isolated roads *)
+    let rec isolated = function
+    | [] -> false
+    | road :: t ->
+        (* all roads must have an intersection on them *)
+        (* TODO: prevent island clusters. For example, two disjoint triangles *)
+        let has_inter = match List.find (fun (inter : Road.it) -> inter.road1 = road || inter.road2 = road) world.intersections with
+          | exception Not_found -> false
+          | _ -> true
+        in if not has_inter then true
+        else isolated t in
+    if List.length world.roads > 1 && isolated world.roads then
+      failwith "Invalid world! At least one road is isolated."
+    else if List.length world.intersections > 1 then
+      (* construct a graph *)
+      let unverified, id_to_lit = reduce_aux world in
+      if (Graph.size unverified != List.length world.intersections + List.length world.locations) then
+        failwith ("Invalid world! Possible floating islands? There are " ^ (List.length world.intersections |> Int.to_string) ^ " intersections and " ^ (List.length world.locations |> Int.to_string) ^ " locations, but the reduced graph has " ^ (Graph.size unverified |> Int.to_string) ^ " nodes.")
+      (* verify the graph *)
+      else Graph.verify unverified, id_to_lit
+    else Graph.verify Graph.empty, Hashtbl.create 0
 
 let rep_ok world =
-  match reduce (Hashtbl.create 10) world with
-  | exception _ -> false
+  match reduce world with
+  | exception e ->
+      e |> Printexc.to_string |> print_endline;
+      false
   | _ -> true
 
 let directions world start finish =
   assert (rep_ok world);
   (* convert to graph and find shortest path *)
-  let hashtbl = Hashtbl.create 10 in
-  let graph = reduce hashtbl world in
-  let key_val_pairs = hashtbl |> Hashtbl.to_seq |> List.of_seq in
+  let graph, id_to_lit = reduce world in
+  let key_val_pairs = id_to_lit |> Hashtbl.to_seq |> List.of_seq in
   let start_id = List.find (fun (_, node) -> node = Loc start) key_val_pairs
             |> fst in
   let finish_id = List.find (fun (_, node) -> node = Loc finish) key_val_pairs
@@ -287,7 +312,7 @@ let directions world start finish =
   (* print id_path, for debugging purposes only*)
   let _ = List.iter (printf "%d ") id_path in
   (* convert ids back to [lit]s and return a [path] type *)
-  List.map (fun id -> Hashtbl.find hashtbl id) id_path
+  List.map (fun id -> Hashtbl.find id_to_lit id) id_path
 
 let path_coords (p : path) =
   let lit_to_coords = fun (node : lit) : (float * float) ->
