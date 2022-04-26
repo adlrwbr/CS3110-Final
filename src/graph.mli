@@ -27,7 +27,7 @@ val add : int -> ugt -> ugt
 
 (**BUG SPOTTED OR SPEC UPDATE NEEDED - SEAN
 If you repeat a connect command, it duplicates the connections. Not setlike! *)
-val connect : int -> int -> ugt -> ugt
+val connect : int -> int -> float -> ugt -> ugt
 (** [connect id1 id2 graph] is a modified unverified graph w/ an additional
     edge b/w nodes [id1] and [id2].
     Requires: [id1] != [id2]
