@@ -13,7 +13,9 @@ let evg : vgt = Hashtbl.create 16
 
 let size graph = Hashtbl.length graph
 
-let add (id : int) (graph : ugt) = (Hashtbl.add graph id []); graph
+let add (id : int) (graph : ugt) =
+  if Hashtbl.mem graph id then failwith @@ Int.to_string id else
+  Hashtbl.add graph id []; graph
 
 let edge id1 id2 = if id1 < id2 then (id1, id2) else (id2, id1)
 
