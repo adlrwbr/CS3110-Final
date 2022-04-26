@@ -19,7 +19,8 @@ let add (id : int) (graph : ugt) =
   (* id has already been added *)
   | _ -> Int.to_string id |> failwith
 
-let connect id1 id2 graph : ugt =
+let connect id1 id2 weight graph : ugt =
+  (* TODO: implement edge weights *)
   if not (List.mem id2 (Hashtbl.find graph id1))
     then Hashtbl.add graph id1 (id2 :: Hashtbl.find graph id1);
   if not (List.mem id1 (Hashtbl.find graph id2)) 

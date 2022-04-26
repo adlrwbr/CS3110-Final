@@ -3,8 +3,8 @@ let slope x1 y1 x2 y2 = (y2 -. y1) /. (x2 -. x1)
 let distance p1 p2 =
     let x1, y1 = p1 in
     let x2, y2 = p2 in
-    let dx = abs_float (x2 -. x1) in
-    let dy = abs_float (y2 -. y1) in
+    let dx = x2 -. x1 in
+    let dy = y2 -. y1 in
     sqrt (dx *. dx +. dy *. dy)
 
 let in_range p p1 p2 = (p >= p1 && p <= p2) || (p >= p2 && p <= p1)

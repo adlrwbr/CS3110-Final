@@ -254,7 +254,12 @@ let reduce_aux (world : wt) : (Graph.ugt * (int, lit) Hashtbl.t ) =
             t := n :: !t;
           (* connect neighbor to cur *)
           let n_id = Hashtbl.find seen n in
-          acc := Graph.connect cur_id n_id !acc
+          let lit_coord = function
+            | Loc loc -> loc_coord loc
+            | Inter inter -> inter_coord inter
+          in
+          let distance = Algo.distance (lit_coord cur) (lit_coord n) in
+          acc := Graph.connect cur_id n_id distance !acc
         ) neighbors in
         (* recursive call *)
         spread !acc !t

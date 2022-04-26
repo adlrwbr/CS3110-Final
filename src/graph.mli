@@ -28,8 +28,8 @@ val add : int -> ugt -> ugt
 (**BUG SPOTTED OR SPEC UPDATE NEEDED - SEAN
 If you repeat a connect command, it duplicates the connections. Not setlike! *)
 val connect : int -> int -> float -> ugt -> ugt
-(** [connect id1 id2 graph] is a modified unverified graph w/ an additional
-    edge b/w nodes [id1] and [id2].
+(** [connect id1 id2 weight graph] is a modified unverified graph w/ an additional
+    edge b/w nodes [id1] and [id2]. The edge has a value of [weight].
     Requires: [id1] != [id2]
     Raises: [UnknownNode id] if either [id1] or [id2] DNE within the graph *)
 
