@@ -51,6 +51,8 @@ let add_loc name category road pos world =
   in
   (new_loc, new_world)
 
+let delete_loc world loc  = {world with locations = List.filter (fun l -> l != loc) world.locations}
+
 let add_road road world =
   (* check for intersections with new road and all existing roads *)
   let rec new_intersns acc rd_lst =
@@ -67,6 +69,10 @@ let add_road road world =
     intersections = List.rev_append (new_intersns [] world.roads) world.intersections;
     locations = world.locations;
   }
+
+let delete_road world road =
+  let world_without_road = {world with roads = List.filter (fun r -> r != road) world.roads} in
+  {world_without_road with locations = List.filter (fun l -> l.road != road) world_without_road.locations}
 
 let locations world = world.locations
 let name (loc : lt) = loc.name
@@ -159,6 +165,10 @@ let nearroad source world =
     distance (fst (Road.road_coords minrd)) (snd (Road.road_coords minrd))
     in
     (interp_dist, minrd)
+
+(** [roads_at_coord coord world] is the list of roads located at [coord] within [world] *)
+let roads_at_coord coord world = match nearroad coord world with 
+| (_, r) -> [r]
 
 
 (** [inter_coord i] is the (x, y) coordinate of [i] *)

@@ -39,3 +39,7 @@ val draw_location_instructions : unit -> unit
 val draw_road_instructions : unit -> unit
 (** [draw_road_instructions () ] displays instructions on how to draw a
     road *)
+
+val delete_road_instructions : unit -> unit
+(** [delete_road_instructions () ] displays instructions on how to
+    delete a road *)

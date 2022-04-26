@@ -135,6 +135,12 @@ let draw_road_instructions () =
     "Click two points on the screen to place a road";
   ()
 
+let delete_road_instructions () =
+  draw_text
+    (size_x () / 2)
+    (size_y ()) (TOP, CENTER) "Click the road you want to delete";
+  ()
+
 let draw_world world =
   let _ = List.map draw_loc (World.locations world) in
   let _ = List.map draw_road (World.roads world) in

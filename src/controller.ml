@@ -84,6 +84,19 @@ let road_placement_mode (world : World.wt) : World.wt =
     else world
   else world
 
+(** [road_deletion_mode world] is a world that may or may not have been
+    modified during Road Deletion Mode *)
+let road_deletion_mode (world : World.wt) : World.wt =
+  let _ = View.delete_road_instructions () in
+  let click = Graphics.wait_next_event [ Graphics.Button_down ] in
+  if click.button then
+    let coord = Graphics.mouse_pos () |> View.pixel_to_world in
+    (* find roads located at coord *)
+    let selected_roads = World.roads_at_coord coord world in
+    let world = List.fold_left World.delete_road world selected_roads in
+    world
+  else world
+
 (* let edit_mode_buttons = [ (* { text = "Random Road"; action = (fun w
    -> print_endline "HELLO"; let road = Road.create "" (40. +.
    Random.float 900., 40. +. Random.float 900.) (40. +. Random.float
@@ -130,6 +143,12 @@ let rec edit_mode (world : World.wt) : World.wt =
         enabled = true;
       };
       {
+        text = "Delete Road";
+        action = (fun w -> w |> road_deletion_mode |> edit_mode);
+        xywh = (520., 900., 150., 40.);
+        enabled = true;
+      };
+      {
         text = "Done";
         action =
           (fun w ->
@@ -137,7 +156,7 @@ let rec edit_mode (world : World.wt) : World.wt =
             (* if World.rep_ok w then w else let _ = print_endline "All
                locations in the world must be connected by \ roads!" in
                edit_mode w *));
-        xywh = (520., 900., 100., 40.);
+        xywh = (770., 900., 100., 40.);
         enabled = true;
       };
     ]
