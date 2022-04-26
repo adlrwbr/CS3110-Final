@@ -231,7 +231,6 @@ let reduce_aux (world : wt) : (Graph.ugt * (int, lit) Hashtbl.t ) =
   (** [spread acc queue] is a fully formed graph. Every node in [queue] has been
       "seen" or added to the graph [acc]. *)
   let rec spread (acc : Graph.ugt) (queue : lit list) : Graph.ugt =
-      List.length queue |> print_int; print_newline (); (* TODO: remove me *)
       if not (List.for_all (fun n -> Hashtbl.mem seen n) queue) then (* TODO: comment out for optimization *)
         failwith "Loop invariant: all nodes in queue must have been added to the graph"
       else
@@ -241,7 +240,6 @@ let reduce_aux (world : wt) : (Graph.ugt * (int, lit) Hashtbl.t ) =
         let cur_id = Hashtbl.find seen cur in
         let neighbors = nextdoor_neighbors world cur in
         "Neighbors found: " ^ (neighbors |> List.length |> Int.to_string) |> print_endline;
-        let acc = ref acc in
         let t = ref t in
         (* for all neighbors *)
         let _ = List.map (fun n ->
@@ -250,7 +248,7 @@ let reduce_aux (world : wt) : (Graph.ugt * (int, lit) Hashtbl.t ) =
             let id = next () in
             Hashtbl.add seen n id;
             (* add neighbor to graph and queue *)
-            acc := Graph.add id !acc;
+            Graph.add id acc;
             t := n :: !t;
           (* connect neighbor to cur *)
           let n_id = Hashtbl.find seen n in
@@ -259,16 +257,17 @@ let reduce_aux (world : wt) : (Graph.ugt * (int, lit) Hashtbl.t ) =
             | Inter inter -> inter_coord inter
           in
           let distance = Algo.distance (lit_coord cur) (lit_coord n) in
-          acc := Graph.connect cur_id n_id distance !acc
+          Graph.connect cur_id n_id distance acc
         ) neighbors in
         (* recursive call *)
-        spread !acc !t
+        spread acc !t
   (* call spread with a queue that contains an intersection *)
   in
   let inter = Inter (world.intersections |> List.hd) in
   let id = next () in
   Hashtbl.add seen inter id;
-  let g = Graph.add id Graph.empty in
+  (* TODO: remove me. It seems like Graph.empty is the same graph bc it's the same underlying in memory each call *)
+  let g = Graph.empty () in Graph.add id g;
   (spread g [inter], id_to_lit)
 
 (** [reduce world] is a tuple containing a graph representing the simplified
@@ -295,7 +294,7 @@ let reduce (world : wt) : (Graph.vgt * (int, lit) Hashtbl.t ) =
         failwith ("Invalid world! Possible floating islands? There are " ^ (List.length world.intersections |> Int.to_string) ^ " intersections and " ^ (List.length world.locations |> Int.to_string) ^ " locations, but the reduced graph has " ^ (Graph.size unverified |> Int.to_string) ^ " nodes.")
       (* verify the graph *)
       else Graph.verify unverified, id_to_lit
-    else Graph.verify Graph.empty, Hashtbl.create 0
+    else Graph.verify @@ Graph.empty (), Hashtbl.create 0
 
 let rep_ok world =
   match reduce world with

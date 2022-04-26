@@ -11,29 +11,32 @@ type vgt
 
 exception UnknownNode of int
 
+exception UnknownEdge
+
 exception InvalidGraph
 (** identifies an unverified graph that cannot be verified *)
 
-val empty : ugt
+val empty : unit -> ugt
 (** [empty] is a graph with no nodes *)
 
 val size : ugt -> int
 (** [size graph] is the number of unique nodes contained in [graph] *)
 
-val add : int -> ugt -> ugt
-(** [add id graph] is a modified [graph] with an additional node specified by
-    [id].
+val add : int -> ugt -> unit
+(** [add id graph] modifies [graph] with an additional node [id].
     Raises: [Failure id] if the [id] already exists in the [graph] *)
 
 (**BUG SPOTTED OR SPEC UPDATE NEEDED - SEAN
 If you repeat a connect command, it duplicates the connections. Not setlike! *)
-val connect : int -> int -> float -> ugt -> ugt
-(** [connect id1 id2 weight graph] is a modified unverified graph w/ an additional
+val connect : int -> int -> float -> ugt -> unit
+(** [connect id1 id2 weight graph] modifies the graph by adding an
     edge b/w nodes [id1] and [id2]. The edge has a value of [weight].
     Requires: [id1] != [id2]
     Raises: [UnknownNode id] if either [id1] or [id2] DNE within the graph *)
 
 val weight : int -> int -> float
+(** [weight id1 id2] is the weight of an edge between nodes [id1] and [id2].
+    Raises: [UnknownEdge] if the edge DNE *)
 
 val unverify : vgt -> ugt
 (** [unverify graph] converts the verified graph into one that is
