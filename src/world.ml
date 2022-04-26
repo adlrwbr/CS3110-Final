@@ -160,42 +160,59 @@ let nearroad source world =
     in
     (interp_dist, minrd)
 
-(** [closest loc intersxns] is the closest intersection in [intersxns]
+
+(** [inter_coord i] is the (x, y) coordinate of [i] *)
+let inter_coord (i : Road.it) : float * float =
+    let (start_x, start_y), (end_x, end_y) = Road.road_coords i.road1 in 
+    let dx, dy = (end_x -. start_x),(end_y -. start_y) in 
+    (dx *. i.pos_on_road1 +.start_x, dy *. i.pos_on_road1 +.start_y)
+
+(** [inter_loc_coords inter_loc] is the (x, y) coordinate of [inter_loc] *)
+let inter_loc_coords (inter_loc : lit) : float * float =
+  match inter_loc with 
+  | Inter inter -> inter_coord inter
+  | Loc loc -> loc_coord loc
+
+(** [closest loc intersections_locs] is the closest intersection/location (whichever is closer) in [intersections_locs]
     to [loc] *)
-let closest (loc : lt) (intersxns : Road.it list) : Road.it =
-  raise (Failure "TODO: Unimplemented")
-  (*
-      List.fold_left (fun (closest : Road.it) (inter : Road.it) ->
-        let inter_coords (i : Road.it) =
-          match Road.inter_coords i.road1 i.road2 with
-          | None -> raise (Failure "Invalid intersection.")
-          | Some pair -> pair *)
+let closest (coord : float * float) (intersections_locs : lit list) : lit =
+  (List.fold_left (fun (closest : lit) (inter_loc : lit) -> 
+    if (Algo.distance coord (inter_loc_coords inter_loc) < Algo.distance coord (inter_loc_coords closest))
+      then (inter_loc) else (closest)
+  ) (List.hd intersections_locs) intersections_locs)
 
 
 (** [nextdoor_neighbors world node] is a list of all intersections and
     locations that immediately connect to [node] in the [world] *)
 let nextdoor_neighbors (world : wt) (node : lit) : lit list =
-  raise (Failure "TODO: for andrew :) ty")
-      (*
-  match node with
-  | Loc loc ->
-      let r = loc.road in
+  let helper coord pos_on_road road =
+    let r = road in
       (* intersections on the same road as loc *)
       let inters_on_road = List.filter (fun (inter : Road.it) -> r = inter.road1 || r = inter.road2) world.intersections in
       (* intersections on the same road as loc, closer to the end *)
       let inters_above = List.filter
       (fun (inter : Road.it) ->
         let pos = if inter.road1 = r then inter.pos_on_road1 else inter.pos_on_road2 in
-        pos > loc.pos_on_road) inters_on_road in
+        pos > pos_on_road) inters_on_road in
       let inters_below = Algo.remove_all inters_on_road inters_above in
-        if Algo.distance (loc_coord loc) (inter_coords inter) < Algo.distance (loc_coord loc) (inter_coords closest)
-        then inter else closest
-        
-      ) (List.hd inters_above) inters_above
-
-
-  | Inter inter -> raise (Failure "Unimplemented")
-  *)
+      (* locations on the same road as loc *)
+      let locs_on_road = List.filter (fun (l : lt) -> r = l.road) world.locations in
+      (* locations on the same road as loc, closer to the end *)
+      let locs_above = List.filter
+      (fun (l : lt) ->
+        l.pos_on_road > pos_on_road) locs_on_road in
+      let locs_below = Algo.remove_all locs_on_road locs_above in
+      (* Convert all intersections and locations into lit type and merge them into one list *)
+      let above = ((List.map (fun i -> Inter i) inters_above) @ (List.map (fun l -> Loc l) locs_above)) in 
+      let below = ((List.map (fun i -> Inter i) inters_below) @ (List.map (fun l -> Loc l) locs_below))  in
+      (* Check to see if there are nodes above and below. For the cases where there are no nodes above/below, do not
+         attempt to find the closest location/intersection. *)
+      if List.length above = 0 then [] else [closest coord above] @ if List.length below = 0 then [] else [closest coord below]
+  in
+  match node with
+  | Loc loc -> helper (loc_coord loc) loc.pos_on_road loc.road
+  | Inter inter -> helper (inter_coord inter) inter.pos_on_road1 inter.road1 @ helper (inter_coord inter) inter.pos_on_road2 inter.road2
+  
 
 (** [reduce tbl world] is a graph representing the simplified state of the
     world where intersections and locations are nodes connected by edges (road
