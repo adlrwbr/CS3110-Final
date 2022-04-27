@@ -43,9 +43,7 @@ let add_loc name category road pos world =
   (* add location to world *)
   let new_world =
     {
-      name = world.name;
-      roads = world.roads;
-      intersections = world.intersections;
+      world with
       locations = new_loc :: world.locations;
     }
   in
@@ -64,15 +62,18 @@ let add_road road world =
         | Some intersn -> new_intersns (intersn :: acc) t
   in
   {
-    name = world.name;
+    world with
     roads = road :: world.roads;
     intersections = List.rev_append (new_intersns [] world.roads) world.intersections;
-    locations = world.locations;
   }
 
 let delete_road world road =
-  let world_without_road = {world with roads = List.filter (fun r -> r != road) world.roads} in
-  {world_without_road with locations = List.filter (fun l -> l.road != road) world_without_road.locations}
+  {
+    world with
+    roads = List.filter (fun r -> r != road) world.roads;
+    locations = List.filter (fun l -> l.road != road) world.locations;
+    intersections = List.filter (fun (i : Road.it) -> i.road1 != road && i.road2 != road) world.intersections;
+  }
 
 let locations world = world.locations
 let name (loc : lt) = loc.name
@@ -170,7 +171,6 @@ let nearroad source world =
 let roads_at_coord coord world = match nearroad coord world with 
 | (_, r) -> [r]
 
-
 (** [inter_coord i] is the (x, y) coordinate of [i] *)
 let inter_coord (i : Road.it) : float * float =
     let (start_x, start_y), (end_x, end_y) = Road.road_coords i.road1 in 
@@ -204,24 +204,31 @@ let nextdoor_neighbors (world : wt) (node : lit) : lit list =
       (fun (inter : Road.it) ->
         let pos = if inter.road1 = r then inter.pos_on_road1 else inter.pos_on_road2 in
         pos > pos_on_road) inters_on_road in
-      let inters_below = Algo.remove_all inters_on_road inters_above in
+      let inters_below = List.filter
+      (fun (inter : Road.it) ->
+        let pos = if inter.road1 = r then inter.pos_on_road1 else inter.pos_on_road2 in
+        pos < pos_on_road) inters_on_road in
       (* locations on the same road as loc *)
       let locs_on_road = List.filter (fun (l : lt) -> r = l.road) world.locations in
       (* locations on the same road as loc, closer to the end *)
       let locs_above = List.filter
       (fun (l : lt) ->
         l.pos_on_road > pos_on_road) locs_on_road in
-      let locs_below = Algo.remove_all locs_on_road locs_above in
+      let locs_below = List.filter
+      (fun (l : lt) ->
+        l.pos_on_road < pos_on_road) locs_on_road in
       (* Convert all intersections and locations into lit type and merge them into one list *)
-      let above = ((List.map (fun i -> Inter i) inters_above) @ (List.map (fun l -> Loc l) locs_above)) in 
-      let below = ((List.map (fun i -> Inter i) inters_below) @ (List.map (fun l -> Loc l) locs_below))  in
+      let above = (List.map (fun i -> Inter i) inters_above) @ (List.map (fun l -> Loc l) locs_above) in
+      let below = (List.map (fun i -> Inter i) inters_below) @ (List.map (fun l -> Loc l) locs_below) in
       (* Check to see if there are nodes above and below. For the cases where there are no nodes above/below, do not
          attempt to find the closest location/intersection. *)
-      if List.length above = 0 then [] else [closest coord above] @ if List.length below = 0 then [] else [closest coord below]
+      (if List.length above = 0 then [] else [closest coord above]) @ (if List.length below = 0 then [] else [closest coord below])
   in
+  let neighbors =
   match node with
   | Loc loc -> helper (loc_coord loc) loc.pos_on_road loc.road
   | Inter inter -> helper (inter_coord inter) inter.pos_on_road1 inter.road1 @ helper (inter_coord inter) inter.pos_on_road2 inter.road2
+  in neighbors |> List.sort_uniq compare
 
 (** [reduce_aux world] is a tuple containing an unverified graph form of
     [world] and a map from that graph's ids to the [world]'s [lit]s *)
@@ -239,17 +246,16 @@ let reduce_aux (world : wt) : (Graph.ugt * (int, lit) Hashtbl.t ) =
       | cur :: t ->
         let cur_id = Hashtbl.find seen cur in
         let neighbors = nextdoor_neighbors world cur in
-        "Neighbors found: " ^ (neighbors |> List.length |> Int.to_string) |> print_endline;
         let t = ref t in
         (* for all neighbors *)
         let _ = List.map (fun n ->
           (* if neighbor hasn't been seen, add to seen, graph, and append to queue *)
-          if not (Hashtbl.mem seen n) then 
+          (if not (Hashtbl.mem seen n) then 
             let id = next () in
             Hashtbl.add seen n id;
             (* add neighbor to graph and queue *)
             Graph.add id acc;
-            t := n :: !t;
+            t := n :: !t);
           (* connect neighbor to cur *)
           let n_id = Hashtbl.find seen n in
           let lit_coord = function
@@ -261,37 +267,32 @@ let reduce_aux (world : wt) : (Graph.ugt * (int, lit) Hashtbl.t ) =
         ) neighbors in
         (* recursive call *)
         spread acc !t
-  (* call spread with a queue that contains an intersection *)
+  (* spread from the first intersection *)
   in
   let inter = Inter (world.intersections |> List.hd) in
   let id = next () in
   Hashtbl.add seen inter id;
-  (* TODO: remove me. It seems like Graph.empty is the same graph bc it's the same underlying in memory each call *)
   let g = Graph.empty () in Graph.add id g;
-  (spread g [inter], id_to_lit)
+  let result = spread g [inter] in
+  (* "Total nodes seen: " ^ (Hashtbl.length seen |> Int.to_string) |> print_endline; *)
+  (result, id_to_lit)
 
 (** [reduce world] is a tuple containing a graph representing the simplified
     [world] where intersections and locations are nodes connected by edges
     (road segments) and a map from that graph's ids to the [world]'s [lit]s *)
 let reduce (world : wt) : (Graph.vgt * (int, lit) Hashtbl.t ) =
-    (* check if there are any isolated roads *)
-    let rec isolated = function
-    | [] -> false
-    | road :: t ->
-        (* all roads must have an intersection on them *)
-        (* TODO: prevent island clusters. For example, two disjoint triangles *)
-        let has_inter = match List.find (fun (inter : Road.it) -> inter.road1 = road || inter.road2 = road) world.intersections with
-          | exception Not_found -> false
-          | _ -> true
-        in if not has_inter then true
-        else isolated t in
-    if List.length world.roads > 1 && isolated world.roads then
+    (* all roads must have an intersection on them, unless there is only 1 *)
+    (* guard against floating roads *)
+    let has_inter road = List.exists (fun (inter : Road.it) -> inter.road1 = road || inter.road2 = road) world.intersections in
+    let isolated = not @@ List.for_all has_inter world.roads in
+    if List.length world.roads > 1 && isolated then
       failwith "Invalid world! At least one road is isolated."
     else if List.length world.intersections > 1 then
       (* construct a graph *)
       let unverified, id_to_lit = reduce_aux world in
+      (* guard against graph components (floating networks of roads) *)
       if (Graph.size unverified != List.length world.intersections + List.length world.locations) then
-        failwith ("Invalid world! Possible floating islands? There are " ^ (List.length world.intersections |> Int.to_string) ^ " intersections and " ^ (List.length world.locations |> Int.to_string) ^ " locations, but the reduced graph has " ^ (Graph.size unverified |> Int.to_string) ^ " nodes.")
+        failwith ("Invalid world! There are " ^ (List.length world.intersections |> Int.to_string) ^ " intersections and " ^ (List.length world.locations |> Int.to_string) ^ " locations, but the reduced graph has " ^ (Graph.size unverified |> Int.to_string) ^ " nodes.")
       (* verify the graph *)
       else Graph.verify unverified, id_to_lit
     else Graph.verify @@ Graph.empty (), Hashtbl.create 0
@@ -299,7 +300,7 @@ let reduce (world : wt) : (Graph.vgt * (int, lit) Hashtbl.t ) =
 let rep_ok world =
   match reduce world with
   | exception e ->
-      e |> Printexc.to_string |> print_endline;
+      (* e |> Printexc.to_string |> print_endline; *)
       false
   | _ -> true
 
