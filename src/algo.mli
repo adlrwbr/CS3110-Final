@@ -38,5 +38,7 @@ Example: (let --> mean connected to) 2-->3,5, 3-->1,4, breadth_first of this gra
 starting at 2 would be [[[2]];[[3;5]];[[1;4];[]]].
 *)
 
-val distance_between : int -> int -> Graph.vgt -> (int -> int -> float) -> float
+val distance_between : Graph.vgt -> int -> int -> (int -> int -> float) -> float
+(** [distance_between graph id1 id2 distance_f] is the shortest* distance between [id1] and [id2] where
+edge weights are assigned by [distance_f id id]. *)
 
