@@ -152,10 +152,12 @@ let rec edit_mode (world : World.wt) : World.wt =
         text = "Done";
         action =
           (fun w ->
-            w
-            (* if World.rep_ok w then w else let _ = print_endline "All
-               locations in the world must be connected by \ roads!" in
-               edit_mode w *));
+            if World.rep_ok w then
+              (print_endline "Valid world!"; w)
+            else
+              (print_endline "Invalid world! All roads must connect.";
+              edit_mode w)
+            );
         xywh = (770., 900., 100., 40.);
         enabled = true;
       };
@@ -163,22 +165,9 @@ let rec edit_mode (world : World.wt) : World.wt =
   in
   View.draw_buttons edit_mode_buttons;
   (* wait for input *)
-  let event =
-    Graphics.wait_next_event
-      [ Graphics.Key_pressed; Graphics.Button_down ]
-  in
-  if event.button then
-    let mouse_pos = Graphics.mouse_pos () |> View.pixel_to_world in
-    match mouse_pos |> hit_buttons world edit_mode_buttons with
-    | exception _ -> edit_mode world
-    | new_world ->
-        if World.rep_ok new_world then
-          (print_endline "Valid world!";
-          new_world)
-        else
-          (print_endline "Invalid world! All roads must connect.";
-          edit_mode new_world)
-  else edit_mode world
+  let _ = Graphics.wait_next_event [ Graphics.Button_down ] in
+  let mouse_pos = Graphics.mouse_pos () |> View.pixel_to_world in
+  mouse_pos |> hit_buttons world edit_mode_buttons
 
 (** [direction_mode world] prompts the user to select two locations and
     highlights the shortest path between them. Requires: [world] can be
