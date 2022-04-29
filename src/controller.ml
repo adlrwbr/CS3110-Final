@@ -97,12 +97,6 @@ let road_deletion_mode (world : World.wt) : World.wt =
     world
   else world
 
-(* let edit_mode_buttons = [ (* { text = "Random Road"; action = (fun w
-   -> print_endline "HELLO"; let road = Road.create "" (40. +.
-   Random.float 900., 40. +. Random.float 900.) (40. +. Random.float
-   900., 40. +. Random.float 900.) in w |> World.add_road road); xywh =
-   (40., 800., 200., 40.); enabled = true; }; *) ] *)
-
 let button_touching_point coord b =
   let x, y = coord in
   let x_r, y_r, w_r, h_r = b.xywh in
@@ -179,8 +173,9 @@ let direction_mode (world : World.wt) : World.wt =
   let _ = Graphics.wait_next_event [ Graphics.Button_down ] in
   let finish = nearest_loc world in
   let path = World.directions world start finish in
-  print_endline "path calculated";
   let _ = View.draw_path path in
+  print_endline "Click the screen to clear the directions.";
+  let _ = Graphics.wait_next_event [ Graphics.Button_down ] in
   world
 
 let buttons =

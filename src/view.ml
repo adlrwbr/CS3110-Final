@@ -61,6 +61,7 @@ let draw_text
   (* "-misc-dejavu sans mono-bold-r-normal--" ^ Int.to_string font_size
      ^ "-0-0-0-m-0-iso8859-1" |> set_font; *)
   moveto x y;
+  rgb 0 0 0 |> set_color;
   let width, height = text_size text in
   let dy =
     match anchor with
@@ -79,6 +80,7 @@ let draw_text
 
 (** [draw_loc loc] draws the location [loc] *)
 let draw_loc (loc : World.lt) =
+  rgb 0 0 0 |> set_color;
   (* node coords in pixel space *)
   let x, y =
     match World.loc_coord loc |> world_to_pixel with
@@ -95,6 +97,8 @@ let draw_loc (loc : World.lt) =
 
 (** [draw_road loc] draws the location [loc] *)
 let draw_road (road : Road.t) =
+  rgb 128 128 128 |> set_color;
+  set_line_width 3;
   (* draw road line *)
   let coord1, coord2 = Road.road_coords road in
   let x1, y1 = world_to_pixel coord1 in
@@ -142,8 +146,8 @@ let delete_road_instructions () =
   ()
 
 let draw_world world =
-  let _ = List.map draw_loc (World.locations world) in
   let _ = List.map draw_road (World.roads world) in
+  let _ = List.map draw_loc (World.locations world) in
   ()
 
 let draw_input_popup prompt input =
@@ -182,6 +186,8 @@ let draw_edit_mode () =
    (TOP, LEFT) "Press e to exit" *)
 
 let draw_path (path : World.path) =
+  rgb 61 190 255 |> set_color;
+  set_line_width 9;
   path |> World.path_coords
   |> List.map (fun c -> world_to_pixel c)
   |> Array.of_list |> draw_poly_line

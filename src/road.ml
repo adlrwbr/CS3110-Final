@@ -23,7 +23,9 @@ let midpt road =
   match (fp, lp) with
   | (a, b), (c, d) -> ((a +. c) /. 2., (b +. d) /. 2.)
 
-let inter_coords road1 road2 : (float * float) option =
+(** [inter_coord_opt r1 r2] is the coordinate pair of the intersection between
+    roads [r1] and [r2] if it exists, or None if DNE *)
+let inter_coord_opt road1 road2 : (float * float) option =
   match (road_coords road1, road_coords road2) with
   | ( ((start1_x, start1_y), (end1_x, end1_y)),
       ((start2_x, start2_y), (end2_x, end2_y)) ) ->
@@ -51,8 +53,13 @@ let inter_coords road1 road2 : (float * float) option =
         then Some (x, y)
         else None
 
+let inter_coord (i : it) : float * float =
+  match inter_coord_opt i.road1 i.road2 with
+  | None -> failwith "Invalid intersection"
+  | Some c -> c
+
 let intersection (r1 : t) (r2 : t) : it option =
-  match inter_coords r1 r2 with
+  match inter_coord_opt r1 r2 with
   | None -> None
   | Some intersect ->
       let r1_dist = Algo.distance r1.startPt r1.endPt in

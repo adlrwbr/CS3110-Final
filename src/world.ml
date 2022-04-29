@@ -171,26 +171,18 @@ let nearroad source world =
 let roads_at_coord coord world = match nearroad coord world with 
 | (_, r) -> [r]
 
-(** [inter_coord i] is the (x, y) coordinate of [i] *)
-let inter_coord (i : Road.it) : float * float =
-    let (start_x, start_y), (end_x, end_y) = Road.road_coords i.road1 in 
-    let dx, dy = (end_x -. start_x),(end_y -. start_y) in 
-    (dx *. i.pos_on_road1 +.start_x, dy *. i.pos_on_road1 +.start_y)
-
-(** [inter_loc_coords inter_loc] is the (x, y) coordinate of [inter_loc] *)
-let inter_loc_coords (inter_loc : lit) : float * float =
-  match inter_loc with 
-  | Inter inter -> inter_coord inter
+(** [lit_coord inter_loc] is the (x, y) coordinate of [inter_loc] *)
+let lit_coord = function
   | Loc loc -> loc_coord loc
+  | Inter inter -> Road.inter_coord inter
 
 (** [closest loc intersections_locs] is the closest intersection/location (whichever is closer) in [intersections_locs]
     to [loc] *)
 let closest (coord : float * float) (intersections_locs : lit list) : lit =
   (List.fold_left (fun (closest : lit) (inter_loc : lit) -> 
-    if (Algo.distance coord (inter_loc_coords inter_loc) < Algo.distance coord (inter_loc_coords closest))
+    if (Algo.distance coord (lit_coord inter_loc) < Algo.distance coord (lit_coord closest))
       then (inter_loc) else (closest)
   ) (List.hd intersections_locs) intersections_locs)
-
 
 (** [nextdoor_neighbors world node] is a list of all intersections and
     locations that immediately connect to [node] in the [world] *)
@@ -227,7 +219,9 @@ let nextdoor_neighbors (world : wt) (node : lit) : lit list =
   let neighbors =
   match node with
   | Loc loc -> helper (loc_coord loc) loc.pos_on_road loc.road
-  | Inter inter -> helper (inter_coord inter) inter.pos_on_road1 inter.road1 @ helper (inter_coord inter) inter.pos_on_road2 inter.road2
+  | Inter inter ->
+      helper (Road.inter_coord inter) inter.pos_on_road1 inter.road1
+      @ helper (Road.inter_coord inter) inter.pos_on_road2 inter.road2
   in neighbors |> List.sort_uniq compare
 
 (** [reduce_aux world] is a tuple containing an unverified graph form of
@@ -253,15 +247,12 @@ let reduce_aux (world : wt) : (Graph.ugt * (int, lit) Hashtbl.t ) =
           (if not (Hashtbl.mem seen n) then 
             let id = next () in
             Hashtbl.add seen n id;
+            Hashtbl.add id_to_lit id n;
             (* add neighbor to graph and queue *)
             Graph.add id acc;
             t := n :: !t);
           (* connect neighbor to cur *)
           let n_id = Hashtbl.find seen n in
-          let lit_coord = function
-            | Loc loc -> loc_coord loc
-            | Inter inter -> inter_coord inter
-          in
           let distance = Algo.distance (lit_coord cur) (lit_coord n) in
           Graph.connect cur_id n_id distance acc
         ) neighbors in
@@ -272,6 +263,7 @@ let reduce_aux (world : wt) : (Graph.ugt * (int, lit) Hashtbl.t ) =
   let inter = Inter (world.intersections |> List.hd) in
   let id = next () in
   Hashtbl.add seen inter id;
+  Hashtbl.add id_to_lit id inter;
   let g = Graph.empty () in Graph.add id g;
   let result = spread g [inter] in
   (* "Total nodes seen: " ^ (Hashtbl.length seen |> Int.to_string) |> print_endline; *)
@@ -293,6 +285,8 @@ let reduce (world : wt) : (Graph.vgt * (int, lit) Hashtbl.t ) =
       (* guard against graph components (floating networks of roads) *)
       if (Graph.size unverified != List.length world.intersections + List.length world.locations) then
         failwith ("Invalid world! There are " ^ (List.length world.intersections |> Int.to_string) ^ " intersections and " ^ (List.length world.locations |> Int.to_string) ^ " locations, but the reduced graph has " ^ (Graph.size unverified |> Int.to_string) ^ " nodes.")
+      else if (Graph.size unverified != Hashtbl.length id_to_lit) then
+        failwith ("Invalid world! There are " ^ (List.length world.intersections |> Int.to_string) ^ " intersections and " ^ (List.length world.locations |> Int.to_string) ^ " locations, but after reducing the map id_to_lit has " ^ (Hashtbl.length id_to_lit |> Int.to_string) ^ " bindings.")
       (* verify the graph *)
       else Graph.verify unverified, id_to_lit
     else Graph.verify @@ Graph.empty (), Hashtbl.create 0
@@ -305,9 +299,10 @@ let rep_ok world =
   | _ -> true
 
 let directions world start finish =
-  assert (rep_ok world);
   (* convert to graph and find shortest path *)
-  let graph, id_to_lit = reduce world in
+  match reduce world with
+  | exception _ -> failwith "Cannot calculate directions for invalid world!"
+  | graph, id_to_lit ->
   let key_val_pairs = id_to_lit |> Hashtbl.to_seq |> List.of_seq in
   let start_id = List.find (fun (_, node) -> node = Loc start) key_val_pairs
             |> fst in
@@ -319,14 +314,4 @@ let directions world start finish =
   (* convert ids back to [lit]s and return a [path] type *)
   List.map (fun id -> Hashtbl.find id_to_lit id) id_path
 
-let path_coords (p : path) =
-  let lit_to_coords = fun (node : lit) : (float * float) ->
-    match node with
-    | Loc loc -> loc_coord loc
-    | Inter inter ->
-        begin
-        match Road.inter_coords inter.road1 inter.road2 with
-        | None -> raise (Failure "Invalid path: intersection does not exist.")
-        | Some coord -> coord
-        end
-  in List.map lit_to_coords p
+let path_coords (p : path) = List.map lit_coord p
