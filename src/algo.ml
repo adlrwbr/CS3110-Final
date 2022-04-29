@@ -89,4 +89,4 @@ let breadth_first (graph : Graph.vgt) start_id end_id distance_f =
 let myg12 = empty |> add 1 |> add 2 |> add 3 |> add 4 |> add 5 |> add 6 |> add 7 |> add 8 |> add 9 |> add 10 |> add 11 |> add 12 |> connect 1 2 0.5 |> connect 1 3 0.5 |> connect 2 4 0.5 |> connect 2 5 0.5 |> connect 3 5 0.5 |> connect 3 6 0.5 |> connect 4 7 0.5 |> connect 4 8 0.5 |> connect 5 8 0.5 |> connect 5 9 0.5 |> connect 6 7 0.5 |> connect 6 8 0.5 |> connect 7 11 0.5 |> connect 9 10 0.5 |> connect 10 12 0.5 |> connect 11 12 0.5 |> verify;; *)
 
 
-let shortest_path start finish graph = raise (Failure "Unimplemented")
+let shortest_path start finish graph = breadth_first graph start finish Graph.weight
