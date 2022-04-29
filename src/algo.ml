@@ -69,10 +69,10 @@ let breadth_first (graph : Graph.vgt) start_id end_id distance_f =
             Some min ->
             if dest_of min = end_id then (min :: heap) else
             (**Debugging *)
-                let _ = if debugging then print_endline @@ "====cycle_of{"^string_of_triplet min^"}====";
+                let _ = if debugging then (print_endline @@ "====cycle_of{"^string_of_triplet min^"}====";
                 print_endline @@ "Frontier  ["^string_of_intl frontier^"]";
                 print_endline @@ "Memory  ["^string_of_intl memory^"]";
-                print_endline @@ "Heap  ["^string_of_heap heap^"]" in
+                print_endline @@ "Heap  ["^string_of_heap heap^"]") in
             dijkstras
                 ((dest_of min) :: frontier)
                 ((dest_of min) :: memory) 
@@ -82,7 +82,7 @@ let breadth_first (graph : Graph.vgt) start_id end_id distance_f =
     ) 
     in
     let djk = dijkstras [start_id] [start_id] [] in
-    let _ = print_endline @@ string_of_heap djk in
+    (*let _ = print_endline @@ string_of_heap djk in *)
     reduce_heap djk
 
 (** Test graph. 
@@ -90,3 +90,14 @@ let myg12 = empty |> add 1 |> add 2 |> add 3 |> add 4 |> add 5 |> add 6 |> add 7
 
 
 let shortest_path start finish graph = breadth_first graph start finish Graph.weight
+
+let distance_between id1 id2 graph distance_f = 
+    let rec pair_accumulation = function
+        e1 :: e2 :: [] -> distance_f e1 e2
+        | e1 :: e2 :: more -> distance_f e1 e2 +. pair_accumulation (e2 :: more)
+        | _ :: [] -> raise (Failure "DIST_BTWN..single element") 
+        | [] -> raise (Failure "DIST_BTWN..no elements")
+        in
+    let sequence = breadth_first graph id1 id2 distance_f in 
+    pair_accumulation sequence
+    
