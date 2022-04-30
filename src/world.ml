@@ -167,9 +167,10 @@ let nearroad source world =
     in
     (interp_dist, minrd)
 
-(** [roads_at_coord coord world] is the list of roads located at [coord] within [world] *)
 let roads_at_coord coord world = match nearroad coord world with 
 | (_, r) -> [r]
+
+let locs_at_coord coord world = raise (Failure "unimplemented")
 
 (** [lit_coord inter_loc] is the (x, y) coordinate of [inter_loc] *)
 let lit_coord = function
