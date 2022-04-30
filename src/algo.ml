@@ -35,7 +35,7 @@ let breadth_first (graph : Graph.vgt) start_id end_id distance_f =
             some :: more-> (string_of_int some)^","^string_of_intl more in 
         let rec string_of_heap = function [] -> 
             "" | triplet :: more -> "("^string_of_triplet triplet^")" ^ string_of_heap more in
-        let src_of = function (src, _, _) -> src in
+        let _ = function (src, _, _) -> src in
         let dest_of = function (_, dest, _) -> dest in
         let distance_of = function (_, _, dist) -> dist in
         let source_minimum id memory =  (*Remove all destinations in memory then find the minimum. *)
@@ -91,7 +91,7 @@ let myg12 = empty |> add 1 |> add 2 |> add 3 |> add 4 |> add 5 |> add 6 |> add 7
 
 let shortest_path start finish graph = breadth_first graph start finish Graph.weight
 
-let distance_between id1 id2 graph distance_f = 
+let distance_between graph id1 id2 distance_f = 
     let rec pair_accumulation = function
         e1 :: e2 :: [] -> distance_f e1 e2
         | e1 :: e2 :: more -> distance_f e1 e2 +. pair_accumulation (e2 :: more)
