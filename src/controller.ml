@@ -313,13 +313,13 @@ let buttons =
     {
       text = "Edit";
       action = (fun w -> w |> edit_mode);
-      xywh = (180., 900., 100., 40.);
+      xywh = (140., 900., 100., 40.);
       enabled = true;
     };
     {
       text = "Directions";
       action = (fun w -> w |> direction_mode);
-      xywh = (300., 900., 200., 40.);
+      xywh = (260., 900., 150., 40.);
       enabled = true;
     };
   ]
