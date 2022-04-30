@@ -23,6 +23,23 @@ let rec input (prompt : string) (acc : string) : string =
       (* append to acc and ask for input again *)
   else input prompt (acc ^ String.make 1 key)
 
+let button_touching_point coord b =
+  let x, y = coord in
+  let x_r, y_r, w_r, h_r = b.xywh in
+  x >= x_r && x <= x_r +. w_r && y >= y_r && y <= y_r +. h_r
+
+let invoke_action w b = b.action w
+
+let hit_buttons w buttons coord =
+  List.fold_left invoke_action w
+    (match
+       buttons
+       |> List.filter button_enabled
+       |> List.filter (button_touching_point coord)
+     with
+    | [] -> raise NoButtonFound
+    | l -> l)
+
 (** [nearest_road world] is a tuple ([pos, road]) that specifies a
     position [pos] on a [road] in [world] nearest the cursor *)
 let nearest_road (world : World.wt) : float * Road.t =
@@ -47,72 +64,123 @@ let nearest_loc (world : World.wt) : World.lt =
   let locs = world |> World.locations in
   nearest_loc_rec (List.hd locs) locs
 
-(** [place_loc world] is a world that may or may not have been modified
-    by a location placed on the road nearest the cursor *)
-let place_loc (world : World.wt) : World.wt =
+(** [loc_placement_mode world] is a world that may or may not have been
+    modified by a location placed on the road nearest the cursor *)
+let loc_placement_mode (world : World.wt) : World.wt =
   let _ = View.draw_location_instructions () in
+  let loc_placement_mode_buttons =
+    [
+      {
+        text = "Cancel";
+        action = (fun w -> w);
+        xywh = (270., 850., 100., 40.);
+        enabled = true;
+      };
+    ]
+  in
+  View.draw_buttons loc_placement_mode_buttons;
   let event = Graphics.wait_next_event [ Graphics.Button_down ] in
   if event.button then
-    match nearest_road world with
-    | exception _ ->
-        world (* Make no changes if no roads are available *)
-    | pos, r ->
-        (* create loc at nearest road r at position pos *)
-        let name = input "Enter new location name" "" in
+    let mouse_coord = Graphics.mouse_pos () |> View.pixel_to_world in
+    let new_world =
+      match
+        mouse_coord |> hit_buttons world loc_placement_mode_buttons
+      with
+      | exception _ -> (
+          match nearest_road world with
+          | exception _ ->
+              world (* Make no changes if no roads are available *)
+          | pos, r ->
+              (* create loc at nearest road r at position pos *)
+              let name = input "Enter new location name" "" in
 
-        let category = input "Enter new location category" "" in
-        let _, new_world = World.add_loc name category r pos world in
-        new_world
+              let category = input "Enter new location category" "" in
+              let _, new_world =
+                World.add_loc name category r pos world
+              in
+              new_world)
+      | w -> w
+    in
+    new_world
   else world
 
 (** [road_placement_mode world] is a world that may or may not have been
     modified during Road Placement Mode *)
 let road_placement_mode (world : World.wt) : World.wt =
   let _ = View.draw_road_instructions () in
+  let road_placement_mode_buttons =
+    [
+      {
+        text = "Cancel";
+        action = (fun w -> w);
+        xywh = (20., 850., 100., 40.);
+        enabled = true;
+      };
+    ]
+  in
+  View.draw_buttons road_placement_mode_buttons;
   let click1 = Graphics.wait_next_event [ Graphics.Button_down ] in
   if click1.button then
     let coord1 = Graphics.mouse_pos () |> View.pixel_to_world in
-    let click2 = Graphics.wait_next_event [ Graphics.Button_down ] in
-    if click2.button then
-      (* get input*)
-      let coord2 = Graphics.mouse_pos () |> View.pixel_to_world in
-      let name = input "Enter new road name" "" in
-      (* create road from coord 1 to coord 2 *)
-      let new_road = Road.create name coord1 coord2 in
-      let world = World.add_road new_road world in
-      world
-    else world
+    let new_world =
+      match coord1 |> hit_buttons world road_placement_mode_buttons with
+      | exception _ ->
+          let click2 =
+            Graphics.wait_next_event [ Graphics.Button_down ]
+          in
+          if click2.button then
+            (* get input*)
+            let coord2 = Graphics.mouse_pos () |> View.pixel_to_world in
+            let new_world =
+              match
+                coord2 |> hit_buttons world road_placement_mode_buttons
+              with
+              | exception _ ->
+                  let name = input "Enter new road name" "" in
+                  (* create road from coord 1 to coord 2 *)
+                  let new_road = Road.create name coord1 coord2 in
+                  let w = World.add_road new_road world in
+                  w
+              | w -> w
+            in
+            new_world
+          else world
+      | w -> w
+    in
+    new_world
   else world
 
 (** [road_deletion_mode world] is a world that may or may not have been
     modified during Road Deletion Mode *)
 let road_deletion_mode (world : World.wt) : World.wt =
   let _ = View.delete_road_instructions () in
+  let road_deletion_mode_buttons =
+    [
+      {
+        text = "Cancel";
+        action = (fun w -> w);
+        xywh = (520., 850., 100., 40.);
+        enabled = true;
+      };
+    ]
+  in
+  View.draw_buttons road_deletion_mode_buttons;
   let click = Graphics.wait_next_event [ Graphics.Button_down ] in
   if click.button then
     let coord = Graphics.mouse_pos () |> View.pixel_to_world in
-    (* find roads located at coord *)
-    let selected_roads = World.roads_at_coord coord world in
-    let world = List.fold_left World.delete_road world selected_roads in
-    world
+    let new_world =
+      match coord |> hit_buttons world road_deletion_mode_buttons with
+      | exception _ ->
+          (* find roads located at coord *)
+          let selected_roads = World.roads_at_coord coord world in
+          let world =
+            List.fold_left World.delete_road world selected_roads
+          in
+          world
+      | w -> w
+    in
+    new_world
   else world
-
-let button_touching_point coord b =
-  let x, y = coord in
-  let x_r, y_r, w_r, h_r = b.xywh in
-  x >= x_r && x <= x_r +. w_r && y >= y_r && y <= y_r +. h_r
-
-let invoke_action w b = b.action w
-
-let hit_buttons w buttons coord =
-  List.fold_left invoke_action w
-    (match
-       buttons
-       |> List.filter button_enabled
-       |> List.filter (button_touching_point coord)
-     with
-    | [] -> raise NoButtonFound
-    | l -> l)
 
 (** [edit_mode world] is a world edited by the user that may be reduced
     into a graph by [World.reduce] without raising an exception *)
@@ -126,7 +194,7 @@ let rec edit_mode (world : World.wt) : World.wt =
     [
       {
         text = "Add Location";
-        action = (fun w -> w |> place_loc |> edit_mode);
+        action = (fun w -> w |> loc_placement_mode |> edit_mode);
         xywh = (270., 900., 150., 40.);
         enabled = true;
       };
@@ -146,12 +214,12 @@ let rec edit_mode (world : World.wt) : World.wt =
         text = "Done";
         action =
           (fun w ->
-            if World.rep_ok w then
-              (print_endline "Valid world!"; w)
-            else
-              (print_endline "Invalid world! All roads must connect.";
-              edit_mode w)
-            );
+            if World.rep_ok w then (
+              print_endline "Valid world!";
+              w)
+            else (
+              print_endline "Invalid world! All roads must connect.";
+              edit_mode w));
         xywh = (770., 900., 100., 40.);
         enabled = true;
       };
@@ -159,9 +227,19 @@ let rec edit_mode (world : World.wt) : World.wt =
   in
   View.draw_buttons edit_mode_buttons;
   (* wait for input *)
-  let _ = Graphics.wait_next_event [ Graphics.Button_down ] in
-  let mouse_pos = Graphics.mouse_pos () |> View.pixel_to_world in
-  mouse_pos |> hit_buttons world edit_mode_buttons
+  let event = Graphics.wait_next_event [ Graphics.Button_down ] in
+  if event.button then
+    let mouse_pos = Graphics.mouse_pos () |> View.pixel_to_world in
+    match mouse_pos |> hit_buttons world edit_mode_buttons with
+    | exception _ -> edit_mode world
+    | new_world ->
+        if World.rep_ok new_world then (
+          print_endline "Valid world!";
+          new_world)
+        else (
+          print_endline "Invalid world! All roads must connect.";
+          edit_mode new_world)
+  else edit_mode world
 
 (** [direction_mode world] prompts the user to select two locations and
     highlights the shortest path between them. Requires: [world] can be
