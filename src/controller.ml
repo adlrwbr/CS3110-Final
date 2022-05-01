@@ -73,7 +73,7 @@ let loc_placement_mode (world : World.wt) : World.wt =
       {
         text = "Cancel";
         action = (fun w -> w);
-        xywh = (270., 850., 100., 40.);
+        xywh = (180., 850., 100., 40.);
         enabled = true;
       };
     ]
@@ -159,7 +159,7 @@ let road_deletion_mode (world : World.wt) : World.wt =
       {
         text = "Cancel";
         action = (fun w -> w);
-        xywh = (520., 850., 100., 40.);
+        xywh = (340., 850., 100., 40.);
         enabled = true;
       };
     ]
@@ -191,7 +191,7 @@ let loc_deletion_mode (world : World.wt) : World.wt =
       {
         text = "Cancel";
         action = (fun w -> w);
-        xywh = (520., 850., 100., 40.);
+        xywh = (500., 850., 100., 40.);
         enabled = true;
       };
     ]
