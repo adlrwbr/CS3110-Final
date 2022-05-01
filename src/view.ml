@@ -151,6 +151,13 @@ let delete_loc_instructions () =
     (size_y ()) (TOP, CENTER) "Click the location you want to delete";
   ()
 
+let get_directions_instructions () =
+  draw_text
+    (size_x () / 2)
+    (size_y ()) (TOP, CENTER)
+    "Click on two locations to get directions between them.";
+  ()
+
 let draw_world world =
   let _ = List.map draw_road (World.roads world) in
   let _ = List.map draw_loc (World.locations world) in

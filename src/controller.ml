@@ -283,16 +283,46 @@ let rec edit_mode (world : World.wt) : World.wt =
     highlights the shortest path between them. Requires: [world] can be
     reduced into graph form *)
 let direction_mode (world : World.wt) : World.wt =
-  print_endline "Click on two locations to get directions between them.";
+  let _ = View.get_directions_instructions () in
+  let direction_mode_buttons =
+    [
+      {
+        text = "Done";
+        action = (fun w -> w);
+        xywh = (260., 850., 100., 40.);
+        enabled = true;
+      };
+    ]
+  in
+  View.draw_buttons direction_mode_buttons;
   let _ = Graphics.wait_next_event [ Graphics.Button_down ] in
   let start = nearest_loc world in
-  let _ = Graphics.wait_next_event [ Graphics.Button_down ] in
-  let finish = nearest_loc world in
-  let path = World.directions world start finish in
-  let _ = View.draw_path path in
-  print_endline "Click the screen to clear the directions.";
-  let _ = Graphics.wait_next_event [ Graphics.Button_down ] in
+  let coord1 = Graphics.mouse_pos () |> View.pixel_to_world in
+  let _ =
+    match coord1 |> hit_buttons world direction_mode_buttons with
+    | exception _ ->
+        let _ = Graphics.wait_next_event [ Graphics.Button_down ] in
+        let finish = nearest_loc world in
+        let coord2 = Graphics.mouse_pos () |> View.pixel_to_world in
+        let _ =
+          match coord2 |> hit_buttons world direction_mode_buttons with
+          | exception _ ->
+              print_endline "draw a path";
+              let path = World.directions world start finish in
+              let _ = View.draw_path path in
+              let _ =
+                Graphics.wait_next_event [ Graphics.Button_down ]
+              in
+              world
+          | w -> w
+        in
+        world
+    | w -> w
+  in
   world
+
+(* print_endline "Click the screen to clear the directions."; let _ =
+   Graphics.wait_next_event [ Graphics.Button_down ] in world *)
 
 let buttons =
   [
@@ -316,12 +346,6 @@ let buttons =
       xywh = (140., 900., 100., 40.);
       enabled = true;
     };
-    {
-      text = "Directions";
-      action = (fun w -> w |> direction_mode);
-      xywh = (260., 900., 150., 40.);
-      enabled = true;
-    };
   ]
 
 (** [loop world] is the main event loop of the application that manages
@@ -331,6 +355,17 @@ let rec loop (world : World.wt) =
   Graphics.clear_graph ();
   (* display world *)
   View.draw_world world;
+  let buttons =
+    if List.length (World.locations world) >= 2 then
+      {
+        text = "Directions";
+        action = (fun w -> w |> direction_mode);
+        xywh = (260., 900., 150., 40.);
+        enabled = true;
+      }
+      :: buttons
+    else buttons
+  in
   View.draw_buttons buttons;
   (* wait for next keypress event *)
   let event =
