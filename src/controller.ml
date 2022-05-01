@@ -79,7 +79,7 @@ let loc_placement_mode (world : World.wt) : World.wt =
     ]
   in
   View.draw_buttons loc_placement_mode_buttons;
-  let event = Graphics.wait_next_event [ Graphics.Button_down ] in
+  let event = Graphics.wait_next_event [ Graphics.Poll ] in
   if event.button then
     let mouse_coord = Graphics.mouse_pos () |> View.pixel_to_world in
     let new_world =
@@ -265,10 +265,7 @@ let buttons =
        40.); enabled = true; }; *)
     {
       text = "Quit";
-      action =
-        (fun w ->
-          let _ = exit 0 in
-          w);
+      action = (fun w -> exit 0);
       xywh = (20., 900., 100., 40.);
       enabled = true;
     };
@@ -288,24 +285,25 @@ let buttons =
 
 (** [loop world] is the main event loop of the application that manages
     user input and displays [world] *)
-let rec loop (world : World.wt) =
-  (* clear graph *)
-  Graphics.clear_graph ();
-  (* display world *)
-  View.draw_world world;
-  View.draw_buttons buttons;
-  (* wait for next keypress event *)
-  let event =
-    Graphics.wait_next_event
-      [ Graphics.Key_pressed; Graphics.Button_down ]
-  in
-  (* check for input *)
-  if event.button then
-    let mouse_pos = Graphics.mouse_pos () |> View.pixel_to_world in
-    match mouse_pos |> hit_buttons world buttons |> loop with
-    | exception _ -> loop world
-    | new_world -> new_world
-  else loop world
+let loop (world : World.wt) : unit =
+  let last_time = Sys.time () in
+  let rec loop_aux (world : World.wt) : unit =
+    (* change in time since last tick *)
+    let dt = Sys.time () -. last_time in
+    (* draw world *)
+    Graphics.clear_graph ();
+    View.draw_world world;
+    View.draw_buttons buttons;
+    (* poll for user input *)
+    let event = Graphics.wait_next_event [ Graphics.Poll ] in
+    (* check for input *)
+    if event.button then
+      let mouse_pos = Graphics.mouse_pos () |> View.pixel_to_world in
+      match mouse_pos |> hit_buttons world buttons |> loop_aux with
+      | exception _ -> loop_aux world
+      | new_world -> new_world
+    else loop_aux world
+  in loop_aux world
 
 let start () =
   let _ = View.init in
