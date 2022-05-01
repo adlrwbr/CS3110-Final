@@ -73,7 +73,7 @@ let loc_placement_mode (world : World.wt) : World.wt =
       {
         text = "Cancel";
         action = (fun w -> w);
-        xywh = (270., 850., 100., 40.);
+        xywh = (180., 850., 100., 40.);
         enabled = true;
       };
     ]
@@ -159,7 +159,7 @@ let road_deletion_mode (world : World.wt) : World.wt =
       {
         text = "Cancel";
         action = (fun w -> w);
-        xywh = (520., 850., 100., 40.);
+        xywh = (340., 850., 100., 40.);
         enabled = true;
       };
     ]
@@ -182,6 +182,38 @@ let road_deletion_mode (world : World.wt) : World.wt =
     new_world
   else world
 
+(** [location_deletion_mode world] is a world that may or may not have
+    been modified during Location Deletion Mode *)
+let loc_deletion_mode (world : World.wt) : World.wt =
+  let _ = View.delete_loc_instructions () in
+  let loc_deletion_mode_buttons =
+    [
+      {
+        text = "Cancel";
+        action = (fun w -> w);
+        xywh = (500., 850., 100., 40.);
+        enabled = true;
+      };
+    ]
+  in
+  View.draw_buttons loc_deletion_mode_buttons;
+  let click = Graphics.wait_next_event [ Graphics.Button_down ] in
+  if click.button then
+    let coord = Graphics.mouse_pos () |> View.pixel_to_world in
+    let new_world =
+      match coord |> hit_buttons world loc_deletion_mode_buttons with
+      | exception _ ->
+          (* find location located at coord *)
+          let selected_locs = World.locs_at_coord coord world in
+          let world =
+            List.fold_left World.delete_loc world selected_locs
+          in
+          world
+      | w -> w
+    in
+    new_world
+  else world
+
 (** [edit_mode world] is a world edited by the user that may be reduced
     into a graph by [World.reduce] without raising an exception *)
 let rec edit_mode (world : World.wt) : World.wt =
@@ -193,21 +225,27 @@ let rec edit_mode (world : World.wt) : World.wt =
   let edit_mode_buttons =
     [
       {
-        text = "Add Location";
-        action = (fun w -> w |> loc_placement_mode |> edit_mode);
-        xywh = (270., 900., 150., 40.);
-        enabled = true;
-      };
-      {
         text = "Add Road";
         action = (fun w -> w |> road_placement_mode |> edit_mode);
         xywh = (20., 900., 150., 40.);
         enabled = true;
       };
       {
+        text = "Add Location";
+        action = (fun w -> w |> loc_placement_mode |> edit_mode);
+        xywh = (180., 900., 150., 40.);
+        enabled = true;
+      };
+      {
         text = "Delete Road";
         action = (fun w -> w |> road_deletion_mode |> edit_mode);
-        xywh = (520., 900., 150., 40.);
+        xywh = (340., 900., 150., 40.);
+        enabled = true;
+      };
+      {
+        text = "Delete Location";
+        action = (fun w -> w |> loc_deletion_mode |> edit_mode);
+        xywh = (500., 900., 150., 40.);
         enabled = true;
       };
       {
@@ -220,7 +258,7 @@ let rec edit_mode (world : World.wt) : World.wt =
             else (
               print_endline "Invalid world! All roads must connect.";
               edit_mode w));
-        xywh = (770., 900., 100., 40.);
+        xywh = (660., 900., 100., 40.);
         enabled = true;
       };
     ]
@@ -245,16 +283,46 @@ let rec edit_mode (world : World.wt) : World.wt =
     highlights the shortest path between them. Requires: [world] can be
     reduced into graph form *)
 let direction_mode (world : World.wt) : World.wt =
-  print_endline "Click on two locations to get directions between them.";
+  let _ = View.get_directions_instructions () in
+  let direction_mode_buttons =
+    [
+      {
+        text = "Done";
+        action = (fun w -> w);
+        xywh = (260., 850., 100., 40.);
+        enabled = true;
+      };
+    ]
+  in
+  View.draw_buttons direction_mode_buttons;
   let _ = Graphics.wait_next_event [ Graphics.Button_down ] in
   let start = nearest_loc world in
-  let _ = Graphics.wait_next_event [ Graphics.Button_down ] in
-  let finish = nearest_loc world in
-  let path = World.directions world start finish in
-  let _ = View.draw_path path in
-  print_endline "Click the screen to clear the directions.";
-  let _ = Graphics.wait_next_event [ Graphics.Button_down ] in
+  let coord1 = Graphics.mouse_pos () |> View.pixel_to_world in
+  let _ =
+    match coord1 |> hit_buttons world direction_mode_buttons with
+    | exception _ ->
+        let _ = Graphics.wait_next_event [ Graphics.Button_down ] in
+        let finish = nearest_loc world in
+        let coord2 = Graphics.mouse_pos () |> View.pixel_to_world in
+        let _ =
+          match coord2 |> hit_buttons world direction_mode_buttons with
+          | exception _ ->
+              print_endline "draw a path";
+              let path = World.directions world start finish in
+              let _ = View.draw_path path in
+              let _ =
+                Graphics.wait_next_event [ Graphics.Button_down ]
+              in
+              world
+          | w -> w
+        in
+        world
+    | w -> w
+  in
   world
+
+(* print_endline "Click the screen to clear the directions."; let _ =
+   Graphics.wait_next_event [ Graphics.Button_down ] in world *)
 
 let buttons =
   [
@@ -272,13 +340,7 @@ let buttons =
     {
       text = "Edit";
       action = (fun w -> w |> edit_mode);
-      xywh = (180., 900., 100., 40.);
-      enabled = true;
-    };
-    {
-      text = "Directions";
-      action = (fun w -> w |> direction_mode);
-      xywh = (300., 900., 200., 40.);
+      xywh = (140., 900., 100., 40.);
       enabled = true;
     };
   ]
@@ -293,6 +355,17 @@ let loop (world : World.wt) : unit =
     (* draw world *)
     Graphics.clear_graph ();
     View.draw_world world;
+    let buttons =
+      if List.length (World.locations world) >= 2 then
+        {
+          text = "Directions";
+          action = (fun w -> w |> direction_mode);
+          xywh = (260., 900., 150., 40.);
+          enabled = true;
+        }
+        :: buttons
+      else buttons
+    in
     View.draw_buttons buttons;
     (* poll for user input *)
     let event = Graphics.wait_next_event [ Graphics.Poll ] in

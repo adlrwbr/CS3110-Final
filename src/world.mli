@@ -40,6 +40,10 @@ val delete_road : wt -> Road.t -> wt
 val roads_at_coord : float * float -> wt -> Road.t list
 (** [roads_at_coord coord world] is a list of roads located at [coord] *)
 
+val locs_at_coord : float * float -> wt -> lt list
+(** [locs_at_coord coord world] is a list of locations located at
+    [coord] *)
+
 val locations : wt -> lt list
 (** [locations world] is a list of all locations contained in [world] *)
 
