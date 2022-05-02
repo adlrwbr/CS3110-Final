@@ -89,8 +89,21 @@ let breadth_first (graph : Graph.vgt) start_id end_id distance_f =
     (*let _ = print_endline @@ string_of_heap djk in *)
     reduce_heap djk
 
-(** Test graph. 
-let myg12 = empty |> add 1 |> add 2 |> add 3 |> add 4 |> add 5 |> add 6 |> add 7 |> add 8 |> add 9 |> add 10 |> add 11 |> add 12 |> connect 1 2 0.5 |> connect 1 3 0.5 |> connect 2 4 0.5 |> connect 2 5 0.5 |> connect 3 5 0.5 |> connect 3 6 0.5 |> connect 4 7 0.5 |> connect 4 8 0.5 |> connect 5 8 0.5 |> connect 5 9 0.5 |> connect 6 7 0.5 |> connect 6 8 0.5 |> connect 7 11 0.5 |> connect 9 10 0.5 |> connect 10 12 0.5 |> connect 11 12 0.5 |> verify;; *)
+(**Test graph:
+let myg = empty();;
+let _ = add_many [1;2;3;4;5;6;7] myg;;
+let _ = 
+    connect 1 2 0.3 myg;
+    connect 2 4 0.3 myg;
+    connect 4 5 0.3 myg;
+    connect 5 6 0.3 myg;
+    connect 6 7 0.3 myg;
+    connect 2 5 0.5 myg;
+    connect 5 7 0.5 myg;
+    connect 1 3 0.6 myg;
+    connect 3 7 0.6 myg;;
+let myg = verify myg;;
+ *)
 
 
 let shortest_path start finish graph = breadth_first graph start finish Graph.weight
