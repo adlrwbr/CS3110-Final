@@ -170,7 +170,8 @@ let nearroad source world =
 let roads_at_coord coord world = match nearroad coord world with 
 | (_, r) -> [r]
 
-let locs_at_coord coord world = raise (Failure "unimplemented")
+let locs_at_coord coord world = List.filter (fun l -> let (x, y) = coord in let (cx, cy) = loc_coord l in
+((x-.cx)*.(x-.cx) +. (y-.cy)*.(y-.cy)) <= 15.0*.15.0) world.locations
 
 (** [lit_coord inter_loc] is the (x, y) coordinate of [inter_loc] *)
 let lit_coord = function
