@@ -17,6 +17,10 @@ let add (id : int) (graph : ugt) =
   if Hashtbl.mem graph id then failwith @@ Int.to_string id
   else Hashtbl.add graph id []
 
+let rec add_many (ids : int list) (graph : ugt) = match ids with 
+  id :: more -> add id graph; add_many more graph
+  | [] -> ()
+
 let edge id1 id2 = if id1 < id2 then (id1, id2) else (id2, id1)
 
 let weight id1 id2 =

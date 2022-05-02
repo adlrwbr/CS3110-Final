@@ -26,8 +26,10 @@ val add : int -> ugt -> unit
 (** [add id graph] modifies [graph] with an additional node [id].
     Raises: [Failure id] if the [id] already exists in the [graph] *)
 
-(**BUG SPOTTED OR SPEC UPDATE NEEDED - SEAN
-If you repeat a connect command, it duplicates the connections. Not setlike! *)
+val add_many : int list -> ugt -> unit
+(** [add_many ids graph] modifies [graph] all additional nodes in [ids].
+    Raises: [Failure id] if any [id] already exists in the [graph] *)
+
 val connect : int -> int -> float -> ugt -> unit
 (** [connect id1 id2 weight graph] modifies the graph by adding an
     edge b/w nodes [id1] and [id2]. The edge has a value of [weight].
