@@ -1,3 +1,5 @@
+exception UndefinedSlope
+
 (** contains helper functions for various data structure *)
 val relate : ('a -> 'a -> bool) -> 'a list -> 'a
 (** [relate f list] is the element in [list] which survives a relation chain of [f].
@@ -12,7 +14,8 @@ val relate_option : ('a -> 'a -> bool) -> 'a list -> 'a option
 
 val slope : float -> float -> float -> float -> float
 (** [slope x1 y1 x2 y2] is the slope between two coordinate pairs (x1, y1) and
-    (x2, y2). *)
+    (x2, y2).
+    Raises: UndefinedSlope if [x1] = [x2] *)
 
 val distance : (float * float) -> (float * float) -> float
 (** [distance p1 p2] is the distance between coordinate pairs [p1] and [p2] *)

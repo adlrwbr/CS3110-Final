@@ -1,8 +1,10 @@
+exception UndefinedSlope
+
 let rec relate f list = match list with
     | cur :: next :: more -> if f cur next then relate f (cur :: more) 
                             else relate f (next :: more)
     | cur :: [] -> cur
-    | [] -> raise (Failure "No elements")
+    | [] -> failwith "No elements"
 
 let rec relate_option f list = match list with
     | cur :: next :: more -> if f cur next then relate_option f (cur :: more) 
@@ -10,7 +12,9 @@ let rec relate_option f list = match list with
     | cur :: [] -> Some cur
     | [] -> None
 
-let slope x1 y1 x2 y2 = (y2 -. y1) /. (x2 -. x1)
+let slope x1 y1 x2 y2 =
+    if x1 = x2 then raise UndefinedSlope
+    else (y2 -. y1) /. (x2 -. x1)
 
 let distance p1 p2 =
     let x1, y1 = p1 in
@@ -105,7 +109,6 @@ let _ =
 let myg = verify myg;;
  *)
 
-
 let shortest_path start finish graph = breadth_first graph start finish Graph.weight
 
 let distance_between graph id1 id2 distance_f = 
@@ -117,4 +120,3 @@ let distance_between graph id1 id2 distance_f =
         in
     let sequence = breadth_first graph id1 id2 distance_f in 
     pair_accumulation sequence
-    
