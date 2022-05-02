@@ -26,7 +26,7 @@ let rec remove_all list1 = function
     | [] -> list1
 
 let breadth_first (graph : Graph.vgt) start_id end_id distance_f = 
-    let debugging = false in
+    let debugging = true in
     (**Helper functions.*)
         let string_of_triplet = function (x,y,z) -> 
             string_of_int(x)^":"^string_of_int(y)^"="^string_of_float(z) in 
@@ -38,21 +38,25 @@ let breadth_first (graph : Graph.vgt) start_id end_id distance_f =
         let _ = function (src, _, _) -> src in
         let dest_of = function (_, dest, _) -> dest in
         let distance_of = function (_, _, dist) -> dist in
-        let source_minimum id memory =  (*Remove all destinations in memory then find the minimum. *)
+        let rec distance_before id heap = match heap with
+            | (_, before, dist_before) :: more -> if id = before then dist_before else distance_before id more
+            | [] -> if heap = [] then 0. else failwith @@ "DIST_BEFORE..unknown id"^(string_of_int id) in
+        let source_minimum id memory heap =  (*Remove all destinations in memory then find the minimum. *)
             let edges = remove_all (Graph.neighbors graph id) memory in 
-                let min = relate_option (fun x y -> distance_f id x < distance_f id y) edges in
-                match min with None -> None | Some min -> Some (id, min, distance_f id min) 
+                let prior = distance_before id heap in
+                let min = relate_option (fun x y -> distance_f id x +. prior < distance_f id y +. prior) edges in
+                match min with None -> None | Some min -> Some (id, min, distance_f id min +. prior) 
             in
-        let rec compile_minimums ids memory = match ids with 
+        let rec compile_minimums ids memory heap = match ids with 
             | id :: more -> 
-            (match source_minimum id memory with 
-                Some s -> s :: compile_minimums more memory
-                | None -> compile_minimums more memory)
+            (match source_minimum id memory heap with 
+                Some s -> s :: compile_minimums more memory heap
+                | None -> compile_minimums more memory heap)
             | [] -> [] in
         let global_minimum id_minimums = relate_option 
             (fun c1 c2 -> distance_of c1 < distance_of c2) id_minimums in
-        let minimum ids memory = 
-            global_minimum (compile_minimums ids memory) in
+        let minimum ids memory heap = 
+            global_minimum (compile_minimums ids memory heap) in
         let rec pathtrace heap memory look_for = match heap with
         | (src,dest,dist) :: more -> 
         if dest = look_for then dest :: pathtrace more (dest :: memory) src
@@ -65,7 +69,7 @@ let breadth_first (graph : Graph.vgt) start_id end_id distance_f =
     (**End helper.*)
     let rec dijkstras frontier memory heap = (
         match frontier with [] -> raise (Failure "DIJKSTRAS..id not found")
-        | _ -> (match minimum frontier memory with
+        | _ -> (match minimum frontier memory heap with
             Some min ->
             if dest_of min = end_id then (min :: heap) else
             (**Debugging *)

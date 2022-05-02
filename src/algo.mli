@@ -30,12 +30,12 @@ val shortest_path : int -> int -> Graph.vgt -> int list
     Example: [ [start]; ...; [finish] ] *)
 
 val breadth_first : Graph.vgt -> int -> int -> (int -> int -> float) -> int list
-(** [breadth_first graph start_id] is the breadth-first traversal from the node
-[start_id]. The first tier of the list contains the nodes n-connections away from
-the root node. The second tier of the list contains the connections from the previous
-node at that index. The third tier is the individual connections from that previous node.
-Example: (let --> mean connected to) 2-->3,5, 3-->1,4, breadth_first of this graph
-starting at 2 would be [[[2]];[[3;5]];[[1;4];[]]].
+(** [breadth_first graph start_id end_id distance_f] is the list of ids 
+constituting the shortest path from [start_id] to [end_id] over the [graph],
+where weights edges between nodes are supplied by the distance_f. 
+Requires: [distance_f] must be defined for all pairs in the cartesian product of 
+all ids in the graph. Not necessarily symmetric, i.e. distance_f id1 id2 is not
+always equal to distance_f id2 id1.
 *)
 
 val distance_between : Graph.vgt -> int -> int -> (int -> int -> float) -> float
