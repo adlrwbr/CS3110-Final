@@ -30,21 +30,37 @@ let inter_coord_opt road1 road2 : (float * float) option =
   | ( ((start1_x, start1_y), (end1_x, end1_y)),
       ((start2_x, start2_y), (end2_x, end2_y)) ) ->
       (* calculate the slopes of lines 1 and 2 *)
-      let m1 = Algo.slope start1_x start1_y end1_x end1_y in
-      let m2 = Algo.slope start2_x start2_y end2_x end2_y in
-      (* x and y is the intersection of the two lines extended from line
-         segments 1 and 2 *)
-      (* for now, we are saying that it is impossible for two roads with
-         the same slope to intersect *)
-      if m1 = m2 then None
-      else
-        let x =
-          (start2_y -. start1_y +. (m1 *. start1_x) -. (m2 *. start2_x))
-          /. (m1 -. m2)
-        in
-        let y = (m2 *. (x -. start2_x)) +. start2_y in
-        (* Check if the intersection point is actually on the
-           segments. *)
+      match
+        if start1_x = end1_x && start2_x <> end2_x then
+          (* line 1 is vertical but line 2 is not *)
+          start1_x, (abs_float (start2_x -. start1_x) *. end2_y +. abs_float (end2_x -. start1_x) *. start2_y) /. (abs_float (start2_x -. start1_x) +. abs_float (end2_x -. start1_x))
+        else if start2_x = end2_x && start1_x <> end1_x then
+          (* line 2 is vertical but line 1 is not *)
+          start2_x, (abs_float (start1_x -. start2_x) *. end1_y +. abs_float (end1_x -. start2_x) *. start1_y) /. (abs_float (start1_x -. start2_x) +. abs_float (end1_x -. start2_x))
+        else if start1_x = end1_x && start2_x = end2_x then
+          (* lines 1 and 2 are both vertical *)
+          failwith "No intersection"
+        else
+          (* neither line 1 nor 2 are vertical *)
+          let m1 = Algo.slope start1_x start1_y end1_x end1_y in
+          let m2 = Algo.slope start2_x start2_y end2_x end2_y in
+          (* x and y is the intersection of the two lines extended from line
+             segments 1 and 2 *)
+          (* for now, we are saying that it is impossible for two roads with
+             the same slope to intersect *)
+          if m1 = m2 then failwith "No intersection"
+          else
+            let x =
+              (start2_y -. start1_y +. (m1 *. start1_x) -. (m2 *. start2_x))
+              /. (m1 -. m2)
+            in
+            let y = (m2 *. (x -. start2_x)) +. start2_y in
+            (x, y)
+      with
+      | exception Failure _ -> None
+      | x, y ->
+      (* Check if the intersection point is actually on the
+         segments. *)
         if
           Algo.in_range x start1_x end1_x
           && Algo.in_range x start2_x end2_x

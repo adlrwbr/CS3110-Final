@@ -1,8 +1,10 @@
+exception UndefinedSlope
+
 let rec relate f list = match list with
     | cur :: next :: more -> if f cur next then relate f (cur :: more) 
                             else relate f (next :: more)
     | cur :: [] -> cur
-    | [] -> raise (Failure "No elements")
+    | [] -> failwith "No elements"
 
 let rec relate_option f list = match list with
     | cur :: next :: more -> if f cur next then relate_option f (cur :: more) 
@@ -10,7 +12,9 @@ let rec relate_option f list = match list with
     | cur :: [] -> Some cur
     | [] -> None
 
-let slope x1 y1 x2 y2 = (y2 -. y1) /. (x2 -. x1)
+let slope x1 y1 x2 y2 =
+    if x1 = x2 then raise UndefinedSlope
+    else (y2 -. y1) /. (x2 -. x1)
 
 let distance p1 p2 =
     let x1, y1 = p1 in
@@ -26,7 +30,7 @@ let rec remove_all list1 = function
     | [] -> list1
 
 let breadth_first (graph : Graph.vgt) start_id end_id distance_f = 
-    let debugging = false in
+    let debugging = true in
     (**Helper functions.*)
         let string_of_triplet = function (x,y,z) -> 
             string_of_int(x)^":"^string_of_int(y)^"="^string_of_float(z) in 
@@ -38,21 +42,25 @@ let breadth_first (graph : Graph.vgt) start_id end_id distance_f =
         let _ = function (src, _, _) -> src in
         let dest_of = function (_, dest, _) -> dest in
         let distance_of = function (_, _, dist) -> dist in
-        let source_minimum id memory =  (*Remove all destinations in memory then find the minimum. *)
+        let rec distance_before id heap = match heap with
+            | (_, before, dist_before) :: more -> if id = before then dist_before else distance_before id more
+            | [] -> if heap = [] then 0. else failwith @@ "DIST_BEFORE..unknown id"^(string_of_int id) in
+        let source_minimum id memory heap =  (*Remove all destinations in memory then find the minimum. *)
             let edges = remove_all (Graph.neighbors graph id) memory in 
-                let min = relate_option (fun x y -> distance_f id x < distance_f id y) edges in
-                match min with None -> None | Some min -> Some (id, min, distance_f id min) 
+                let prior = distance_before id heap in
+                let min = relate_option (fun x y -> distance_f id x +. prior < distance_f id y +. prior) edges in
+                match min with None -> None | Some min -> Some (id, min, distance_f id min +. prior) 
             in
-        let rec compile_minimums ids memory = match ids with 
+        let rec compile_minimums ids memory heap = match ids with 
             | id :: more -> 
-            (match source_minimum id memory with 
-                Some s -> s :: compile_minimums more memory
-                | None -> compile_minimums more memory)
+            (match source_minimum id memory heap with 
+                Some s -> s :: compile_minimums more memory heap
+                | None -> compile_minimums more memory heap)
             | [] -> [] in
         let global_minimum id_minimums = relate_option 
             (fun c1 c2 -> distance_of c1 < distance_of c2) id_minimums in
-        let minimum ids memory = 
-            global_minimum (compile_minimums ids memory) in
+        let minimum ids memory heap = 
+            global_minimum (compile_minimums ids memory heap) in
         let rec pathtrace heap memory look_for = match heap with
         | (src,dest,dist) :: more -> 
         if dest = look_for then dest :: pathtrace more (dest :: memory) src
@@ -65,7 +73,7 @@ let breadth_first (graph : Graph.vgt) start_id end_id distance_f =
     (**End helper.*)
     let rec dijkstras frontier memory heap = (
         match frontier with [] -> raise (Failure "DIJKSTRAS..id not found")
-        | _ -> (match minimum frontier memory with
+        | _ -> (match minimum frontier memory heap with
             Some min ->
             if dest_of min = end_id then (min :: heap) else
             (**Debugging *)
@@ -85,9 +93,21 @@ let breadth_first (graph : Graph.vgt) start_id end_id distance_f =
     (*let _ = print_endline @@ string_of_heap djk in *)
     reduce_heap djk
 
-(** Test graph. 
-let myg12 = empty |> add 1 |> add 2 |> add 3 |> add 4 |> add 5 |> add 6 |> add 7 |> add 8 |> add 9 |> add 10 |> add 11 |> add 12 |> connect 1 2 0.5 |> connect 1 3 0.5 |> connect 2 4 0.5 |> connect 2 5 0.5 |> connect 3 5 0.5 |> connect 3 6 0.5 |> connect 4 7 0.5 |> connect 4 8 0.5 |> connect 5 8 0.5 |> connect 5 9 0.5 |> connect 6 7 0.5 |> connect 6 8 0.5 |> connect 7 11 0.5 |> connect 9 10 0.5 |> connect 10 12 0.5 |> connect 11 12 0.5 |> verify;; *)
-
+(**Test graph:
+let myg = empty();;
+let _ = add_many [1;2;3;4;5;6;7] myg;;
+let _ = 
+    connect 1 2 0.3 myg;
+    connect 2 4 0.3 myg;
+    connect 4 5 0.3 myg;
+    connect 5 6 0.3 myg;
+    connect 6 7 0.3 myg;
+    connect 2 5 0.5 myg;
+    connect 5 7 0.5 myg;
+    connect 1 3 0.6 myg;
+    connect 3 7 0.6 myg;;
+let myg = verify myg;;
+ *)
 
 let shortest_path start finish graph = breadth_first graph start finish Graph.weight
 
@@ -100,4 +120,3 @@ let distance_between graph id1 id2 distance_f =
         in
     let sequence = breadth_first graph id1 id2 distance_f in 
     pair_accumulation sequence
-    

@@ -362,7 +362,8 @@ let buttons =
 let rec loop (world : World.wt) =
   (* clear graph *)
   Graphics.clear_graph ();
-  (* display world *)
+  (* draw world *)
+  Graphics.clear_graph ();
   View.draw_world world;
   let buttons =
     if List.length (World.locations world) >= 2 then
