@@ -20,5 +20,5 @@ clean:
 	dune clean
 	rm -f final.zip
 
-doc:
+docs:
 	dune build @doc

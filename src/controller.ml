@@ -182,6 +182,16 @@ let road_deletion_mode (world : World.wt) : World.wt =
     new_world
   else world
 
+(** [locs_at_coord coord world] is a list of locations located at
+    [coord] *)
+let locs_at_coord coord world =
+  List.filter
+    (fun l ->
+      let x, y = View.world_to_pixel coord in
+      let cx, cy = View.world_to_pixel (World.loc_coord l) in
+      ((x - cx) * (x - cx)) + ((y - cy) * (y - cy)) <= 15 * 15)
+    (World.locations world)
+
 (** [location_deletion_mode world] is a world that may or may not have
     been modified during Location Deletion Mode *)
 let loc_deletion_mode (world : World.wt) : World.wt =
@@ -204,7 +214,7 @@ let loc_deletion_mode (world : World.wt) : World.wt =
       match coord |> hit_buttons world loc_deletion_mode_buttons with
       | exception _ ->
           (* find location located at coord *)
-          let selected_locs = World.locs_at_coord coord world in
+          let selected_locs = locs_at_coord coord world in
           let world =
             List.fold_left World.delete_loc world selected_locs
           in
@@ -307,7 +317,6 @@ let direction_mode (world : World.wt) : World.wt =
         let _ =
           match coord2 |> hit_buttons world direction_mode_buttons with
           | exception _ ->
-              print_endline "draw a path";
               let path = World.directions world start finish in
               let _ = View.draw_path path in
               let _ =
