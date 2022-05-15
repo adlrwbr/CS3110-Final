@@ -1,5 +1,6 @@
+(** Representation of the user interactions with the GUI. *)
+
 open Button
-(** represents the view in MVC pattern *)
 
 val world_to_pixel : float * float -> int * int
 (** [world_to_pixel (x, y)] is an integer coordinate pair in pixel space

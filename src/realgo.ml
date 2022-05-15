@@ -1,4 +1,3 @@
-(** [remove_all list1 list2] is [list1] without the elements of [list2]*)
 let rec remove_all (list1 : 'a list) (list2 : 'a list) : 'a list = 
     match list2 with 
     | head :: tail -> remove_all (List.filter (fun x -> x <> head) list1) tail
@@ -9,9 +8,7 @@ let rec relate_option f list = match list with
                             else relate_option f (next :: more)
     | cur :: [] -> Some cur
     | [] -> None
-(** [relate f list] is the element in [list] which survives a relation chain of [f].
-Begins by comparing the first two values [f e1 e2]. If [f e1 e2] then list --> [e1, e3...] 
-else [e2, e3...] and this process recurses until only one element remains. *)
+
 
 
 let breadth_first (graph : Graph.vgt) start_id end_id distance_f = 
@@ -74,6 +71,6 @@ let breadth_first (graph : Graph.vgt) start_id end_id distance_f =
     let _ = print_endline @@ string_of_heap djk in
     reduce_heap djk
 
-(** Test graph. 
+(** Test graph.
 let myg12 = empty |> add 1 |> add 2 |> add 3 |> add 4 |> add 5 |> add 6 |> add 7 |> add 8 |> add 9 |> add 10 |> add 11 |> add 12 |> connect 1 2 0.5 |> connect 1 3 0.5 |> connect 2 4 0.5 |> connect 2 5 0.5 |> connect 3 5 0.5 |> connect 3 6 0.5 |> connect 4 7 0.5 |> connect 4 8 0.5 |> connect 5 8 0.5 |> connect 5 9 0.5 |> connect 6 7 0.5 |> connect 6 8 0.5 |> connect 7 11 0.5 |> connect 9 10 0.5 |> connect 10 12 0.5 |> connect 11 12 0.5 |> verify;; *)
 

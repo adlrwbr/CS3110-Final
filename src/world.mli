@@ -1,4 +1,7 @@
-(** represents the world model in MVC pattern *)
+(** Representation of the world model.
+
+    This module represents a world build through the GUI by the users,
+    containing a locations, roads, and intersections. s*)
 
 exception IllegalWorld of string
 (** IllegalWorld exception with user-friendly error message *)
