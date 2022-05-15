@@ -300,8 +300,8 @@ let rec edit_mode (world : World.wt) : World.wt =
         action = (fun w ->
           let choice = input "Clear everything? (y/n) " "" |> String.lowercase_ascii in
           if choice = "yes" || choice = "y"
-          then World.name w |> World.empty
-          else w);
+          then World.name w |> World.empty |> edit_mode
+          else w |> edit_mode);
         xywh = (770., 900., 100., 40.);
         enabled = true;
       };
@@ -390,7 +390,7 @@ let rec load_mode (world : World.wt) : World.wt =
     (* return to main menu if user enters nothing *)
     try filename |> Yojson.Basic.from_file |> World.from_json with
     | Yojson.Json_error _ ->
-        ("Invalid filetype! Try again." |> print_endline;
+        ("Invalid file! Try again." |> print_endline;
          Unix.chdir initial_dir;
          load_mode world)
     | World.ParseError s ->
