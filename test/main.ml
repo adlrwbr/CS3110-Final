@@ -46,3 +46,21 @@ let intersect_tests = "intersection test suite" >::: [
 ]
 
 let _ = run_test_tt_main intersect_tests
+
+
+
+(**Test graph:
+let myg = empty();;
+let _ = add_many [1;2;3;4;5;6;7] myg;;
+let _ = 
+    connect 1 2 0.3 myg;
+    connect 2 4 0.3 myg;
+    connect 4 5 0.3 myg;
+    connect 5 6 0.3 myg;
+    connect 6 7 0.3 myg;
+    connect 2 5 0.5 myg;
+    connect 5 7 0.5 myg;
+    connect 1 3 0.6 myg;
+    connect 3 7 0.6 myg;;
+let myg = verify myg;;
+ *)
