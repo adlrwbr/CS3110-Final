@@ -93,22 +93,6 @@ let breadth_first (graph : Graph.vgt) start_id end_id distance_f =
     (*let _ = print_endline @@ string_of_heap djk in *)
     reduce_heap djk
 
-(**Test graph:
-let myg = empty();;
-let _ = add_many [1;2;3;4;5;6;7] myg;;
-let _ = 
-    connect 1 2 0.3 myg;
-    connect 2 4 0.3 myg;
-    connect 4 5 0.3 myg;
-    connect 5 6 0.3 myg;
-    connect 6 7 0.3 myg;
-    connect 2 5 0.5 myg;
-    connect 5 7 0.5 myg;
-    connect 1 3 0.6 myg;
-    connect 3 7 0.6 myg;;
-let myg = verify myg;;
- *)
-
 let shortest_path start finish graph = breadth_first graph start finish Graph.weight
 
 let distance_between graph id1 id2 distance_f = 
