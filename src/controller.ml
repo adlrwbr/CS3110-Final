@@ -2,6 +2,15 @@ open Button
 
 exception NoButtonFound
 
+(** [load_world_file f] loads the world specified in the world-file named [f] *)
+let load_world_file (filename : string) : World.wt =
+  filename |> Yojson.Basic.from_file |> World.from_json
+
+(** [save_world_file w] saves the world [w] with name [n] to a JSON file called
+    [n].json *)
+let save_world_file (world : World.wt) : unit =
+  world |> World.to_json |> Yojson.Basic.to_file (World.name world ^ ".json")
+
 (** [input prompt acc] is a user-entered string in response to a popup
     input field with the prompt message [prompt] where [acc] is the
     pending input before the user presses enter *)

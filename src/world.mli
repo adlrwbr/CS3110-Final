@@ -51,11 +51,14 @@ val roads_at_coord : float * float -> wt -> Road.t list
 val locations : wt -> lt list
 (** [locations world] is a list of all locations contained in [world] *)
 
-val name : lt -> string
-(** [name loc] is the name of the location [loc] *)
+val name : wt -> string
+(** [name world] is the name of the world [world] *)
 
-val category : lt -> string
-(** [category loc] is the category of the location [loc] *)
+val loc_category : lt -> string
+(** [loc_category loc] is the category of the location [loc] *)
+
+val loc_name : lt -> string
+(** [loc_name loc] is the name of the location [loc] *)
 
 val loc_coord : lt -> float * float
 (** [loc_coord loc] is the world-space (x, y) coordinate of location

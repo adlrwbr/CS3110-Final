@@ -86,8 +86,35 @@ let from_json json =
   | Type_error (s, _) -> failwith ("Parsing error: " ^ s)
   | Failure s -> failwith ("Parsing error: " ^ s)
 
-let to_json world =
-  failwith "Unimplemented" (* TODO *)
+let road_to_json (road : Road.t) =
+  let (x1, y1), (x2, y2) = Road.road_coords road in
+  `Assoc [
+    ("name", `String (Road.name road));
+    ("start", `List [`Float x1; `Float y1]);
+    ("end", `List [`Float x2; `Float y2]);
+  ]
+
+let intersect_to_json (inter : Road.it) =
+  `Assoc [
+    ("road1", `String (Road.name inter.road1));
+    ("road2", `String (Road.name inter.road2));
+  ]
+
+let loc_to_json (loc : lt) =
+  `Assoc [
+    ("name", `String loc.name);
+    ("category", `String loc.category);
+    ("road", `String (Road.name loc.road));
+    ("pos_on_road", `Float loc.pos_on_road)
+  ]
+
+let to_json (world : wt) =
+  `Assoc [
+    ("name", `String world.name);
+    ("roads", `List (List.map road_to_json world.roads));
+    ("intersections", `List (List.map intersect_to_json world.intersections));
+    ("locations", `List (List.map loc_to_json world.locations));
+  ]
 
 let distance pt1 pt2 =
   match (pt1, pt2) with
@@ -136,9 +163,10 @@ let delete_road world road =
   }
 
 let locations world = world.locations
-let name (loc : lt) = loc.name
-let category loc = loc.category
+let name (world : wt) = world.name
 
+let loc_category loc = loc.category
+let loc_name (loc : lt) = loc.name
 let loc_coord loc =
   (* get the start and end coordinates of the location's road *)
   let road_start, road_end = Road.road_coords loc.road in

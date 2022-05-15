@@ -91,9 +91,9 @@ let draw_loc (loc : World.lt) =
   (* draw node *)
   fill_circle x y 15;
   (* draw name label *)
-  loc |> World.name |> draw_text x (y + 15) (BOTTOM, CENTER);
+  loc |> World.loc_name |> draw_text x (y + 15) (BOTTOM, CENTER);
   (* draw category label *)
-  loc |> World.category |> draw_text x (y - 15) (TOP, CENTER)
+  loc |> World.loc_category |> draw_text x (y - 15) (TOP, CENTER)
 
 (** [draw_road loc] draws the location [loc] *)
 let draw_road (road : Road.t) =
