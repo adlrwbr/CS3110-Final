@@ -30,6 +30,10 @@ let button_touching_point coord b =
 
 let invoke_action w b = b.action w
 
+(** [hit_buttons w btns coord] is the world [w] that may have been modified
+    as a result of the user clicking a button in [btns] at world-space
+    coordinate [coord].
+    Raises: [NoButtonFound] if [coord] is not on an enabled button *)
 let hit_buttons w buttons coord =
   List.fold_left invoke_action w
     (match
@@ -119,36 +123,23 @@ let road_placement_mode (world : World.wt) : World.wt =
     ]
   in
   View.draw_buttons road_placement_mode_buttons;
-  let click1 = Graphics.wait_next_event [ Graphics.Button_down ] in
-  if click1.button then
-    let coord1 = Graphics.mouse_pos () |> View.pixel_to_world in
-    let new_world =
-      match coord1 |> hit_buttons world road_placement_mode_buttons with
-      | exception _ ->
-          let click2 =
-            Graphics.wait_next_event [ Graphics.Button_down ]
-          in
-          if click2.button then
-            (* get input*)
-            let coord2 = Graphics.mouse_pos () |> View.pixel_to_world in
-            let new_world =
-              match
-                coord2 |> hit_buttons world road_placement_mode_buttons
-              with
-              | exception _ ->
-                  let name = input "Enter new road name" "" in
-                  (* create road from coord 1 to coord 2 *)
-                  let new_road = Road.create name coord1 coord2 in
-                  let w = World.add_road new_road world in
-                  w
-              | w -> w
-            in
-            new_world
-          else world
-      | w -> w
-    in
-    new_world
-  else world
+  (* get first click coords *)
+  Graphics.wait_next_event [ Graphics.Button_down ] |> ignore;
+  let coord1 = Graphics.mouse_pos () |> View.pixel_to_world in
+  try coord1 |> hit_buttons world road_placement_mode_buttons with
+  | NoButtonFound ->
+    (* get second click coords *)
+    Graphics.wait_next_event [ Graphics.Button_down ] |> ignore;
+    let coord2 = Graphics.mouse_pos () |> View.pixel_to_world in
+    try coord2 |> hit_buttons world road_placement_mode_buttons with
+    | NoButtonFound ->
+        (* prompt for road name *)
+        let rec try_road_name prompt =
+          let name = input prompt "" in
+          let new_road = Road.create name coord1 coord2 in
+          try World.add_road new_road world with
+          | World.RoadNameConflict rn -> "A road named " ^ rn ^ " already exists. Try again" |> try_road_name
+        in try_road_name "Enter new road name"
 
 (** [road_deletion_mode world] is a world that may or may not have been
     modified during Road Deletion Mode *)
@@ -330,6 +321,22 @@ let direction_mode (world : World.wt) : World.wt =
   in
   world
 
+(** [load_mode w] is a user-specified world loaded from JSON *)
+let rec load_mode (world : World.wt) : World.wt =
+  let filename = input "Enter filename to load" "" in
+  (* return to main menu if user enters nothing *)
+  if String.length filename = 0 then world
+  else
+    try filename |> Yojson.Basic.from_file |> World.from_json with
+    | Failure s -> (print_endline s; load_mode world)
+
+(** [save_world_file w] saves the world [w] with name [n] to a JSON file called
+    [n].json *)
+let save_world_file (world : World.wt) : unit =
+  let filename = World.name world ^ ".json" in
+  world |> World.to_json |> Yojson.Basic.to_file filename;
+  "World saved as " ^ filename |> print_endline
+
 (* print_endline "Click the screen to clear the directions."; let _ =
    Graphics.wait_next_event [ Graphics.Button_down ] in world *)
 
@@ -350,9 +357,21 @@ let buttons =
       enabled = true;
     };
     {
+      text = "Load";
+      action = (fun w -> w |> load_mode);
+      xywh = (140., 900., 100., 40.);
+      enabled = true;
+    };
+    {
+      text = "Save";
+      action = (fun w -> save_world_file w; w);
+      xywh = (260., 900., 100., 40.);
+      enabled = true;
+    };
+    {
       text = "Edit";
       action = (fun w -> w |> edit_mode);
-      xywh = (140., 900., 100., 40.);
+      xywh = (380., 900., 100., 40.);
       enabled = true;
     };
   ]
@@ -370,7 +389,7 @@ let rec loop (world : World.wt) =
       {
         text = "Directions";
         action = (fun w -> w |> direction_mode);
-        xywh = (260., 900., 150., 40.);
+        xywh = (400., 900., 150., 40.);
         enabled = true;
       }
       :: buttons

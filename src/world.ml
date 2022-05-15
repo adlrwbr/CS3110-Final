@@ -1,5 +1,8 @@
 exception IllegalWorld of string
+exception RoadNameConflict of string
+
 open Printf
+open Yojson.Basic.Util
 
 type lt = {
   id : int;
@@ -25,17 +28,100 @@ let size_x = 1000.
 let size_y = 1000.
 let empty name = { name; roads = []; intersections = []; locations = [] }
 
-let distance pt1 pt2 =
-  match (pt1, pt2) with
-  | (a, b), (c, d) ->
-      sqrt (((a -. c) *. (a -. c)) +. ((b -. d) *. (b -. d)))
-
 (** [next] is the next integer in a 0-based counter *)
 let next =
   let ctr = ref 0 in
   fun () ->
     incr ctr;
     !ctr
+
+let road_of_json j =
+  let name = j |> member "name" |> to_string in
+  let parse_list (coords : float list) : (float * float) =
+    if List.length coords <> 2 then failwith "Coordinate list must consist of two (x, y) float values"
+    else (List.nth coords 0, List.nth coords 1)
+  in
+  let startPt = j |> member "start" |> to_list |> List.map (fun m -> to_number m) |> parse_list in
+  let endPt = j |> member "end" |> to_list |> List.map (fun m -> to_number m) |> parse_list in
+  Road.create name startPt endPt
+
+let intersect_of_json (roads : Road.t list) j =
+  let r1_name = j |> member "road1" |> to_string in
+  let r2_name = j |> member "road2" |> to_string in
+  try
+    let r1 = List.find (fun r -> Road.name r = r1_name) roads in
+    let r2 = List.find (fun r -> Road.name r = r2_name) roads in
+    match Road.intersection r1 r2 with
+    | None -> failwith (r1_name ^ " and " ^ r2_name ^ " do not intersect")
+    | Some inter -> inter
+  with
+  | Not_found -> failwith "Road specified in intersections must also be in roads"
+
+let loc_of_json (roads : Road.t list) j =
+  let name = j |> member "name" |> to_string in
+  let category = j |> member "category" |> to_string in
+  let road_name = j |> member "road" |> to_string in
+  let road =
+    try List.find (fun r -> Road.name r = road_name) roads with
+    | Not_found -> failwith "Road specified in location must also be in roads"
+  in
+  {
+    id = next ();
+    name = name;
+    category = category;
+    road = road;
+    pos_on_road = j |> member "pos_on_road" |> to_number
+  }
+
+let world_of_json j =
+  let name = j |> member "name" |> to_string in
+  let roads = j |> member "roads" |> to_list |> List.map road_of_json in
+  {
+    name = name;
+    roads = roads;
+    intersections = j |> member "intersections" |> to_list |> List.map (intersect_of_json roads);
+    locations = j |> member "locations" |> to_list |> List.map (loc_of_json roads)
+  }
+
+let from_json json =
+  try world_of_json json with
+  | Type_error (s, _) -> failwith ("Parsing error: " ^ s)
+  | Failure s -> failwith ("Parsing error: " ^ s)
+
+let road_to_json (road : Road.t) =
+  let (x1, y1), (x2, y2) = Road.road_coords road in
+  `Assoc [
+    ("name", `String (Road.name road));
+    ("start", `List [`Float x1; `Float y1]);
+    ("end", `List [`Float x2; `Float y2]);
+  ]
+
+let intersect_to_json (inter : Road.it) =
+  `Assoc [
+    ("road1", `String (Road.name inter.road1));
+    ("road2", `String (Road.name inter.road2));
+  ]
+
+let loc_to_json (loc : lt) =
+  `Assoc [
+    ("name", `String loc.name);
+    ("category", `String loc.category);
+    ("road", `String (Road.name loc.road));
+    ("pos_on_road", `Float loc.pos_on_road)
+  ]
+
+let to_json (world : wt) =
+  `Assoc [
+    ("name", `String world.name);
+    ("roads", `List (List.map road_to_json world.roads));
+    ("intersections", `List (List.map intersect_to_json world.intersections));
+    ("locations", `List (List.map loc_to_json world.locations));
+  ]
+
+let distance pt1 pt2 =
+  match (pt1, pt2) with
+  | (a, b), (c, d) ->
+      sqrt (((a -. c) *. (a -. c)) +. ((b -. d) *. (b -. d)))
 
 let add_loc name category road pos world =
   (* create location *)
@@ -51,7 +137,11 @@ let add_loc name category road pos world =
 
 let delete_loc world loc  = {world with locations = List.filter (fun l -> l != loc) world.locations}
 
-let add_road road world =
+let add_road (road : Road.t) world =
+  let road_name = Road.name road in
+  if world.roads |> List.exists (fun r -> Road.name r = road_name)
+  then raise (RoadNameConflict road_name)
+  else
   (* check for intersections with new road and all existing roads *)
   let rec new_intersns acc rd_lst =
     match rd_lst with
@@ -76,9 +166,10 @@ let delete_road world road =
   }
 
 let locations world = world.locations
-let name (loc : lt) = loc.name
-let category loc = loc.category
+let name (world : wt) = world.name
 
+let loc_category loc = loc.category
+let loc_name (loc : lt) = loc.name
 let loc_coord loc =
   (* get the start and end coordinates of the location's road *)
   let road_start, road_end = Road.road_coords loc.road in

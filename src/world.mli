@@ -4,7 +4,10 @@
     containing a locations, roads, and intersections. s*)
 
 exception IllegalWorld of string
-(** IllegalWorld exception with user-friendly error message *)
+(** [IllegalWorld s] where s is a user-friendly error message *)
+
+exception RoadNameConflict of string
+(** [RoadNameConflict s] where s is the name of the road *)
 
 type wt
 (** the abstract world type *)
@@ -24,6 +27,13 @@ val size_y : float
 val empty : string -> wt
 (** [empty name] is an empty world named [name] *)
 
+val from_json : Yojson.Basic.t -> wt
+(** [from_json j] is the world that [j] represents. Requires: [j] is
+    a valid JSON world representation. *)
+
+val to_json : wt -> Yojson.Basic.t
+(** [to_json w] is the serialized world [w]. *)
+
 val add_loc : string -> string -> Road.t -> float -> wt -> lt * wt
 (** [add_loc name category road pos world] is the tuple ([loc],
     [newworld]) where [newworld] is [world] w/ an additional location
@@ -34,7 +44,9 @@ val delete_loc : wt -> lt -> wt
 
 val add_road : Road.t -> wt -> wt
 (** [add_road road world] is a modified [world] with an additional
-    [road] and intersections *)
+    [road] and intersections.
+    Raises: [IllegalWorld n] if [world] contains a road with the same name [n]
+    as [road] *)
 
 val delete_road : wt -> Road.t -> wt
 (** [delete_road world road] is a modified [world] with [road] and any
@@ -46,11 +58,14 @@ val roads_at_coord : float * float -> wt -> Road.t list
 val locations : wt -> lt list
 (** [locations world] is a list of all locations contained in [world] *)
 
-val name : lt -> string
-(** [name loc] is the name of the location [loc] *)
+val name : wt -> string
+(** [name world] is the name of the world [world] *)
 
-val category : lt -> string
-(** [category loc] is the category of the location [loc] *)
+val loc_category : lt -> string
+(** [loc_category loc] is the category of the location [loc] *)
+
+val loc_name : lt -> string
+(** [loc_name loc] is the name of the location [loc] *)
 
 val loc_coord : lt -> float * float
 (** [loc_coord loc] is the world-space (x, y) coordinate of location
