@@ -16,6 +16,11 @@ let slope x1 y1 x2 y2 =
     if x1 = x2 then raise UndefinedSlope
     else (y2 -. y1) /. (x2 -. x1)
 
+let rec string_of_intl = function 
+    | [] -> "" 
+    | some :: [] -> (string_of_int some) 
+    | some :: more-> (string_of_int some)^","^string_of_intl more
+
 let distance p1 p2 =
     let x1, y1 = p1 in
     let x2, y2 = p2 in
@@ -29,25 +34,38 @@ let rec remove_all list1 = function
     head :: tail -> remove_all (List.filter (fun x -> x <> head) list1) tail
     | [] -> list1
 
+type edge = int * int * float
+
+let src_of = function (src, _, _) -> src
+
+let dest_of = function (_, dest, _) -> dest
+
+let dist_of = function (_, _, dist) -> dist
+
+let string_of_edge = function (e : edge) -> 
+    string_of_int(src_of e)^"->"
+    ^string_of_int(dest_of e)^"="
+    ^string_of_float(dist_of e)
+
 let breadth_first (graph : Graph.vgt) start_id end_id distance_f = 
     let debugging = true in
     (**Helper functions.*)
-        let string_of_triplet = function (x,y,z) -> 
-            string_of_int(x)^":"^string_of_int(y)^"="^string_of_float(z) in 
-        let rec string_of_intl = function [] -> 
-            "" | some :: [] -> (string_of_int some) |
-            some :: more-> (string_of_int some)^","^string_of_intl more in 
-        let rec string_of_heap = function [] -> 
-            "" | triplet :: more -> "("^string_of_triplet triplet^")" ^ string_of_heap more in
-        let _ = function (src, _, _) -> src in
-        let dest_of = function (_, dest, _) -> dest in
-        let distance_of = function (_, _, dist) -> dist in
-        let rec distance_before id heap = match heap with
-            | (_, before, dist_before) :: more -> if id = before then dist_before else distance_before id more
-            | [] -> if heap = [] then 0. else failwith @@ "DIST_BEFORE..unknown id"^(string_of_int id) in
-        let source_minimum id memory heap =  (*Remove all destinations in memory then find the minimum. *)
+        let rec string_of_heap = function 
+            | [] -> "" 
+            | edge :: more -> "("^string_of_edge edge^")" ^ string_of_heap more in
+        let rec distance_before id visited_edges = 
+            match visited_edges with
+            | (_, before, dist_before) :: more ->
+                if id = before 
+                    then dist_before 
+                    else distance_before id more
+            | [] -> 
+                if visited_edges = [] 
+                    then 0. 
+                    else failwith @@ "DIST_BEFORE..unknown id"^(string_of_int id) in
+        let source_minimum id memory visited_edges =  (*Remove all destinations in memory then find the minimum. *)
             let edges = remove_all (Graph.neighbors graph id) memory in 
-                let prior = distance_before id heap in
+                let prior = distance_before id visited_edges in
                 let min = relate_option (fun x y -> distance_f id x +. prior < distance_f id y +. prior) edges in
                 match min with None -> None | Some min -> Some (id, min, distance_f id min +. prior) 
             in
@@ -57,10 +75,10 @@ let breadth_first (graph : Graph.vgt) start_id end_id distance_f =
                 Some s -> s :: compile_minimums more memory heap
                 | None -> compile_minimums more memory heap)
             | [] -> [] in
-        let global_minimum id_minimums = relate_option 
-            (fun c1 c2 -> distance_of c1 < distance_of c2) id_minimums in
-        let minimum ids memory heap = 
-            global_minimum (compile_minimums ids memory heap) in
+        let minimum_edge ids memory heap : edge option = 
+            relate_option 
+            (fun e1 e2 -> dist_of e1 < dist_of e2)
+            (compile_minimums ids memory heap) in
         let rec pathtrace heap memory look_for = match heap with
         | (src,dest,dist) :: more -> 
         if dest = look_for then dest :: pathtrace more (dest :: memory) src
@@ -73,11 +91,11 @@ let breadth_first (graph : Graph.vgt) start_id end_id distance_f =
     (**End helper.*)
     let rec dijkstras frontier memory heap = (
         match frontier with [] -> raise (Failure "DIJKSTRAS..id not found")
-        | _ -> (match minimum frontier memory heap with
+        | _ -> (match minimum_edge frontier memory heap with
             Some min ->
             if dest_of min = end_id then (min :: heap) else
             (**Debugging *)
-                let _ = if debugging then (print_endline @@ "====cycle_of{"^string_of_triplet min^"}====";
+                let _ = if debugging then (print_endline @@ "====cycle_of{"^string_of_edge min^"}====";
                 print_endline @@ "Frontier  ["^string_of_intl frontier^"]";
                 print_endline @@ "Memory  ["^string_of_intl memory^"]";
                 print_endline @@ "Heap  ["^string_of_heap heap^"]") in
