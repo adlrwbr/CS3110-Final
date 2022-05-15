@@ -17,6 +17,21 @@ let test_distance
     (p2 : float * float) : test =
   name >:: fun _ -> assert_equal expected (Algo.distance p1 p2)
 
+let test_in_range
+    (name : string)
+    (expected : bool)
+    (p : float)
+    (p1 : float)
+    (p2 : float) : test =
+  name >:: fun _ -> assert_equal expected (Algo.in_range p p1 p2)
+
+let test_remove_all
+    (name : string)
+    (expected : 'a list)
+    (list1 : 'a list)
+    (list2 : 'a list) : test =
+  name >:: fun _ -> assert_equal expected (Algo.remove_all list1 list2)
+
 (** [test_intersect expected s1 f1 s2 f2] is a test that ensures that
     two roads defined by endpoints [s1]-[f1] and [s2]-[f2] have the same
     intersection as [expected] if it exists *)
@@ -105,10 +120,51 @@ let distance_tests =
       (0., 200.) (23., 200.);
   ]
 
+let in_range_tests =
+  [
+    test_in_range "3 is in [1, 4]" true 3. 1. 4.;
+    test_in_range "3 is in [4, 1]" true 3. 4. 1.;
+    test_in_range "2.21 is in [2.20, 3]" true 2.21 2.20 3.;
+    test_in_range "2 is in [1, 4]" true 2. 1. 4.;
+    test_in_range "10 is NOT in [1, 4]" false 10. 1. 4.;
+    test_in_range "1 is in [1, 4]" true 1. 1. 4.;
+    test_in_range "0 is NOT in [1, 4]" false 0. 1. 4.;
+    test_in_range "-2 is in [-1, -4]" true ~-.2. ~-.1. ~-.4.;
+    test_in_range "-10 is NOT in [-1, -4]" false ~-.10. ~-.1. ~-.4.;
+  ]
+
+let remove_all_tests =
+  [
+    test_remove_all "[] - [] = []" [] [] [];
+    test_remove_all "[2] - [1] = [2]" [ 2 ] [ 2 ] [ 1 ];
+    test_remove_all "[1;2] - [1] = [2]" [ 2 ] [ 1; 2 ] [ 1 ];
+    test_remove_all "[1;2] - [1] = [2]" [ 2; 4; 5 ]
+      [ 1; 2; 3; 4; 5; 1; 3 ] [ 1; 3 ];
+    test_remove_all "[ 1; 2; 1; 1; 1; 1; 1 ] - [1] = [2]" [ 2 ]
+      [ 1; 2; 1; 1; 1; 1; 1 ] [ 1 ];
+    test_remove_all "[1;2] - [] = [1;2]" [ 1; 2 ] [ 1; 2 ] [];
+    test_remove_all "[1;2] - [1;2] = []" [] [ 1; 2 ] [ 1; 2 ];
+    test_remove_all "[1; 2; 3; 4; 5; 6] - [1; 2; 3; 4; 5; 6] = []" []
+      [ 1; 2; 3; 4; 5; 6 ] [ 1; 2; 3; 4; 5; 6 ];
+    test_remove_all
+      "[\"adler\"; \"sean\"; \"andrew\"; \"adler\"] - [ \"sean\"; \
+       \"andrew\" ] = [ \"adler\"; \"adler\" ]"
+      [ "adler"; "adler" ]
+      [ "adler"; "sean"; "andrew"; "adler" ]
+      [ "sean"; "andrew" ];
+  ]
+
 let _ =
   run_test_tt_main
     ("test suite for final project"
-    >::: List.flatten [ intersect_tests; slope_tests; distance_tests ])
+    >::: List.flatten
+           [
+             intersect_tests;
+             slope_tests;
+             distance_tests;
+             in_range_tests;
+             remove_all_tests;
+           ])
 
 (**Test graph: let myg = empty();; let _ = add_many [1;2;3;4;5;6;7]
    myg;; let _ = connect 1 2 0.3 myg; connect 2 4 0.3 myg; connect 4 5
