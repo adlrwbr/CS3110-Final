@@ -1,4 +1,6 @@
 exception IllegalWorld of string
+exception RoadNameConflict of string
+
 open Printf
 open Yojson.Basic.Util
 
@@ -39,8 +41,8 @@ let road_of_json j =
     if List.length coords <> 2 then failwith "Coordinate list must consist of two (x, y) float values"
     else (List.nth coords 0, List.nth coords 1)
   in
-  let startPt = j |> member "start" |> to_list |> List.map (fun m -> to_float m) |> parse_list in
-  let endPt = j |> member "end" |> to_list |> List.map (fun m -> to_float m) |> parse_list in
+  let startPt = j |> member "start" |> to_list |> List.map (fun m -> to_number m) |> parse_list in
+  let endPt = j |> member "end" |> to_list |> List.map (fun m -> to_number m) |> parse_list in
   Road.create name startPt endPt
 
 let intersect_of_json (roads : Road.t list) j =
@@ -48,7 +50,7 @@ let intersect_of_json (roads : Road.t list) j =
   let r2_name = j |> member "road2" |> to_string in
   try
     let r1 = List.find (fun r -> Road.name r = r1_name) roads in
-    let r2 = List.find (fun r -> Road.name r = r1_name) roads in (*TODO: guard against Not_found *)
+    let r2 = List.find (fun r -> Road.name r = r2_name) roads in
     match Road.intersection r1 r2 with
     | None -> failwith (r1_name ^ " and " ^ r2_name ^ " do not intersect")
     | Some inter -> inter
@@ -68,7 +70,7 @@ let loc_of_json (roads : Road.t list) j =
     name = name;
     category = category;
     road = road;
-    pos_on_road = j |> member "pos_on_road" |> to_float
+    pos_on_road = j |> member "pos_on_road" |> to_number
   }
 
 let world_of_json j =
@@ -136,8 +138,9 @@ let add_loc name category road pos world =
 let delete_loc world loc  = {world with locations = List.filter (fun l -> l != loc) world.locations}
 
 let add_road (road : Road.t) world =
-  if world.roads |> List.exists (fun r -> Road.name r = Road.name road)
-  then failwith "A road with this name already exists!"
+  let road_name = Road.name road in
+  if world.roads |> List.exists (fun r -> Road.name r = road_name)
+  then raise (RoadNameConflict road_name)
   else
   (* check for intersections with new road and all existing roads *)
   let rec new_intersns acc rd_lst =

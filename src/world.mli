@@ -1,7 +1,10 @@
 (** represents the world model in MVC pattern *)
 
 exception IllegalWorld of string
-(** IllegalWorld exception with user-friendly error message *)
+(** [IllegalWorld s] where s is a user-friendly error message *)
+
+exception RoadNameConflict of string
+(** [RoadNameConflict s] where s is the name of the road *)
 
 type wt
 (** the abstract world type *)
@@ -39,7 +42,8 @@ val delete_loc : wt -> lt -> wt
 val add_road : Road.t -> wt -> wt
 (** [add_road road world] is a modified [world] with an additional
     [road] and intersections.
-    Raises: if [world] contains a road with the same name as [road] *)
+    Raises: [IllegalWorld n] if [world] contains a road with the same name [n]
+    as [road] *)
 
 val delete_road : wt -> Road.t -> wt
 (** [delete_road world road] is a modified [world] with [road] and any
