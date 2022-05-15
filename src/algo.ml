@@ -13,8 +13,8 @@ let rec relate_option f list = match list with
     | [] -> None
 
 let slope x1 y1 x2 y2 =
-    if x1 = x2 then raise UndefinedSlope
-    else (y2 -. y1) /. (x2 -. x1)
+    let m = (y2 -. y1) /. (x2 -. x1) in
+    if m |> abs_float = infinity then raise UndefinedSlope else m
 
 let rec string_of_intl = function 
     | [] -> "" 
