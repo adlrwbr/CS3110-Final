@@ -1,39 +1,42 @@
 (** Representation of the world model.
 
     This module represents a world build through the GUI by the users,
-    containing a locations, roads, and intersections. s*)
+    containing a locations, roads, and intersections. *)
 
 exception IllegalWorld of string
-(** [IllegalWorld s] where s is a user-friendly error message *)
+(** Raised when an illegal world representation is encountered.
+    [IllegalWorld s] where s is a user-friendly error message *)
 
 exception RoadNameConflict of string
-(** [RoadNameConflict s] where s is the name of the road *)
+(** Raised when a two roads are attempted to be named the same.
+    [RoadNameConflict s] where s is the name of the road *)
 
 exception ParseError of string
-(** [ParseError s] where s is a user-friendly error message *)
+(** Raised when the JSON file cannot be parsed. [ParseError s] where s
+    is a user-friendly error message *)
 
 type wt
-(** the abstract world type *)
+(** The abstract type of values representing world types. *)
 
 type lt
-(** the abstract location type *)
+(** The abstract type of values representing location types. *)
 
 type path
-(** an abstract type that represents a path from one [lt] to another *)
+(** The abstract type that represents a path from one [lt] to another. *)
 
 val size_x : float
-(** the width of the world *)
+(** [size_x] is the width of the world. *)
 
 val size_y : float
-(** the height of the world *)
+(** [size_y] is the height of the world. *)
 
 val empty : string -> wt
 (** [empty name] is an empty world named [name] *)
 
 val from_json : Yojson.Basic.t -> wt
-(** [from_json j] is the world that [j] represents. Requires: [j] is
-    a valid JSON world representation.
-    Raises: ParseError if [j] is an invalid world format *)
+(** [from_json j] is the world that [j] represents. Requires: [j] is a
+    valid JSON world representation. Raises: ParseError if [j] is an
+    invalid world format *)
 
 val to_json : wt -> Yojson.Basic.t
 (** [to_json w] is the serialized world [w]. *)
@@ -48,9 +51,8 @@ val delete_loc : wt -> lt -> wt
 
 val add_road : Road.t -> wt -> wt
 (** [add_road road world] is a modified [world] with an additional
-    [road] and intersections.
-    Raises: [IllegalWorld n] if [world] contains a road with the same name [n]
-    as [road] *)
+    [road] and intersections. Raises: [IllegalWorld n] if [world]
+    contains a road with the same name [n] as [road] *)
 
 val delete_road : wt -> Road.t -> wt
 (** [delete_road world road] is a modified [world] with [road] and any

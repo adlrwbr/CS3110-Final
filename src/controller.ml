@@ -23,18 +23,19 @@ let rec input (prompt : string) (acc : string) : string =
       (* append to acc and ask for input again *)
   else input prompt (acc ^ String.make 1 key)
 
-(** [file_browser] is the full path to a user-selected file (or None if they
-    exit) in response to an interactive GUI file browser popup *)
+(** [file_browser] is the full path to a user-selected file (or None if
+    they exit) in response to an interactive GUI file browser popup *)
 let file_browser () : string option =
   let rec folder_browser wd cursor_pos =
     (* get contents of CWD *)
     let current_dir = Unix.getcwd () |> Unix.opendir in
     let children : string list =
       let rec children acc =
-        try Unix.readdir current_dir :: acc |> children with
-        | End_of_file -> acc
-      (* sort alphabetically and remove '.' entry *)
-      in children [] |> List.sort String.compare |> List.tl
+        try Unix.readdir current_dir :: acc |> children
+        with End_of_file -> acc
+        (* sort alphabetically and remove '.' entry *)
+      in
+      children [] |> List.sort String.compare |> List.tl
     in
     Unix.closedir current_dir;
     (* clear graph *)
@@ -44,22 +45,28 @@ let file_browser () : string option =
     (* get next key *)
     let event = Graphics.wait_next_event [ Graphics.Key_pressed ] in
     let key = event.key in
-    if key = 'j' then folder_browser wd @@ min (cursor_pos + 1) (List.length children - 1)
+    if key = 'j' then
+      folder_browser wd
+      @@ min (cursor_pos + 1) (List.length children - 1)
     else if key = 'k' then folder_browser wd @@ max (cursor_pos - 1) 0
     (* escape key *)
-    (* chdir back to [initial_dir] ensures that saving after exploring works the same *)
     else if key = '\x1B' then None
     (* return key *)
-    else if key = '\r' then
+    else if key = '\r' then (
       (* if selection is file then select otherwise explore folder *)
       let selection = List.nth children cursor_pos in
       let stats = Unix.stat selection in
       match stats.st_kind with
       | S_REG -> Some selection
-      | S_DIR -> (Unix.chdir selection; folder_browser (Unix.getcwd ()) 0)
-      | _ -> (print_endline "Cannot open!"; folder_browser wd cursor_pos)
+      | S_DIR ->
+          Unix.chdir selection;
+          folder_browser (Unix.getcwd ()) 0
+      | _ ->
+          print_endline "Cannot open!";
+          folder_browser wd cursor_pos)
     else folder_browser wd cursor_pos
-  in folder_browser "." 0
+  in
+  folder_browser "." 0
 
 let button_touching_point coord b =
   let x, y = coord in
@@ -68,10 +75,10 @@ let button_touching_point coord b =
 
 let invoke_action w b = b.action w
 
-(** [hit_buttons w btns coord] is the world [w] that may have been modified
-    as a result of the user clicking a button in [btns] at world-space
-    coordinate [coord].
-    Raises: [NoButtonFound] if [coord] is not on an enabled button *)
+(** [hit_buttons w btns coord] is the world [w] that may have been
+    modified as a result of the user clicking a button in [btns] at
+    world-space coordinate [coord]. Raises: [NoButtonFound] if [coord]
+    is not on an enabled button *)
 let hit_buttons w buttons coord =
   List.fold_left invoke_action w
     (match
@@ -164,20 +171,23 @@ let road_placement_mode (world : World.wt) : World.wt =
   (* get first click coords *)
   Graphics.wait_next_event [ Graphics.Button_down ] |> ignore;
   let coord1 = Graphics.mouse_pos () |> View.pixel_to_world in
-  try coord1 |> hit_buttons world road_placement_mode_buttons with
-  | NoButtonFound ->
+  try coord1 |> hit_buttons world road_placement_mode_buttons
+  with NoButtonFound -> (
     (* get second click coords *)
     Graphics.wait_next_event [ Graphics.Button_down ] |> ignore;
     let coord2 = Graphics.mouse_pos () |> View.pixel_to_world in
-    try coord2 |> hit_buttons world road_placement_mode_buttons with
-    | NoButtonFound ->
-        (* prompt for road name *)
-        let rec try_road_name prompt =
-          let name = input prompt "" in
-          let new_road = Road.create name coord1 coord2 in
-          try World.add_road new_road world with
-          | World.RoadNameConflict rn -> "A road named " ^ rn ^ " already exists. Try again" |> try_road_name
-        in try_road_name "Enter new road name"
+    try coord2 |> hit_buttons world road_placement_mode_buttons
+    with NoButtonFound ->
+      (* prompt for road name *)
+      let rec try_road_name prompt =
+        let name = input prompt "" in
+        let new_road = Road.create name coord1 coord2 in
+        try World.add_road new_road world
+        with World.RoadNameConflict rn ->
+          "A road named " ^ rn ^ " already exists. Try again"
+          |> try_road_name
+      in
+      try_road_name "Enter new road name")
 
 (** [road_deletion_mode world] is a world that may or may not have been
     modified during Road Deletion Mode *)
@@ -253,8 +263,6 @@ let loc_deletion_mode (world : World.wt) : World.wt =
     new_world
   else world
 
-(** [edit_mode world] is a world edited by the user that may be reduced
-    into a graph by [World.reduce] without raising an exception *)
 let rec edit_mode (world : World.wt) : World.wt =
   (* clear graph *)
   Graphics.clear_graph ();
@@ -398,8 +406,8 @@ let rec load_mode (world : World.wt) : World.wt =
          Unix.chdir initial_dir;
          load_mode world)
 
-(** [save_world_file w] saves the world [w] with name [n] to a JSON file called
-    [n].json *)
+(** [save_world_file w] saves the world [w] with name [n] to a JSON file
+    called [n].json *)
 let save_world_file (world : World.wt) : unit =
   let filename = World.name world ^ ".json" in
   world |> World.to_json |> Yojson.Basic.to_file filename;
@@ -429,7 +437,10 @@ let buttons =
     };
     {
       text = "Save";
-      action = (fun w -> save_world_file w; w);
+      action =
+        (fun w ->
+          save_world_file w;
+          w);
       xywh = (260., 900., 100., 40.);
       enabled = true;
     };

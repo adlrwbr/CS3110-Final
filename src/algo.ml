@@ -35,90 +35,85 @@ let rec remove_all list1 = function
     | [] -> list1
 
 type edge = int * int * float
+(**[edge] represents (id1,id2,weight), where [weight] is the 'distance'
+ of [id2] from [id1]. Not necessarily bidirectional.*)
 
-let src_of = function (src, _, _) -> src
+let src : edge -> int = function (src, _, _) -> src
 
-let dest_of = function (_, dest, _) -> dest
+let dest : edge -> int  = function (_, dest, _) -> dest
 
-let dist_of = function (_, _, dist) -> dist
+let dist  : edge -> float = function (_, _, dist) -> dist
 
 let string_of_edge = function (e : edge) -> 
-    string_of_int(src_of e)^"->"
-    ^string_of_int(dest_of e)^"="
-    ^string_of_float(dist_of e)
+    "("^string_of_int(src(e))^"->"
+    ^string_of_int(dest(e))^"="
+    ^string_of_float(dist(e))^")"
 
-let breadth_first (graph : Graph.vgt) start_id end_id distance_f = 
-    let debugging = true in
+let rec string_of_edge_list : edge list -> string = function 
+    | [] -> "" 
+    | edge :: more -> "("^string_of_edge edge^")" ^ string_of_edge_list more
+
+let rec distance_before id visited_edges = 
+    match visited_edges with
+    | (_, before, dist_before) :: more ->
+        if id = before 
+            then dist_before 
+            else distance_before id more
+    | [] -> 
+        if visited_edges = [] 
+            then 0. 
+            else failwith @@ "DIST_BEFORE..unknown id"^(string_of_int id)
+
+let rec pathtrace start_id edge_list dead_ids look_for = match edge_list with
+| (src,dest,dist) :: more -> if dest = look_for 
+    then dest :: pathtrace start_id more (dest :: dead_ids) src
+    else pathtrace start_id more (dead_ids) look_for
+| [] -> [start_id]
+
+let reduce_edge_list_to_path edge_list start_id end_id = 
+    List.rev @@ pathtrace start_id edge_list [] end_id
+
+let breadth_first (graph : Graph.vgt) start_id end_id f = 
     (**Helper functions.*)
-        let rec string_of_heap = function 
-            | [] -> "" 
-            | edge :: more -> "("^string_of_edge edge^")" ^ string_of_heap more in
-        let rec distance_before id visited_edges = 
-            match visited_edges with
-            | (_, before, dist_before) :: more ->
-                if id = before 
-                    then dist_before 
-                    else distance_before id more
-            | [] -> 
-                if visited_edges = [] 
-                    then 0. 
-                    else failwith @@ "DIST_BEFORE..unknown id"^(string_of_int id) in
-        let source_minimum id memory visited_edges =  (*Remove all destinations in memory then find the minimum. *)
-            let edges = remove_all (Graph.neighbors graph id) memory in 
-                let prior = distance_before id visited_edges in
-                let min = relate_option (fun x y -> distance_f id x +. prior < distance_f id y +. prior) edges in
-                match min with None -> None | Some min -> Some (id, min, distance_f id min +. prior) 
-            in
-        let rec compile_minimums ids memory heap = match ids with 
+    let min_of_id id dead_ids visited_edges =
+        let edges = remove_all (Graph.neighbors graph id) dead_ids in 
+            let prior = distance_before id visited_edges in
+            let min = relate_option 
+            (fun x y -> f id x +. prior < f id y +. prior)
+            edges in
+            match min with 
+                | None -> None 
+                | Some min -> Some (id, min, f id min +. prior) in
+    let minimum_edge ids dead_ids edge_list : edge option = 
+        let rec compile_minimums = function 
             | id :: more -> 
-            (match source_minimum id memory heap with 
-                Some s -> s :: compile_minimums more memory heap
-                | None -> compile_minimums more memory heap)
-            | [] -> [] in
-        let minimum_edge ids memory heap : edge option = 
-            relate_option 
-            (fun e1 e2 -> dist_of e1 < dist_of e2)
-            (compile_minimums ids memory heap) in
-        let rec pathtrace heap memory look_for = match heap with
-        | (src,dest,dist) :: more -> 
-        if dest = look_for then dest :: pathtrace more (dest :: memory) src
-        else pathtrace more (memory) look_for
-        | [] -> [start_id]
-        in
-        let reduce_heap heap = 
-            List.rev @@ pathtrace heap [] end_id
-        in 
-    (**End helper.*)
-    let rec dijkstras frontier memory heap = (
+                (match min_of_id id dead_ids edge_list with 
+                    | Some s -> s :: compile_minimums more
+                    | None -> compile_minimums more)
+            | [] -> [] in relate_option
+            (fun e1 e2 -> dist(e1) < dist(e2)) (compile_minimums ids) in
+    let rec dijkstras frontier dead_ids edge_list = (
         match frontier with [] -> raise (Failure "DIJKSTRAS..id not found")
-        | _ -> (match minimum_edge frontier memory heap with
-            Some min ->
-            if dest_of min = end_id then (min :: heap) else
-            (**Debugging *)
-                let _ = if debugging then (print_endline @@ "====cycle_of{"^string_of_edge min^"}====";
-                print_endline @@ "Frontier  ["^string_of_intl frontier^"]";
-                print_endline @@ "Memory  ["^string_of_intl memory^"]";
-                print_endline @@ "Heap  ["^string_of_heap heap^"]") in
-            dijkstras
-                ((dest_of min) :: frontier)
-                ((dest_of min) :: memory) 
-                (min :: heap)
-            | None -> raise (Failure ("DIJKSTRA..no minimum..death occured @ node"^(string_of_int @@ List.hd frontier)))
+        | _ -> (match minimum_edge frontier dead_ids edge_list with
+            Some e -> if dest(e) = end_id then (e :: edge_list) else
+            dijkstras ((dest(e)) :: frontier) ((dest(e)) :: dead_ids) 
+                (e :: edge_list)
+            | None -> raise 
+            (Failure ("DIJKSTRA..no minimum..death occured @ node"^
+            (string_of_int @@ List.hd frontier)))
         )
-    ) 
-    in
-    let djk = dijkstras [start_id] [start_id] [] in
-    (*let _ = print_endline @@ string_of_heap djk in *)
-    reduce_heap djk
+    ) in let djk = dijkstras [start_id] [start_id] [] in
+    reduce_edge_list_to_path djk start_id end_id
 
-let shortest_path start finish graph = breadth_first graph start finish Graph.weight
+let shortest_path start_id end_id graph = 
+    breadth_first graph start_id end_id Graph.weight
 
-let distance_between graph id1 id2 distance_f = 
+let distance_between graph id1 id2 f = 
     let rec pair_accumulation = function
-        e1 :: e2 :: [] -> distance_f e1 e2
-        | e1 :: e2 :: more -> distance_f e1 e2 +. pair_accumulation (e2 :: more)
+        e1 :: e2 :: [] -> f e1 e2
+        | e1 :: e2 :: more -> f e1 e2 +. pair_accumulation (e2 :: more)
         | _ :: [] -> raise (Failure "DIST_BTWN..single element") 
         | [] -> raise (Failure "DIST_BTWN..no elements")
         in
-    let sequence = breadth_first graph id1 id2 distance_f in 
+    let sequence = breadth_first graph id1 id2 f in 
     pair_accumulation sequence

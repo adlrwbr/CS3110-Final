@@ -1,6 +1,11 @@
-(** contains helper functions for various data structures *)
+(** Bundle of various mathematical functions for data structures.
+
+    This module is a collection of functions for data structure,
+    containing the shortest path algorithm, breadth first traversal,
+    slope, distance, and range checking. *)
 
 exception UndefinedSlope
+(** Raised when an undefined slope is calculated. *)
 
 val relate : ('a -> 'a -> bool) -> 'a list -> 'a
 (** [relate f list] is the element in [list] which survives a relation
