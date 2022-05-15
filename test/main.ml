@@ -43,6 +43,11 @@ let intersect_tests = "intersection test suite" >::: [
         None (0., 0.) (1., 0.) (0., 0.0) (2., 0.);
     test_intersect_exists "intersection exists: misc large numbers"
         true (276., 522.) (641., 580.) (451., 706.) (610., 295.);
+    test_intersect_exists "intersection exists: regression test"
+        true
+        (108.33333333333334, 128.88888888888889)
+        (108.33333333333334, 215.55555555555554)
+        (101.66666666666667, 200.) (483.3333333333333, 200.)
 ]
 
 let _ = run_test_tt_main intersect_tests
