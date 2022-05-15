@@ -198,6 +198,54 @@ let draw_edit_mode () =
    (draw_text 5 (size_y () - title_height - (3 * (keybind_height + 5)))
    (TOP, LEFT) "Press e to exit" *)
 
+let draw_file_browser contents selection =
+  let win_width, win_height =
+    (Int.to_float (size_x ()), Int.to_float (size_y ()))
+  in
+  (* draw background box *)
+  let _ = rgb 170 227 255 |> set_color in
+  let box_width = win_width *. 0.5 |> Int.of_float in
+  let box_height = win_height *. 0.7 |> Int.of_float in
+  let box_ll_x = (size_x () / 2) - (box_width / 2) in
+  let box_ll_y = (size_y () / 2) - (box_height / 2) in
+  fill_rect box_ll_x box_ll_y box_width box_height;
+  (* draw prompt text *)
+  rgb 0 0 0 |> set_color;
+  let box_ul_x, box_ul_y = box_ll_x, box_ll_y + box_height in
+  "Navigate to world with j/k and press Enter:"
+  |> draw_text (box_ll_x + 10) (box_ul_y - 15) (BOTTOM, LEFT);
+  (* calculate the max number of entries that can be displayed *)
+  let _, text_height = text_size "How tall am I" in
+  let entry_height = text_height + 5 in
+  (* the height of the displayable area w padding *)
+  let display_height = box_ul_y - 35 - 35 - box_ll_y in
+  let max_entries = display_height / entry_height in
+  (* allow scrolling. if the selection is offscreen, scroll *)
+  let to_pop = max 0 (selection - max_entries) in
+  (** [pop n] pops the head off a list [n] times *)
+  let rec pop n = function
+    | [] -> []
+    | h :: t as lst -> if n > 0 then pop (n - 1) t else lst
+  in
+  let contents = pop to_pop contents in
+  (* selection corresponds to an index in contents so we must change both *)
+  let selection = selection - to_pop in
+  (* draw contents of CWD *)
+  let n = ref 0 in
+  List.map (fun f ->
+    let y = box_ul_y - 35 - entry_height * !n in
+    (* ensure list is not larger than displayable area *)
+    if !n > max_entries then ()
+    else
+      (draw_text (box_ul_x + 35) y (TOP, LEFT) f;
+      (* draw cursor next to selection *)
+      if !n = selection then
+        draw_text (box_ll_x + 20) y (TOP, LEFT) ">"
+      else ());
+    incr n;
+  )
+  contents |> ignore
+
 let draw_path (path : World.path) =
   rgb 61 190 255 |> set_color;
   set_line_width 9;

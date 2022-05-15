@@ -1,5 +1,6 @@
 exception IllegalWorld of string
 exception RoadNameConflict of string
+exception ParseError of string
 
 open Printf
 open Yojson.Basic.Util
@@ -85,8 +86,8 @@ let world_of_json j =
 
 let from_json json =
   try world_of_json json with
-  | Type_error (s, _) -> failwith ("Parsing error: " ^ s)
-  | Failure s -> failwith ("Parsing error: " ^ s)
+  | Type_error (s, _) -> raise (ParseError s)
+  | Failure s -> raise (ParseError s)
 
 let road_to_json (road : Road.t) =
   let (x1, y1), (x2, y2) = Road.road_coords road in
