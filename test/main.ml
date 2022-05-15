@@ -10,6 +10,13 @@ let test_slope
     (y2 : float) : test =
   name >:: fun _ -> assert_equal expected (Algo.slope x1 y1 x2 y2)
 
+let test_distance
+    (name : string)
+    (expected : float)
+    (p1 : float * float)
+    (p2 : float * float) : test =
+  name >:: fun _ -> assert_equal expected (Algo.distance p1 p2)
+
 (** [test_intersect expected s1 f1 s2 f2] is a test that ensures that
     two roads defined by endpoints [s1]-[f1] and [s2]-[f2] have the same
     intersection as [expected] if it exists *)
@@ -68,12 +75,40 @@ let intersect_tests =
   ]
 
 let slope_tests =
-  [ test_slope "slope of (1, 2) (2, 4) is 2" 2. 1. 2. 2. 4. ]
+  [
+    test_slope "slope of (1, 2) (2, 4) is 2" 2. 1. 2. 2. 4.;
+    test_slope "slope of (0, 0) (3, 3) is 1" 1. 0. 0. 3. 3.;
+    test_slope "slope of (0, 10) (10, 0) is -1" ~-.1. 0. 10. 10. 0.;
+    test_slope "slope of (2, 100) (0, 300) is -100" ~-.100. 2. 100. 0.
+      300.;
+    test_slope "slope of (1, 0) (3, 3) is 1.5" 1.5 1. 0. 3. 3.;
+    test_slope "slope of (1, 0) (3, 0) is 0" 0. 1. 0. 3. 0.;
+  ]
+
+let distance_tests =
+  [
+    test_distance "distance between (1, 0) and (4, 4) is 5" 5. (1., 0.)
+      (4., 4.);
+    test_distance "distance between (10, 20) and (4, 12) is 10" 10.
+      (10., 20.) (4., 12.);
+    test_distance "distance between (10, 0) and (15, 12) is 13" 13.
+      (10., 0.) (15., 12.);
+    test_distance "distance between (0, 0) and (48, 55) is 73" 73.
+      (0., 0.) (48., 55.);
+    test_distance "distance between (23, 100) and (43, 1) is 101" 101.
+      (23., 100.) (43., 1.);
+    test_distance "distance between (23, 100) and (23, 100) is 0" 0.
+      (23., 100.) (23., 100.);
+    test_distance "distance between (23, 100) and (23, 200) is 100" 100.
+      (23., 100.) (23., 200.);
+    test_distance "distance between (0, 200) and (23, 200) is 23" 23.
+      (0., 200.) (23., 200.);
+  ]
 
 let _ =
   run_test_tt_main
     ("test suite for final project"
-    >::: List.flatten [ intersect_tests; slope_tests ])
+    >::: List.flatten [ intersect_tests; slope_tests; distance_tests ])
 
 (**Test graph: let myg = empty();; let _ = add_many [1;2;3;4;5;6;7]
    myg;; let _ = connect 1 2 0.3 myg; connect 2 4 0.3 myg; connect 4 5
