@@ -8,17 +8,20 @@
     cannot connect the same node to 2 twice.*)
 
 type ugt
-(** the unverified graph abstract type. Represents a bidirectional graph
-    which may contain islands *)
+(** The unverified graph abstract type. Represents a bidirectional graph
+    which may contain islands. *)
 
 type vgt
-(** the verified graph abstract type. Guarenteed to not contain islands *)
+(** The verified graph abstract type. Guarenteed to not contain islands. *)
 
 exception UnknownNode of int
+(** Raised when an unknown node is encountered. *)
+
 exception UnknownEdge
+(** Raised when an unknown edge is encountered. *)
 
 exception InvalidGraph
-(** identifies an unverified graph that cannot be verified *)
+(** Raised when an invalid unverified graph is encountered. *)
 
 val empty : unit -> ugt
 (** [empty] is a graph with no nodes *)

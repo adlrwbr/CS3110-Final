@@ -5,6 +5,7 @@
     slope, distance, and range checking. *)
 
 exception UndefinedSlope
+(** Raised when an undefined slope is calculated. *)
 
 val relate : ('a -> 'a -> bool) -> 'a list -> 'a
 (** [relate f list] is the element in [list] which survives a relation

@@ -12,4 +12,4 @@ type button = {
 (** The representation of the button type. *)
 
 val button_enabled : button -> bool
-(** [button enabled b] is whether or not [b] is enabled *)
+(** [button_enabled b] is whether or not [b] is enabled *)

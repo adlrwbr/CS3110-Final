@@ -4,28 +4,31 @@
     containing a locations, roads, and intersections. *)
 
 exception IllegalWorld of string
-(** [IllegalWorld s] where s is a user-friendly error message *)
+(** Raised when an illegal world representation is encountered.
+    [IllegalWorld s] where s is a user-friendly error message *)
 
 exception RoadNameConflict of string
-(** [RoadNameConflict s] where s is the name of the road *)
+(** Raised when a two roads are attempted to be named the same.
+    [RoadNameConflict s] where s is the name of the road *)
 
 exception ParseError of string
-(** [ParseError s] where s is a user-friendly error message *)
+(** Raised when the JSON file cannot be parsed. [ParseError s] where s
+    is a user-friendly error message *)
 
 type wt
-(** the abstract world type *)
+(** The abstract type of values representing world types. *)
 
 type lt
-(** the abstract location type *)
+(** The abstract type of values representing location types. *)
 
 type path
-(** an abstract type that represents a path from one [lt] to another *)
+(** The abstract type that represents a path from one [lt] to another. *)
 
 val size_x : float
-(** the width of the world *)
+(** [size_x] is the width of the world. *)
 
 val size_y : float
-(** the height of the world *)
+(** [size_y] is the height of the world. *)
 
 val empty : string -> wt
 (** [empty name] is an empty world named [name] *)
