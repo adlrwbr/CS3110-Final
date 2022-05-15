@@ -1,3 +1,9 @@
+(** Representation of the user mouse and keyboard interactions with the
+    GUI.
+
+    This module represents a collection of functions that take care of
+    mouse and keyboard interactions with the GUI. *)
+
 open Button
 
 val edit_mode : World.wt -> World.wt

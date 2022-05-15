@@ -1,7 +1,11 @@
-(** represents the road model in MVC pattern *)
+(** Representation of the road and road intersections in the world
+    model.
+
+    This module represents a road and road intersections created through
+    the GUI by the users, represented by its two endpoints. *)
 
 type t
-(** the abstract road type *)
+(** The abstract type of values representing road types. *)
 
 type it = {
   road1 : t;
@@ -9,11 +13,11 @@ type it = {
   pos_on_road1 : float;
   pos_on_road2 : float;
 }
-(** the intersection type *)
+(** The type of values representing intersections. *)
 
 val create : string -> float * float -> float * float -> t
 (** [create name startPoint endPoint] is a newly created road stretching
-    b/w [startPoint] and [endPoint] *)
+    between [startPoint] and [endPoint] *)
 
 val name : t -> string
 (** [name road] is the name of the road [road] *)
@@ -25,8 +29,8 @@ val midpt : t -> float * float
 (** [midpt road] is the midpoint of the [road] *)
 
 val intersection : t -> t -> it option
-(** [intersection r1 r2] is an intersection between [r1] and [r2] or [None] if
-    the two roads do not intersect. *)
+(** [intersection r1 r2] is an intersection between [r1] and [r2] or
+    [None] if the two roads do not intersect. *)
 
 val inter_coord : it -> float * float
 (** [inter_coord inter] is the (x, y) coordinate of intersection [inter] *)

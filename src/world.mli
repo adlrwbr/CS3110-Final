@@ -1,7 +1,7 @@
 (** Representation of the world model.
 
     This module represents a world build through the GUI by the users,
-    containing a locations, roads, and intersections. s*)
+    containing a locations, roads, and intersections. *)
 
 exception IllegalWorld of string
 (** [IllegalWorld s] where s is a user-friendly error message *)
@@ -28,8 +28,8 @@ val empty : string -> wt
 (** [empty name] is an empty world named [name] *)
 
 val from_json : Yojson.Basic.t -> wt
-(** [from_json j] is the world that [j] represents. Requires: [j] is
-    a valid JSON world representation. *)
+(** [from_json j] is the world that [j] represents. Requires: [j] is a
+    valid JSON world representation. *)
 
 val to_json : wt -> Yojson.Basic.t
 (** [to_json w] is the serialized world [w]. *)
@@ -44,9 +44,8 @@ val delete_loc : wt -> lt -> wt
 
 val add_road : Road.t -> wt -> wt
 (** [add_road road world] is a modified [world] with an additional
-    [road] and intersections.
-    Raises: [IllegalWorld n] if [world] contains a road with the same name [n]
-    as [road] *)
+    [road] and intersections. Raises: [IllegalWorld n] if [world]
+    contains a road with the same name [n] as [road] *)
 
 val delete_road : wt -> Road.t -> wt
 (** [delete_road world road] is a modified [world] with [road] and any

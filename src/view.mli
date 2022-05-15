@@ -1,4 +1,8 @@
-(** Representation of the user interactions with the GUI. *)
+(** Representation of the user interactions with the GUI.
+
+    This module represents a collection of functions that allow the user
+    to edit the world, with different user modes and drawing
+    functionality. *)
 
 open Button
 

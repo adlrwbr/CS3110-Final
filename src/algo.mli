@@ -1,4 +1,8 @@
-(** contains helper functions for various data structures *)
+(** Bundle of various mathematical functions for data structures.
+
+    This module is a collection of functions for data structure,
+    containing the shortest path algorithm, breadth first traversal,
+    slope, distance, and range checking. *)
 
 exception UndefinedSlope
 
