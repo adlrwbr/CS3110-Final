@@ -73,7 +73,7 @@ let rec pathtrace start_id edge_list dead_ids look_for = match edge_list with
 let reduce_edge_list_to_path edge_list start_id end_id = 
     List.rev @@ pathtrace start_id edge_list [] end_id
 
-let breadth_first (graph : Graph.vgt) start_id end_id f = 
+let breadth_first f start_id end_id (graph : Graph.vgt) = 
     (**Helper functions.*)
     let min_of_id id dead_ids visited_edges =
         let edges = remove_all (Graph.neighbors graph id) dead_ids in 
@@ -106,14 +106,14 @@ let breadth_first (graph : Graph.vgt) start_id end_id f =
     reduce_edge_list_to_path djk start_id end_id
 
 let shortest_path start_id end_id graph = 
-    breadth_first graph start_id end_id Graph.weight
+    breadth_first Graph.weight start_id end_id graph 
 
-let distance_between graph id1 id2 f = 
+let distance_between start_id end_id graph = 
     let rec pair_accumulation = function
-        e1 :: e2 :: [] -> f e1 e2
-        | e1 :: e2 :: more -> f e1 e2 +. pair_accumulation (e2 :: more)
+        e1 :: e2 :: [] -> Graph.weight e1 e2
+        | e1 :: e2 :: more -> Graph.weight e1 e2 +. pair_accumulation (e2 :: more)
         | _ :: [] -> raise (Failure "DIST_BTWN..single element") 
         | [] -> raise (Failure "DIST_BTWN..no elements")
         in
-    let sequence = breadth_first graph id1 id2 f in 
+    let sequence = breadth_first Graph.weight start_id end_id graph in 
     pair_accumulation sequence

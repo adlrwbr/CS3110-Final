@@ -33,23 +33,21 @@ val in_range : float -> float -> float -> bool
 val remove_all : 'a list -> 'a list -> 'a list
 (** [remove_all list1 list2] is [list1] without the elements of [list2]*)
 
+val breadth_first : (int -> int -> float) -> int -> int -> Graph.vgt -> int list
+(** [breadth_first graph start_id end_id f] is the list of ids
+    constituting the shortest path from [start_id] to [end_id] over the
+    [graph], where weights edges between nodes are supplied by [f]. 
+    Requires: [f] must be defined for all pairs in
+    the cartesian product of all ids in the graph. Not necessarily
+    symmetric, i.e. f id1 id2 is not always equal to f
+    id2 id1. *)
+
 val shortest_path : int -> int -> Graph.vgt -> int list
 (** [shortest_path start finish graph] is a list of the ids of the nodes
     along the shortest path from [start] to [finish], inclusive.
     Example: [ \[start\]; ...; \[finish\] ] *)
 
-val breadth_first :
-  Graph.vgt -> int -> int -> (int -> int -> float) -> int list
-(** [breadth_first graph start_id end_id distance_f] is the list of ids
-    constituting the shortest path from [start_id] to [end_id] over the
-    [graph], where weights edges between nodes are supplied by the
-    distance_f. Requires: [distance_f] must be defined for all pairs in
-    the cartesian product of all ids in the graph. Not necessarily
-    symmetric, i.e. distance_f id1 id2 is not always equal to distance_f
-    id2 id1. *)
-
-val distance_between :
-  Graph.vgt -> int -> int -> (int -> int -> float) -> float
-(** [distance_between graph id1 id2 distance_f] is the shortest*
+val distance_between : int -> int -> Graph.vgt -> float
+(** [distance_between graph id1 id2 f] is the shortest*
     distance between [id1] and [id2] where edge weights are assigned by
-    [distance_f id id]. *)
+    [f id1 id2]. *)
