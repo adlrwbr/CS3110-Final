@@ -38,16 +38,16 @@ type edge = int * int * float
 (**[edge] represents (id1,id2,weight), where [weight] is the 'distance'
  of [id2] from [id1]. Not necessarily bidirectional.*)
 
-let src_of : edge -> int = function (src, _, _) -> src
+let src : edge -> int = function (src, _, _) -> src
 
-let dest_of : edge -> int  = function (_, dest, _) -> dest
+let dest : edge -> int  = function (_, dest, _) -> dest
 
-let dist_of  : edge -> float = function (_, _, dist) -> dist
+let dist  : edge -> float = function (_, _, dist) -> dist
 
 let string_of_edge = function (e : edge) -> 
-    "("^string_of_int(src_of e)^"->"
-    ^string_of_int(dest_of e)^"="
-    ^string_of_float(dist_of e)^")"
+    "("^string_of_int(src(e))^"->"
+    ^string_of_int(dest(e))^"="
+    ^string_of_float(dist(e))^")"
 
 let rec string_of_edge_list : edge list -> string = function 
     | [] -> "" 
@@ -65,57 +65,55 @@ let rec distance_before id visited_edges =
             else failwith @@ "DIST_BEFORE..unknown id"^(string_of_int id)
 
 let rec pathtrace start_id edge_list dead_ids look_for = match edge_list with
-| (src,dest,dist) :: more -> 
-if dest = look_for then dest :: pathtrace start_id more (dest :: dead_ids) src
-else pathtrace start_id more (dead_ids) look_for
+| (src,dest,dist) :: more -> if dest = look_for 
+    then dest :: pathtrace start_id more (dest :: dead_ids) src
+    else pathtrace start_id more (dead_ids) look_for
 | [] -> [start_id]
 
 let reduce_edge_list_to_path edge_list start_id end_id = 
     List.rev @@ pathtrace start_id edge_list [] end_id
 
-let breadth_first (graph : Graph.vgt) start_id end_id distance_f = 
+let breadth_first (graph : Graph.vgt) start_id end_id f = 
     (**Helper functions.*)
     let min_of_id id dead_ids visited_edges =
         let edges = remove_all (Graph.neighbors graph id) dead_ids in 
             let prior = distance_before id visited_edges in
             let min = relate_option 
-            (fun x y -> distance_f id x +. prior < distance_f id y +. prior
-            ) edges in
+            (fun x y -> f id x +. prior < f id y +. prior)
+            edges in
             match min with 
                 | None -> None 
-                | Some min -> Some (id, min, distance_f id min +. prior) in
+                | Some min -> Some (id, min, f id min +. prior) in
     let minimum_edge ids dead_ids edge_list : edge option = 
         let rec compile_minimums = function 
             | id :: more -> 
-            (match min_of_id id dead_ids edge_list with 
-                | Some s -> s :: compile_minimums more
-                | None -> compile_minimums more)
-            | [] -> [] in
-        relate_option 
-        (fun e1 e2 -> dist_of e1 < dist_of e2)
-        (compile_minimums ids) in
+                (match min_of_id id dead_ids edge_list with 
+                    | Some s -> s :: compile_minimums more
+                    | None -> compile_minimums more)
+            | [] -> [] in relate_option
+            (fun e1 e2 -> dist(e1) < dist(e2)) (compile_minimums ids) in
     let rec dijkstras frontier dead_ids edge_list = (
         match frontier with [] -> raise (Failure "DIJKSTRAS..id not found")
         | _ -> (match minimum_edge frontier dead_ids edge_list with
-            Some min ->
-            if dest_of min = end_id then (min :: edge_list) else
-            dijkstras
-                ((dest_of min) :: frontier)
-                ((dest_of min) :: dead_ids) 
-                (min :: edge_list)
-            | None -> raise (Failure ("DIJKSTRA..no minimum..death occured @ node"^(string_of_int @@ List.hd frontier)))
+            Some e -> if dest(e) = end_id then (e :: edge_list) else
+            dijkstras ((dest(e)) :: frontier) ((dest(e)) :: dead_ids) 
+                (e :: edge_list)
+            | None -> raise 
+            (Failure ("DIJKSTRA..no minimum..death occured @ node"^
+            (string_of_int @@ List.hd frontier)))
         )
     ) in let djk = dijkstras [start_id] [start_id] [] in
     reduce_edge_list_to_path djk start_id end_id
 
-let shortest_path start finish graph = breadth_first graph start finish Graph.weight
+let shortest_path start_id end_id graph = 
+    breadth_first graph start_id end_id Graph.weight
 
-let distance_between graph id1 id2 distance_f = 
+let distance_between graph id1 id2 f = 
     let rec pair_accumulation = function
-        e1 :: e2 :: [] -> distance_f e1 e2
-        | e1 :: e2 :: more -> distance_f e1 e2 +. pair_accumulation (e2 :: more)
+        e1 :: e2 :: [] -> f e1 e2
+        | e1 :: e2 :: more -> f e1 e2 +. pair_accumulation (e2 :: more)
         | _ :: [] -> raise (Failure "DIST_BTWN..single element") 
         | [] -> raise (Failure "DIST_BTWN..no elements")
         in
-    let sequence = breadth_first graph id1 id2 distance_f in 
+    let sequence = breadth_first graph id1 id2 f in 
     pair_accumulation sequence
