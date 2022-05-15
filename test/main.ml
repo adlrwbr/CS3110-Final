@@ -1,5 +1,6 @@
 open OUnit2
 open Pathfinder
+open Graph
 
 let test_slope
     (name : string)
@@ -158,6 +159,53 @@ let remove_all_tests =
       [ "sean"; "andrew" ];
   ]
 
+let test_rel_and_relop string f list expected =
+    string >:: fun _ ->
+    match Algo.relate_option f list with
+    | Some e -> assert_equal e expected; assert_equal (Algo.relate f list) expected
+    | None -> assert_raises (Failure "No elements") (fun _ -> Algo.relate f list)
+
+let scrambled = [1;4;2;3;19;18;6;4;7;-20;9;2;1;6;2;4;6;3]
+
+let relate_tests =  [
+    test_rel_and_relop "get biggest" (fun x y -> x > y) scrambled 19;
+    test_rel_and_relop "get smallest" (fun x y -> x < y) scrambled @@ -20;
+    test_rel_and_relop "get first" (fun x y -> true) scrambled @@ 1;
+    test_rel_and_relop "get last" (fun x y -> false) scrambled @@ 3
+]
+
+let test_shortest_path string graph start_id end_id expected_path expected_distance =
+    string >:: fun _ ->
+    assert_equal (Algo.shortest_path start_id end_id graph) expected_path;
+    assert_equal (Algo.distance_between start_id end_id graph) expected_distance
+
+let g_12 = empty()
+
+    let _ = g_12 |> add_many [1;2];
+        connect 1 2 1. g_12
+
+let vg_12 = verify g_12
+
+let g_137 = empty()
+
+    let _ = g_137 |> add_many [1;2;3;4;5;6;7];
+        connect 1 2 0.3 g_137;
+        connect 2 4 0.3 g_137;
+        connect 4 5 0.3 g_137;
+        connect 5 6 0.3 g_137;
+        connect 6 7 0.3 g_137;
+        connect 2 5 0.5 g_137;
+        connect 5 7 0.5 g_137;
+        connect 1 3 0.6 g_137;
+        connect 3 7 0.6 g_137
+
+let vg_137 = verify g_137
+
+let pathfinding_test = [
+    test_shortest_path "simplest example" vg_12 1 2 [1;2] 1. ;
+    test_shortest_path "not greedy dijkstra" vg_137 1 7 [1;3;7] 1.2 
+]
+
 let _ =
   run_test_tt_main
     ("test suite for final project"
@@ -168,10 +216,7 @@ let _ =
              distance_tests;
              in_range_tests;
              remove_all_tests;
+             relate_tests;
+             pathfinding_test
            ])
 
-(**Test graph: let myg = empty();; let _ = add_many [1;2;3;4;5;6;7]
-   myg;; let _ = connect 1 2 0.3 myg; connect 2 4 0.3 myg; connect 4 5
-   0.3 myg; connect 5 6 0.3 myg; connect 6 7 0.3 myg; connect 2 5 0.5
-   myg; connect 5 7 0.5 myg; connect 1 3 0.6 myg; connect 3 7 0.6 myg;;
-   let myg = verify myg;; *)
