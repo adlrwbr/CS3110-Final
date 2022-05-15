@@ -9,6 +9,9 @@ exception IllegalWorld of string
 exception RoadNameConflict of string
 (** [RoadNameConflict s] where s is the name of the road *)
 
+exception ParseError of string
+(** [ParseError s] where s is a user-friendly error message *)
+
 type wt
 (** the abstract world type *)
 
@@ -29,7 +32,8 @@ val empty : string -> wt
 
 val from_json : Yojson.Basic.t -> wt
 (** [from_json j] is the world that [j] represents. Requires: [j] is
-    a valid JSON world representation. *)
+    a valid JSON world representation.
+    Raises: ParseError if [j] is an invalid world format *)
 
 val to_json : wt -> Yojson.Basic.t
 (** [to_json w] is the serialized world [w]. *)
