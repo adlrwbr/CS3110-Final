@@ -168,6 +168,7 @@ let delete_road world road =
 
 let locations world = world.locations
 let name (world : wt) = world.name
+let rename w n = { w with name = n }
 
 let loc_category loc = loc.category
 let loc_name (loc : lt) = loc.name

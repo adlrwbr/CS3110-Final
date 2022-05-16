@@ -161,7 +161,7 @@ let get_directions_instructions () =
 let draw_world world =
   let _ = List.map draw_road (World.roads world) in
   let _ = List.map draw_loc (World.locations world) in
-  ()
+  "World: " ^ World.name world |> draw_text 10 10 (BOTTOM, LEFT)
 
 let draw_input_popup prompt input =
   let win_width, win_height =

@@ -13,6 +13,7 @@
 
 open OUnit2
 open Pathfinder
+open Graph
 
 let pp_tuple (tuple : float * float) : string =
   match tuple with
@@ -127,6 +128,11 @@ let intersect_tests =
       (0., 0.) (1., 0.) (0., 0.0) (2., 0.);
     test_intersect_exists "intersection exists: misc large numbers" true
       (276., 522.) (641., 580.) (451., 706.) (610., 295.);
+    test_intersect_exists "intersection exists: regression test" true
+      (108.33333333333334, 128.88888888888889)
+      (108.33333333333334, 215.55555555555554)
+      (101.66666666666667, 200.)
+      (483.3333333333333, 200.);
   ]
 
 let slope_tests =
@@ -225,6 +231,70 @@ let road_midpt_tests =
     test_road_midpt "road3 midpt is at (2.65, 11.6)" (2.65, 11.6) road3;
   ]
 
+let test_rel_and_relop string f list expected =
+  string >:: fun _ ->
+  match Algo.relate_option f list with
+  | Some e ->
+      assert_equal e expected;
+      assert_equal (Algo.relate f list) expected
+  | None ->
+      assert_raises (Failure "No elements") (fun _ ->
+          Algo.relate f list)
+
+let scrambled =
+  [ 1; 4; 2; 3; 19; 18; 6; 4; 7; -20; 9; 2; 1; 6; 2; 4; 6; 3 ]
+
+let relate_tests =
+  [
+    test_rel_and_relop "get biggest" (fun x y -> x > y) scrambled 19;
+    test_rel_and_relop "get smallest" (fun x y -> x < y) scrambled
+    @@ -20;
+    test_rel_and_relop "get first" (fun x y -> true) scrambled @@ 1;
+    test_rel_and_relop "get last" (fun x y -> false) scrambled @@ 3;
+  ]
+
+let test_shortest_path
+    string
+    graph
+    start_id
+    end_id
+    expected_path
+    expected_distance =
+  string >:: fun _ ->
+  assert_equal (Algo.shortest_path start_id end_id graph) expected_path;
+  assert_equal
+    (Algo.distance_between start_id end_id graph)
+    expected_distance
+
+let g_12 = empty ()
+
+let _ =
+  g_12 |> add_many [ 1; 2 ];
+  connect 1 2 1. g_12
+
+let vg_12 = verify g_12
+let g_137 = empty ()
+
+let _ =
+  g_137 |> add_many [ 1; 2; 3; 4; 5; 6; 7 ];
+  connect 1 2 0.3 g_137;
+  connect 2 4 0.3 g_137;
+  connect 4 5 0.3 g_137;
+  connect 5 6 0.3 g_137;
+  connect 6 7 0.3 g_137;
+  connect 2 5 0.5 g_137;
+  connect 5 7 0.5 g_137;
+  connect 1 3 0.6 g_137;
+  connect 3 7 0.6 g_137
+
+let vg_137 = verify g_137
+
+let pathfinding_test =
+  [
+    test_shortest_path "simplest example" vg_12 1 2 [ 1; 2 ] 1.;
+    test_shortest_path "not greedy dijkstra" vg_137 1 7 [ 1; 3; 7 ] 1.2;
+  ]
+
 let _ =
   run_test_tt_main
     ("test suite for final project"
@@ -238,10 +308,6 @@ let _ =
              road_name_tests;
              road_coords_tests;
              road_midpt_tests;
+             relate_tests;
+             pathfinding_test;
            ])
-
-(**Test graph: let myg = empty();; let _ = add_many [1;2;3;4;5;6;7]
-   myg;; let _ = connect 1 2 0.3 myg; connect 2 4 0.3 myg; connect 4 5
-   0.3 myg; connect 5 6 0.3 myg; connect 6 7 0.3 myg; connect 2 5 0.5
-   myg; connect 5 7 0.5 myg; connect 1 3 0.6 myg; connect 3 7 0.6 myg;;
-   let myg = verify myg;; *)

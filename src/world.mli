@@ -67,6 +67,9 @@ val locations : wt -> lt list
 val name : wt -> string
 (** [name world] is the name of the world [world] *)
 
+val rename : wt -> string -> wt
+(** [rename w name] is the world [w] renamed to [name] *)
+
 val loc_category : lt -> string
 (** [loc_category loc] is the category of the location [loc] *)
 

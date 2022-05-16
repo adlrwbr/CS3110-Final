@@ -26,7 +26,6 @@ let rec input (prompt : string) (acc : string) : string =
 (** [file_browser] is the full path to a user-selected file (or None if
     they exit) in response to an interactive GUI file browser popup *)
 let file_browser () : string option =
-  let initial_dir = Unix.getcwd () in
   let rec folder_browser wd cursor_pos =
     (* get contents of CWD *)
     let current_dir = Unix.getcwd () |> Unix.opendir in
@@ -50,12 +49,9 @@ let file_browser () : string option =
       folder_browser wd
       @@ min (cursor_pos + 1) (List.length children - 1)
     else if key = 'k' then folder_browser wd @@ max (cursor_pos - 1) 0
-      (* escape key *)
-      (* chdir back to [initial_dir] ensures that saving after exploring
-         works the same *)
-    else if key = '\x1B' then (
-      Unix.chdir initial_dir;
-      None (* return key *))
+    (* escape key *)
+    else if key = '\x1B' then None
+    (* return key *)
     else if key = '\r' then (
       (* if selection is file then select otherwise explore folder *)
       let selection = List.nth children cursor_pos in
@@ -300,6 +296,24 @@ let rec edit_mode (world : World.wt) : World.wt =
         enabled = true;
       };
       {
+        text = "Rename";
+        action = (fun w ->
+          w |> World.name |> input "Rename world" |> World.rename w
+          |> edit_mode);
+        xywh = (660., 900., 100., 40.);
+        enabled = true;
+      };
+      {
+        text = "Clear";
+        action = (fun w ->
+          let choice = input "Clear everything? (y/n) " "" |> String.lowercase_ascii in
+          if choice = "yes" || choice = "y"
+          then World.name w |> World.empty |> edit_mode
+          else w |> edit_mode);
+        xywh = (770., 900., 100., 40.);
+        enabled = true;
+      };
+      {
         text = "Done";
         action =
           (fun w ->
@@ -309,7 +323,7 @@ let rec edit_mode (world : World.wt) : World.wt =
             else (
               print_endline "Invalid world! All roads must connect.";
               edit_mode w));
-        xywh = (660., 900., 100., 40.);
+        xywh = (880., 900., 100., 40.);
         enabled = true;
       };
     ]
@@ -373,20 +387,24 @@ let direction_mode (world : World.wt) : World.wt =
 
 (** [load_mode w] is a user-specified world loaded from JSON *)
 let rec load_mode (world : World.wt) : World.wt =
-  (* let filename = input "Enter filename to load" "" in *)
+  (* it is important to cd to [initial_dir] if loading fails so that the save
+     button saves an open world to the proper CWD *)
+  let initial_dir = Unix.getcwd () in
   match file_browser () with
-  | None -> world
-  | Some filename -> (
-      let _ = print_endline filename in
-
-      (* return to main menu if user enters nothing *)
-      try filename |> Yojson.Basic.from_file |> World.from_json with
-      | World.ParseError s ->
-          "Parse Error: " ^ s |> print_endline;
-          load_mode world
-      | Failure s ->
-          print_endline s;
-          load_mode world)
+  | None ->
+      Unix.chdir initial_dir;
+      world
+  | Some filename ->
+    (* return to main menu if user enters nothing *)
+    try filename |> Yojson.Basic.from_file |> World.from_json with
+    | Yojson.Json_error _ ->
+        ("Invalid file! Try again." |> print_endline;
+         Unix.chdir initial_dir;
+         load_mode world)
+    | World.ParseError s ->
+        ("Parse Error: " ^ s |> print_endline;
+         Unix.chdir initial_dir;
+         load_mode world)
 
 (** [save_world_file w] saves the world [w] with name [n] to a JSON file
     called [n].json *)
@@ -394,9 +412,6 @@ let save_world_file (world : World.wt) : unit =
   let filename = World.name world ^ ".json" in
   world |> World.to_json |> Yojson.Basic.to_file filename;
   "World saved as " ^ filename |> print_endline
-
-(* print_endline "Click the screen to clear the directions."; let _ =
-   Graphics.wait_next_event [ Graphics.Button_down ] in world *)
 
 let buttons =
   [
