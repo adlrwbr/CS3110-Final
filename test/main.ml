@@ -1,5 +1,22 @@
+(** Testing rationale:
+
+    comment describing your approach to testing: what you tested,
+    anything you omitted testing, and why you believe that your test
+    suite demonstrates the correctness of your system.
+
+    -1: The test plan does not explain which parts of the system were
+    automatically tested by OUnit vs. manually tested. -1: The test plan
+    does not explain what modules were tested by OUnit and how test
+    cases were developed (black box, glass box, randomized, etc.). -1:
+    The test plan does not provide an argument for why the testing
+    approach demonstrates the correctness of the system. *)
+
 open OUnit2
 open Pathfinder
+
+let pp_tuple (tuple : float * float) : string =
+  match tuple with
+  | x, y -> "(" ^ string_of_float x ^ "," ^ string_of_float y ^ ")"
 
 let test_slope
     (name : string)
@@ -31,6 +48,29 @@ let test_remove_all
     (list1 : 'a list)
     (list2 : 'a list) : test =
   name >:: fun _ -> assert_equal expected (Algo.remove_all list1 list2)
+
+let test_road_name (name : string) (expected : string) (road : Road.t) :
+    test =
+  name >:: fun _ -> assert_equal expected (Road.name road)
+
+let test_road_coords
+    (name : string)
+    (expected : (float * float) * (float * float))
+    (road : Road.t) : test =
+  name >:: fun _ -> assert_equal expected (Road.road_coords road)
+
+let floats_about_eq f1 f2 = abs_float f1 -. f2 <= 0.001
+
+let test_road_midpt
+    (name : string)
+    (expected : float * float)
+    (road : Road.t) : test =
+  name >:: fun _ ->
+  assert_equal true
+    (let x1, y1 = expected in
+     let x2, y2 = Road.midpt road in
+     floats_about_eq x1 x2 && floats_about_eq y1 y2)
+    ~printer:string_of_bool
 
 (** [test_intersect expected s1 f1 s2 f2] is a test that ensures that
     two roads defined by endpoints [s1]-[f1] and [s2]-[f2] have the same
@@ -154,6 +194,37 @@ let remove_all_tests =
       [ "sean"; "andrew" ];
   ]
 
+let road1 = Road.create "Jessup Rd" (1.2, 2.2) (1.2, 2.2)
+let road2 = Road.create "Triphammer Rd" (1.2, 2.2) (10.2, 4.1)
+let road3 = Road.create "Main St" (4.3, 21.2) (1., 2.)
+
+let road_name_tests =
+  [
+    test_road_name "road1 is called Jessup Rd" "Jessup Rd" road1;
+    test_road_name "road2 is called Triphammer Rd" "Triphammer Rd" road2;
+    test_road_name "road3 is called Main St" "Main St" road3;
+  ]
+
+let road_coords_tests =
+  [
+    test_road_coords "road1 is at (1.2, 2.2), (1.2, 2.2)"
+      ((1.2, 2.2), (1.2, 2.2))
+      road1;
+    test_road_coords "road2 is at (1.2, 2.2), (10.2, 4.1)"
+      ((1.2, 2.2), (10.2, 4.1))
+      road2;
+    test_road_coords "road3 is at (4.3, 21.2) (1., 2.)"
+      ((4.3, 21.2), (1., 2.))
+      road3;
+  ]
+
+let road_midpt_tests =
+  [
+    test_road_midpt "road1 midpt is at (1.2, 2.2)" (1.2, 2.2) road1;
+    test_road_midpt "road2 midpt is at (5.7, 3.15)" (5.7, 3.15) road2;
+    test_road_midpt "road3 midpt is at (2.65, 11.6)" (2.65, 11.6) road3;
+  ]
+
 let _ =
   run_test_tt_main
     ("test suite for final project"
@@ -164,6 +235,9 @@ let _ =
              distance_tests;
              in_range_tests;
              remove_all_tests;
+             road_name_tests;
+             road_coords_tests;
+             road_midpt_tests;
            ])
 
 (**Test graph: let myg = empty();; let _ = add_many [1;2;3;4;5;6;7]
