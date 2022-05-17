@@ -28,7 +28,10 @@ let distance p1 p2 =
     let dy = y2 -. y1 in
     sqrt (dx *. dx +. dy *. dy)
 
-let in_range p p1 p2 = (p >= p1 && p <= p2) || (p >= p2 && p <= p1)
+let in_range p p1 p2 =
+    let tolerance = 0.001 in
+     (p >= p1 -. tolerance && p <= p2 +. tolerance) 
+     || (p >= p2 -. tolerance && p <= p1 +. tolerance)
 
 let rec remove_all list1 = function
     head :: tail -> remove_all (List.filter (fun x -> x <> head) list1) tail
