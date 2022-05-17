@@ -144,6 +144,8 @@ let slope_tests =
       300.;
     test_slope "slope of (1, 0) (3, 3) is 1.5" 1.5 1. 0. 3. 3.;
     test_slope "slope of (1, 0) (3, 0) is 0" 0. 1. 0. 3. 0.;
+    "slope of (0, 0) (0, 1) is undefined" >:: 
+    fun _ -> assert_raises Algo.UndefinedSlope (fun _ -> Algo.slope 0. 0. 0. 1.) 
   ]
 
 let distance_tests =
