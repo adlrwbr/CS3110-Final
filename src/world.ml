@@ -188,8 +188,8 @@ or none if the perpendicular does not intersect. (fix beyond endpoint) *)
 let nearest_pt_on_line fix ref_line =
   let ((s1,s2), ((p_a1_x, p_a1_y), (p_a2_x, p_a2_y))) = fix, Road.road_coords ref_line in
   let m_a = -.(try Algo.slope p_a1_y p_a1_x p_a2_y p_a2_x with
-  | Algo.UndefinedSlope -> max_float) in
-  let source1 = (s1 -. 10000.,s2-.(10000.*.m_a)) in (**Should be good enough.*)
+  | Algo.UndefinedSlope -> 1000.) in
+  let source1 = (s1 -. 10000.,s2-.(10000.*.m_a)) in (**10000 should be good enough.*)
   let source2 = (s1 +. 10000.,s2+.(10000.*.m_a)) in
   let r = Road.create "" source1 source2 in
   (* [r] is perpendicular to [ref_line] *)

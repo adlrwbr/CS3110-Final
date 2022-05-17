@@ -125,7 +125,7 @@ let intersect_tests =
     test_intersect "no intersection: segments do not touch" None
       (0., 1.) (1., 1.) (2., 0.) (2., 2.);
     test_intersect "infinite intersections: overlapping roads" None
-      (0., 0.) (1., 0.) (0., 0.0) (2., 0.);
+      (0., 0.) (1., 0.) (0., 0.) (2., 0.);
     test_intersect_exists "intersection exists: misc large numbers" true
       (276., 522.) (641., 580.) (451., 706.) (610., 295.);
     test_intersect_exists "intersection exists: regression test" true
@@ -281,37 +281,6 @@ let graph_tests = [
   "no neighbors" >:: (fun _ ->  assert_equal (Graph.neighbors (verify one) 1) []);
   "not in graph" >:: (fun _ -> assert_equal (Graph.neighbors (verify one) 69) [])
 ]
-
-(*val size : ugt -> int
-(** [size graph] is the number of unique nodes contained in [graph] *)
-
-val add : int -> ugt -> unit
-(** [add id graph] modifies [graph] with an additional node [id].
-    Raises: [Failure id] if the [id] already exists in the [graph] *)
-
-val add_many : int list -> ugt -> unit
-(** [add_many ids graph] modifies [graph] all additional nodes in [ids].
-    Raises: [Failure id] if any [id] already exists in the [graph] *)
-
-val connect : int -> int -> float -> ugt -> unit
-(** [connect id1 id2 weight graph] modifies the graph by adding an edge
-    b/w nodes [id1] and [id2]. The edge has a value of [weight].
-    Requires: [id1] != [id2] Raises: [UnknownNode id] if either [id1] or
-    [id2] DNE within the graph *)
-
-val weight : vgt -> int -> int -> float
-(** [weight id1 id2] is the weight of an edge between nodes [id1] and
-    [id2]. Raises: [UnknownEdge] if the edge DNE *)
-
-val unverify : vgt -> ugt
-(** [unverify graph] converts the verified graph into one that is no
-    longer guaranteed to be *)
-
-val verify : ugt -> vgt
-(** [verify graph] is the verified graph. Raises InvalidGraph if [graph]
-    is not verifiable. *)
-
-val neighbors : vgt -> int -> int list*)
 
 let test_shortest_path
     string
