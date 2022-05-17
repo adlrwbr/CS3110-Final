@@ -28,7 +28,10 @@ let distance p1 p2 =
     let dy = y2 -. y1 in
     sqrt (dx *. dx +. dy *. dy)
 
-let in_range p p1 p2 = (p >= p1 && p <= p2) || (p >= p2 && p <= p1)
+let in_range p p1 p2 =
+    let tolerance = 0.001 in
+     (p >= p1 -. tolerance && p <= p2 +. tolerance) 
+     || (p >= p2 -. tolerance && p <= p1 +. tolerance)
 
 let rec remove_all list1 = function
     head :: tail -> remove_all (List.filter (fun x -> x <> head) list1) tail
@@ -92,10 +95,12 @@ let breadth_first f start_id end_id (graph : Graph.vgt) =
                     | None -> compile_minimums more)
             | [] -> [] in relate_option
             (fun e1 e2 -> dist(e1) < dist(e2)) (compile_minimums ids) in
-    let rec dijkstras frontier dead_ids edge_list = (
+    let rec dijkstras frontier dead_ids edge_list = 
+    (
         match frontier with [] -> raise (Failure "DIJKSTRAS..id not found")
         | _ -> (match minimum_edge frontier dead_ids edge_list with
-            Some e -> if dest(e) = end_id then (e :: edge_list) else
+            Some e -> 
+            if dest(e) = end_id then (e :: edge_list) else
             dijkstras ((dest(e)) :: frontier) ((dest(e)) :: dead_ids) 
                 (e :: edge_list)
             | None -> raise 
@@ -105,15 +110,15 @@ let breadth_first f start_id end_id (graph : Graph.vgt) =
     ) in let djk = dijkstras [start_id] [start_id] [] in
     reduce_edge_list_to_path djk start_id end_id
 
-let shortest_path start_id end_id graph = 
-    breadth_first Graph.weight start_id end_id graph 
+let shortest_path start_id end_id (graph : Graph.vgt) = 
+    breadth_first (Graph.weight graph) start_id end_id graph 
 
-let distance_between start_id end_id graph = 
+let distance_between start_id end_id (graph : Graph.vgt) = 
     let rec pair_accumulation = function
-        e1 :: e2 :: [] -> Graph.weight e1 e2
-        | e1 :: e2 :: more -> Graph.weight e1 e2 +. pair_accumulation (e2 :: more)
+        e1 :: e2 :: [] -> Graph.weight graph e1 e2 
+        | e1 :: e2 :: more -> Graph.weight graph e1 e2  +. pair_accumulation (e2 :: more)
         | _ :: [] -> raise (Failure "DIST_BTWN..single element") 
         | [] -> raise (Failure "DIST_BTWN..no elements")
         in
-    let sequence = breadth_first Graph.weight start_id end_id graph in 
+    let sequence = breadth_first (Graph.weight graph) start_id end_id graph in 
     pair_accumulation sequence

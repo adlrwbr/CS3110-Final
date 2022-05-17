@@ -43,7 +43,7 @@ val connect : int -> int -> float -> ugt -> unit
     Requires: [id1] != [id2] Raises: [UnknownNode id] if either [id1] or
     [id2] DNE within the graph *)
 
-val weight : int -> int -> float
+val weight : vgt -> int -> int -> float
 (** [weight id1 id2] is the weight of an edge between nodes [id1] and
     [id2]. Raises: [UnknownEdge] if the edge DNE *)
 
