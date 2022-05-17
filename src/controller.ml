@@ -395,7 +395,6 @@ let rec load_mode (world : World.wt) : World.wt =
       Unix.chdir initial_dir;
       world
   | Some filename ->
-    (* return to main menu if user enters nothing *)
     try filename |> Yojson.Basic.from_file |> World.from_json with
     | Yojson.Json_error _ ->
         ("Invalid file! Try again." |> print_endline;
@@ -415,11 +414,6 @@ let save_world_file (world : World.wt) : unit =
 
 let buttons =
   [
-    (* { text = "Random Road"; action = (fun w -> print_endline "HELLO";
-       let road = Road.create "" (40. +. Random.float 900., 40. +.
-       Random.float 900.) (40. +. Random.float 900., 40. +. Random.float
-       900.) in w |> World.add_road road); xywh = (40., 800., 200.,
-       40.); enabled = true; }; *)
     {
       text = "Quit";
       action =
