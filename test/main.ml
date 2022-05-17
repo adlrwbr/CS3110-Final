@@ -253,6 +253,66 @@ let relate_tests =
     test_rel_and_relop "get last" (fun x y -> false) scrambled @@ 3;
   ]
 
+let one = Graph.empty ()
+let many = Graph.empty ()
+
+let _ = 
+  one |> add 1;
+  many |> Graph.add_many [1;3;5;7;9;-15];
+  many |> connect 1 3 1. ;
+  many|> connect 3 1 2.;
+  many |> connect 3 5 2.;
+  many |> connect 5 7 3.;
+  many |> connect 9 (-15) 5.;
+  many |> connect 9 3 2.;
+  many |> connect 9 1 9.
+
+let vmany = verify many 
+
+let graph_tests = [
+  "0-size test" >:: (fun _ -> assert_equal (size @@ Graph.empty()) 0);
+  "1-size test" >:: (fun _ -> assert_equal (size one) 1);
+  "multi-size test" >:: (fun _ -> assert_equal (size many) 6);
+  "contains-1 (fail)" >:: (fun _ -> assert_raises (Failure "1") (fun _ -> Graph.add 1 one));
+  "connect" >:: (fun _ -> assert_equal (Graph.weight vmany 1 3) 2.);
+  "connect-nonexisting (fail)" >:: (fun _ -> assert_raises (Graph.UnknownNode 2) (fun _ -> Graph.connect 1 2 1. many));
+  "unknown edge (fail)" >:: (fun _ -> assert_raises (Graph.UnknownEdge) (fun _ -> Graph.weight vmany 1 2));
+  "neighbors" >:: (fun _ ->  assert_equal (Graph.neighbors vmany 9) [-15; 1; 3]);
+  "no neighbors" >:: (fun _ ->  assert_equal (Graph.neighbors (verify one) 1) []);
+  "not in graph" >:: (fun _ -> assert_equal (Graph.neighbors (verify one) 69) [])
+]
+
+(*val size : ugt -> int
+(** [size graph] is the number of unique nodes contained in [graph] *)
+
+val add : int -> ugt -> unit
+(** [add id graph] modifies [graph] with an additional node [id].
+    Raises: [Failure id] if the [id] already exists in the [graph] *)
+
+val add_many : int list -> ugt -> unit
+(** [add_many ids graph] modifies [graph] all additional nodes in [ids].
+    Raises: [Failure id] if any [id] already exists in the [graph] *)
+
+val connect : int -> int -> float -> ugt -> unit
+(** [connect id1 id2 weight graph] modifies the graph by adding an edge
+    b/w nodes [id1] and [id2]. The edge has a value of [weight].
+    Requires: [id1] != [id2] Raises: [UnknownNode id] if either [id1] or
+    [id2] DNE within the graph *)
+
+val weight : vgt -> int -> int -> float
+(** [weight id1 id2] is the weight of an edge between nodes [id1] and
+    [id2]. Raises: [UnknownEdge] if the edge DNE *)
+
+val unverify : vgt -> ugt
+(** [unverify graph] converts the verified graph into one that is no
+    longer guaranteed to be *)
+
+val verify : ugt -> vgt
+(** [verify graph] is the verified graph. Raises InvalidGraph if [graph]
+    is not verifiable. *)
+
+val neighbors : vgt -> int -> int list*)
+
 let test_shortest_path
     string
     graph

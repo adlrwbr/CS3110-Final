@@ -13,9 +13,7 @@ exception InvalidGraph
 exception IndexOutofBounds
 
 let empty () : ugt = { nodes = Hashtbl.create 16; edges = Hashtbl.create 16 }
-(* TODO: Sean, using [weights] as a global works fine when we only deal with
-   one graph, but if multiple graphs have the same ids then this will
-   cause an issue *)
+
 let size (graph : ugt) = Hashtbl.length graph.nodes
 
 let add (id : int) (graph : ugt) =
@@ -55,9 +53,4 @@ let verify (ug : ugt) : vgt = {nodes = ug.nodes; edges = ug.edges}
 let neighbors graph id =
   if Hashtbl.mem graph.nodes id = false then []
   else
-    (*let rec string_of_intl = function [] -> "" | some :: [] ->
-      (string_of_int some) | some :: more-> (string_of_int
-      some)^","^string_of_intl more in let _ = print_endline
-      (string_of_int id ^ "-->" ^string_of_intl @@ Hashtbl.find graph
-      id) in*)
     Hashtbl.find graph.nodes id
