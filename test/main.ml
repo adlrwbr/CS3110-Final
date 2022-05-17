@@ -4,6 +4,20 @@
     anything you omitted testing, and why you believe that your test
     suite demonstrates the correctness of your system.
 
+    We tested all the modules, either through OUnit testing or manually
+    testing for GUI-related features. Here's what we covered:
+
+    In this testing file, we implemented unit tests for all public
+    functions of the algo, graph, road, and world modules.
+
+    Manual testing:
+
+    The button module does not have explicit tests because we classify
+    it as a "supporting module" to controller and view, where all the
+    functionality will be manually tested on the GUI itself. Buttons are
+    located on the GUI, where we tested them after implementing the
+    quit, load, save, edit, and edit mode buttons.
+
     -1: The test plan does not explain which parts of the system were
     automatically tested by OUnit vs. manually tested. -1: The test plan
     does not explain what modules were tested by OUnit and how test
