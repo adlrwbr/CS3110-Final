@@ -47,7 +47,6 @@ let rec help_verify ug queue =
   | some :: more -> Hashtbl.remove ug some
   | [] -> ()
 
-(** TODO Find way to verify graph. *)
 let verify (ug : ugt) : vgt = {nodes = ug.nodes; edges = ug.edges}
 
 let neighbors graph id =
