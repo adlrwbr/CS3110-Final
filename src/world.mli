@@ -64,6 +64,9 @@ val roads_at_coord : float * float -> wt -> Road.t list
 val locations : wt -> lt list
 (** [locations world] is a list of all locations contained in [world] *)
 
+val intersections : wt -> Road.it list
+(** [locations world] is a list of all locations contained in [world] *)
+
 val name : wt -> string
 (** [name world] is the name of the world [world] *)
 
@@ -82,10 +85,6 @@ val loc_coord : lt -> float * float
 
 val roads : wt -> Road.t list
 (** [roads world] is the list of all roads in the [world] *)
-
-val distance : float * float -> float * float -> float
-(** [distance point1 point2] is the euclidean distance between [point1]
-    and [point2]. *)
 
 val rep_ok : wt -> bool
 (** [rep_ok world] is whether or not all locations in the [world]

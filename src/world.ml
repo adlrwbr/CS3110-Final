@@ -119,11 +119,6 @@ let to_json (world : wt) =
     ("locations", `List (List.map loc_to_json world.locations));
   ]
 
-let distance pt1 pt2 =
-  match (pt1, pt2) with
-  | (a, b), (c, d) ->
-      sqrt (((a -. c) *. (a -. c)) +. ((b -. d) *. (b -. d)))
-
 let add_loc name category road pos world =
   (* create location *)
   let new_loc = { id = next (); name; category; road; pos_on_road = pos } in
@@ -167,6 +162,7 @@ let delete_road world road =
   }
 
 let locations world = world.locations
+let intersections world = world.intersections
 let name (world : wt) = world.name
 let rename w n = { w with name = n }
 
@@ -202,14 +198,14 @@ let seg_dist source road =
     let maybe = nearest_pt_on_line source road in
     (match maybe with
     | None -> min
-    (distance source (road |> Road.road_coords |> fst))
-    (distance source (road |> Road.road_coords |> snd))
+    (Algo.distance source (road |> Road.road_coords |> fst))
+    (Algo.distance source (road |> Road.road_coords |> snd))
     | Some (x,y) ->
     min
       (min
-        (distance source (road |> Road.road_coords |> fst))
-        (distance source (road |> Road.road_coords |> snd)))
-      (distance source (x,y))
+        (Algo.distance source (road |> Road.road_coords |> fst))
+        (Algo.distance source (road |> Road.road_coords |> snd)))
+      (Algo.distance source (x,y))
      )
 
 let nearroad source world =
@@ -219,26 +215,26 @@ let nearroad source world =
     let insct = nearest_pt_on_line source minrd in
     let ordp = (match insct with
     | Some (x,y) ->
-    if (distance source (x,y)) <
-        distance source c1
+    if (Algo.distance source (x,y)) <
+        Algo.distance source c1
     then
-      if (distance source (x,y) < distance source c2)
+      if (Algo.distance source (x,y) < Algo.distance source c2)
       then (x,y)
       else c2
     else
-      if (distance source c1
-              < distance source c2)
+      if (Algo.distance source c1
+              < Algo.distance source c2)
       then c1
       else c2
     | None ->
-    if (distance source c1)
-    < (distance source c2)
+    if (Algo.distance source c1)
+    < (Algo.distance source c2)
     then c1
     else c2)
     in
     let interp_dist =
-    distance ordp c1 /.
-    distance c1 c2
+    Algo.distance ordp c1 /.
+    Algo.distance c1 c2
     in (interp_dist, minrd)
 
 let roads_at_coord coord world = match nearroad coord world with 
@@ -383,7 +379,7 @@ let directions world start finish =
             |> fst in
   let id_path = Algo.shortest_path start_id finish_id graph in
   (* print id_path, for debugging purposes only*)
-  let _ = List.iter (printf "%d ") id_path in
+  (* let _ = List.iter (printf "%d ") id_path in *)
   (* convert ids back to [lit]s and return a [path] type *)
   List.map (fun id -> Hashtbl.find id_to_lit id) id_path
 
