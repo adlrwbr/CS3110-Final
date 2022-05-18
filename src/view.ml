@@ -56,10 +56,6 @@ let draw_text
     (anchor : anchor)
     ?size:(font_size : int = 12)
     (text : string) : unit =
-  (* set_font "-misc-dejavu sans
-     mono-bold-r-normal--12-0-0-0-m-0-iso8859-1"; *)
-  (* "-misc-dejavu sans mono-bold-r-normal--" ^ Int.to_string font_size
-     ^ "-0-0-0-m-0-iso8859-1" |> set_font; *)
   moveto x y;
   rgb 0 0 0 |> set_color;
   let width, height = text_size text in
