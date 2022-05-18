@@ -331,6 +331,19 @@ let test_shortest_path
     (Algo.distance_between start_id end_id graph)
     expected_distance
 
+let test_custom_path
+    string
+    graph
+    start_id
+    end_id
+    expected_path
+    expected_distance =
+  string >:: fun _ ->
+  assert_equal (Algo.custom_path (fun x y -> 1. /. (Graph.weight graph x y))start_id end_id graph) expected_path;
+  assert_equal
+    (Algo.custom_distance (fun x y -> 1. /. (Graph.weight graph x y)) start_id end_id graph)
+    expected_distance
+
 let g_12 = empty ()
 
 let _ =
@@ -354,11 +367,25 @@ let _ =
 
 let vg_137 = verify g_137
 
+let g_long = empty ()
+
+let _ =
+  g_long |> add_many [ 1; 2; 3; 4; 5];
+  connect 1 2 0.1 g_long;
+  connect 2 3 0.1 g_long;
+  connect 3 4 0.1 g_long;
+  connect 4 5 0.1 g_long;
+  connect 5 1 0.5 g_long
+let vg_long = verify g_long
+
 let pathfinding_test =
   [
-    test_shortest_path "simplest example" vg_12 1 2 [ 1; 2 ] 1.
-    (*test_shortest_path "not greedy dijkstra" vg_137 1 7 [ 1; 3; 7 ]
-      1.2;*);
+    test_shortest_path "simplest example" vg_12 1 2 [ 1; 2 ] 1.;
+    test_shortest_path "not greedy dijkstra" vg_137 1 7 [ 1; 3; 7 ] 1.2;
+    test_shortest_path "subset path" vg_137 1 3 [ 1; 3 ] 0.6;
+    test_shortest_path "reverse" vg_137 7 1 [ 7; 3; 1 ] 1.2;
+    test_shortest_path "long path" vg_long 1 5 [ 1; 2; 3; 4; 5] 0.4;
+    test_custom_path "longest long path" vg_long 1 5 [ 1; 5] (2.0);
   ]
 
 let j_basic_world = Yojson.Basic.from_string

@@ -55,6 +55,9 @@ let dest : edge -> int = function
 let dist : edge -> float = function
   | _, _, dist -> dist
 
+(**[string_of_edge edge] is the string that represents.
+the source [src], destination [dest], and distance [dist] as:
+"(src->dest=dist)".*)
 let string_of_edge = function
   | (e : edge) ->
       "("
@@ -65,11 +68,16 @@ let string_of_edge = function
       ^ string_of_float (dist e)
       ^ ")"
 
+(**[string_of_edge_list edge_list] is the string that represents a
+series of edges. Takes the form "(edge1) (edge2) (edge3)..."*)
 let rec string_of_edge_list : edge list -> string = function
   | [] -> ""
   | edge :: more ->
       "(" ^ string_of_edge edge ^ ")" ^ string_of_edge_list more
 
+(**[distance_before id visited_edges] is the sum of the weights
+of the edges preceding the node [id], where [visited_edges] is
+a list of already-weighted pairs of ids.*)
 let rec distance_before id visited_edges =
   match visited_edges with
   | (_, before, dist_before) :: more ->
@@ -78,6 +86,11 @@ let rec distance_before id visited_edges =
       if visited_edges = [] then 0.
       else failwith @@ "DIST_BEFORE..unknown id" ^ string_of_int id
 
+(**[pathtrace start_id edge_list dead_ids look_for] is the path 
+from the [start_id] to [look_for], assuming all the edges that 
+connect [start_id] to the id [look_for] are in [edge_list] and
+in order from [start_id] -> [next] -> ... -> [look_for]. There
+may be edges that are not relevant to the search.*)
 let rec pathtrace start_id edge_list dead_ids look_for =
   match edge_list with
   | (src, dest, dist) :: more ->
@@ -86,8 +99,12 @@ let rec pathtrace start_id edge_list dead_ids look_for =
       else pathtrace start_id more dead_ids look_for
   | [] -> [ start_id ]
 
+(**[reduce_edge_list_to_path edge_list start_id end_id] is a list
+of ids to traverse to get from [start_id] to [end_id] where the 
+available edges are given by edge_list.
+Requires: [start_id] =/= [end_id]*)
 let reduce_edge_list_to_path edge_list start_id end_id =
-  List.rev @@ pathtrace start_id edge_list [] end_id
+    List.rev @@ pathtrace start_id edge_list [] end_id
 
 let breadth_first f start_id end_id (graph : Graph.vgt) =
   (* Helper functions *)
@@ -132,18 +149,26 @@ let breadth_first f start_id end_id (graph : Graph.vgt) =
   let djk = dijkstras [ start_id ] [ start_id ] [] in
   reduce_edge_list_to_path djk start_id end_id
 
-let shortest_path start_id end_id (graph : Graph.vgt) =
-  breadth_first (Graph.weight graph) start_id end_id graph
+let custom_path f start_id end_id (graph : Graph.vgt) = 
+    breadth_first f start_id end_id graph    
 
-let distance_between start_id end_id (graph : Graph.vgt) =
+let custom_distance f start_id end_id (graph : Graph.vgt) =
   let rec pair_accumulation = function
-    | [ e1; e2 ] -> Graph.weight graph e1 e2
+    | [ e1; e2 ] -> f e1 e2
     | e1 :: e2 :: more ->
-        Graph.weight graph e1 e2 +. pair_accumulation (e2 :: more)
+        f e1 e2 +. pair_accumulation (e2 :: more)
     | [ _ ] -> raise (Failure "DIST_BTWN..single element")
     | [] -> raise (Failure "DIST_BTWN..no elements")
   in
   let sequence =
-    breadth_first (Graph.weight graph) start_id end_id graph
+    breadth_first f start_id end_id graph
   in
   pair_accumulation sequence
+
+
+let shortest_path start_id end_id (graph : Graph.vgt) =
+  custom_path (Graph.weight graph) start_id end_id graph    
+
+let distance_between start_id end_id (graph : Graph.vgt) =
+  custom_distance (Graph.weight graph) start_id end_id graph
+

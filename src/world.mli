@@ -95,7 +95,7 @@ val path_coords : path -> (float * float) list
 (** [path_coords p] is a list of all world coordinates along the path
     [p] *)
 
-val nearroad : float * float -> wt -> float * Road.t
+val near_road : float * float -> wt -> float * Road.t
 (** [nearroad c world] is a tuple ([pos, road]) that specifies a
     position [pos] on a road [road] in [world] nearest the provided
     world-space coordinate pair [c]. *)

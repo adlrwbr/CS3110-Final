@@ -246,7 +246,7 @@ let seg_dist source road =
            (Algo.distance source (road |> Road.road_coords |> snd)))
         (Algo.distance source (x, y))
 
-let nearroad source world =
+let near_road source world =
   let rel d1 d2 = seg_dist source d1 < seg_dist source d2 in
   let minrd = Algo.relate rel (roads world) in
   let c1, c2 = Road.road_coords minrd in

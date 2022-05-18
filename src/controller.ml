@@ -92,7 +92,7 @@ let hit_buttons w buttons coord =
     position [pos] on a [road] in [world] nearest the cursor *)
 let nearest_road (world : World.wt) : float * Road.t =
   let point = Graphics.mouse_pos () |> View.pixel_to_world in
-  World.nearroad point world
+  World.near_road point world
 
 (** [nearest_loc world] is a location in [world] nearest the cursor *)
 let nearest_loc (world : World.wt) : World.lt =
@@ -209,7 +209,7 @@ let road_deletion_mode (world : World.wt) : World.wt =
     let new_world =
       match coord |> hit_buttons world road_deletion_mode_buttons with
       | exception _ ->
-          let road = World.nearroad coord world |> snd in
+          let road = World.near_road coord world |> snd in
           World.delete_road world road
       | w -> w
     in

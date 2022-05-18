@@ -34,8 +34,8 @@ val add : int -> ugt -> unit
     Raises: [Failure id] if the [id] already exists in the [graph] *)
 
 val add_many : int list -> ugt -> unit
-(** [add_many ids graph] modifies [graph] all additional nodes in [ids].
-    Raises: [Failure id] if any [id] already exists in the [graph] *)
+(** [add_many ids graph] modifies [graph] to contain all additional nodes in
+    [ids]. Raises: [Failure id] if any [id] already exists in the [graph] *)
 
 val connect : int -> int -> float -> ugt -> unit
 (** [connect id1 id2 weight graph] modifies the graph by adding an edge

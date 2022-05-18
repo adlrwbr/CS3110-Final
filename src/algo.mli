@@ -38,15 +38,30 @@ val breadth_first :
 (** [breadth_first graph start_id end_id f] is the list of ids
     constituting the shortest path from [start_id] to [end_id] over the
     [graph], where weights edges between nodes are supplied by [f].
-    Requires: [f] must be defined for all pairs in the cartesian product
-    of all ids in the graph. Not necessarily symmetric, i.e. f id1 id2
-    is not always equal to f id2 id1. *)
+    Requires: [f] must be defined for all pairs of ids where an edge 
+    exists between those ids. Not necessarily symmetric, i.e. f id1 id2
+    is not always equal to f id2 id1, but must be defined for both. *)
+
+val custom_path : (int -> int -> float) -> int -> int -> 
+    Graph.vgt -> int list
+(** [custom_path f start finish graph] is a list of the ids of the nodes
+    along the minimum path from the id [start] to the id [finish] 
+    within [graph] where edge weights are assigned by the function [f].
+    [f id1 id2] needs to be defined for all edges within the graph,
+    [f id1 id2] is not necessarily equal to [f id2 id1], but both
+    must be defined.*)
+
+val custom_distance : (int -> int -> float) -> int -> int 
+    -> Graph.vgt -> float
+    (** [custom_distance f id1 id2 graph] is the minimum distance between
+    [id1] and [id2] where edge weights are assigned by [f id1 id2].
+    [f] is not necessarily symmetric but must be defined both ways.*)
+
 
 val shortest_path : int -> int -> Graph.vgt -> int list
 (** [shortest_path start finish graph] is a list of the ids of the nodes
-    along the shortest path from [start] to [finish], inclusive.
-    Example: [ \[start\]; ...; \[finish\] ] *)
+    along the shortest path from [start] to [finish], inclusive of endpoints.*)
 
 val distance_between : int -> int -> Graph.vgt -> float
-(** [distance_between graph id1 id2 f] is the shortest* distance between
-    [id1] and [id2] where edge weights are assigned by [f id1 id2]. *)
+(** [distance_between graph id1 id2 f] is the shortest distance between
+    [id1] and [id2].*)
