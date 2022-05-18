@@ -339,9 +339,11 @@ let test_custom_path
     expected_path
     expected_distance =
   string >:: fun _ ->
-  assert_equal (Algo.custom_path (fun x y -> 1. /. (Graph.weight graph x y))start_id end_id graph) expected_path;
+  assert_equal (Algo.custom_path (fun x y -> 1. /. (Graph.weight graph x y))
+  start_id end_id graph) expected_path;
   assert_equal
-    (Algo.custom_distance (fun x y -> 1. /. (Graph.weight graph x y)) start_id end_id graph)
+    (Algo.custom_distance (fun x y -> 1. /. (Graph.weight graph x y))
+     start_id end_id graph)
     expected_distance
 
 let g_12 = empty ()
