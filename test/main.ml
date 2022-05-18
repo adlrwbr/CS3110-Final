@@ -361,6 +361,98 @@ let pathfinding_test =
       1.2;*);
   ]
 
+let j_basic_world = Yojson.Basic.from_string
+  {|
+    {
+      "name": "Basic World",
+      "roads": [
+        { "name": "vertical",
+          "start": [ 108.33333333333334, 128.88888888888889 ],
+          "end": [ 108.33333333333334, 215.55555555555554 ] },
+        { "name": "horizontal",
+          "start": [ 101.66666666666667, 200.0 ],
+          "end": [ 483.3333333333333, 200.0 ] }
+      ],
+      "intersections": [{ "road1": "vertical", "road2": "horizontal" }],
+      "locations": [
+        { "name": "Wegmans", "category": "supermarket",
+          "road": "horizontal", "pos_on_road": 0.5 }
+      ]
+    }
+  |}
+let basic_world = World.from_json j_basic_world
+
+let test_world_quantities name ?expected_roads:(exp_r = -1)
+?expected_intersects:(exp_i = -1)
+?expected_locations:(exp_l = -1) world = 
+  name >:: fun _ ->
+    (if exp_r <> -1 then
+      assert_equal exp_r (world |> World.roads |> List.length));
+    (if exp_i <> -1 then
+      assert_equal exp_i (world |> World.intersections |> List.length));
+    (if exp_r <> -1 then
+      assert_equal exp_r (world |> World.roads |> List.length))
+
+let json_tests =
+  [
+     "to_json is the complement of from_json" >:: fun _ ->
+      let w = World.from_json j_basic_world in
+      let rejsoned = World.to_json w in
+      assert_bool "world |> to_json |> from_json != world!"
+        @@ Yojson.Basic.equal j_basic_world rejsoned
+  ]
+
+let world_quantity_tests =
+  [
+    test_world_quantities "basic_world has 2 roads"
+      ~expected_roads:2 basic_world;
+    test_world_quantities "basic_world has 1 intersection"
+      ~expected_intersects:1 basic_world;
+    test_world_quantities "basic_world has 1 location"
+      ~expected_locations:1 basic_world;
+  ]
+
+(** [basic_world_extended] is [basic_world] with an added road [new_road] and
+    location [new_loc] *)
+let basic_world_extended, new_road, new_loc =
+  let new_road = Road.create "diagonal" (100., 160.) (160., 220.) in
+  let new_loc, world =
+  j_basic_world |> World.from_json
+  |> World.add_road new_road
+  |> World.add_loc "Cornell" "university" new_road 0. in
+  (world, new_road, new_loc)
+
+let world_modification_tests =
+  [
+    test_world_quantities "extended world has 3 roads"
+      ~expected_roads:3 basic_world_extended;
+    test_world_quantities "extended world has 3 intersections"
+      ~expected_intersects:3 basic_world_extended;
+    test_world_quantities "extended world has 2 locs"
+      ~expected_locations:2 basic_world_extended;
+    "extended world contains new_road" >:: (fun _ ->
+      basic_world_extended |> World.roads |> List.exists (fun r -> r =
+        new_road) |> assert_bool "new_road DNE!");
+    "extended world contains new_loc" >:: (fun _ ->
+      basic_world_extended |> World.locations |> List.exists (fun l -> l =
+        new_loc) |> assert_bool "new_loc DNE!");
+    "deleting from extended world yields basic world" >:: (fun _ ->
+      let w = World.delete_loc basic_world_extended new_loc in
+      let w = World.delete_road w new_road in
+      assert_bool "world |> to_json |> from_json != world!"
+        @@ Yojson.Basic.equal j_basic_world (World.to_json w));
+    ]
+
+let loc_tests =
+  [
+    "new_loc has correct name" >:: (fun _ ->
+      new_loc |> World.loc_name |> assert_equal "Cornell");
+    "new_loc has correct category" >:: (fun _ ->
+      new_loc |> World.loc_category |> assert_equal "university");
+    "new_loc has correct coordinate" >:: (fun _ ->
+      new_loc |> World.loc_coord |> assert_equal (100., 160.));
+  ]
+
 let _ =
   run_test_tt_main
     ("test suite for final project"
@@ -376,4 +468,8 @@ let _ =
              road_midpt_tests;
              relate_tests;
              pathfinding_test;
+             json_tests;
+             world_quantity_tests;
+             world_modification_tests;
+             loc_tests;
            ])
