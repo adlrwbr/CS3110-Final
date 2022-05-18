@@ -210,12 +210,8 @@ let road_deletion_mode (world : World.wt) : World.wt =
     let new_world =
       match coord |> hit_buttons world road_deletion_mode_buttons with
       | exception _ ->
-          (* find roads located at coord *)
-          let selected_roads = World.roads_at_coord coord world in
-          let world =
-            List.fold_left World.delete_road world selected_roads
-          in
-          world
+          let road = World.nearroad coord world |> snd in
+          World.delete_road world road
       | w -> w
     in
     new_world

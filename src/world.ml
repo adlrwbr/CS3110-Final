@@ -237,9 +237,6 @@ let nearroad source world =
     Algo.distance c1 c2
     in (interp_dist, minrd)
 
-let roads_at_coord coord world = match nearroad coord world with 
-| (_, r) -> [r]
-
 (** [lit_coord inter_loc] is the (x, y) coordinate of [inter_loc] *)
 let lit_coord = function
   | Loc loc -> loc_coord loc

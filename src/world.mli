@@ -58,9 +58,6 @@ val delete_road : wt -> Road.t -> wt
 (** [delete_road world road] is a modified [world] with [road] and any
     locations/intersections on [road] removed *)
 
-val roads_at_coord : float * float -> wt -> Road.t list
-(** [roads_at_coord coord world] is a list of roads located at [coord] *)
-
 val locations : wt -> lt list
 (** [locations world] is a list of all locations contained in [world] *)
 
