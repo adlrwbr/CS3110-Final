@@ -25,9 +25,9 @@ val draw_input_popup : string -> string -> unit
     text [prompt] and pending input text [input] *)
 
 val draw_file_browser : string list -> int -> unit
-(** [draw_file_browser contents selection] draws a basic GUI file browser
-    in which [contents] is the contents of the CWD and the user has selected
-    the [selection]th file/folder *)
+(** [draw_file_browser contents selection] draws a basic GUI file
+    browser in which [contents] is the contents of the CWD and the user
+    has selected the [selection]th file/folder *)
 
 val draw_edit_mode : unit -> unit
 (** [draw_edit_mode] draws the GUI overlay for edit mode *)

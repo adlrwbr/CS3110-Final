@@ -1,4 +1,4 @@
 (library
- (name pathfinder)
- (public_name Pathfinder)
- (libraries graphics yojson core))
+  (name pathfinder)
+  (public_name Pathfinder)
+  (libraries graphics yojson core))

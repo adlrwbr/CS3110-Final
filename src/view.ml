@@ -207,7 +207,7 @@ let draw_file_browser contents selection =
   fill_rect box_ll_x box_ll_y box_width box_height;
   (* draw prompt text *)
   rgb 0 0 0 |> set_color;
-  let box_ul_x, box_ul_y = box_ll_x, box_ll_y + box_height in
+  let box_ul_x, box_ul_y = (box_ll_x, box_ll_y + box_height) in
   "Navigate to world with j/k and press Enter:"
   |> draw_text (box_ll_x + 10) (box_ul_y - 15) (BOTTOM, LEFT);
   (* calculate the max number of entries that can be displayed *)
@@ -218,29 +218,31 @@ let draw_file_browser contents selection =
   let max_entries = display_height / entry_height in
   (* allow scrolling. if the selection is offscreen, scroll *)
   let to_pop = max 0 (selection - max_entries) in
-  (** [pop n] pops the head off a list [n] times *)
+  (* [pop n] pops the head off a list [n] times *)
   let rec pop n = function
     | [] -> []
     | h :: t as lst -> if n > 0 then pop (n - 1) t else lst
   in
   let contents = pop to_pop contents in
-  (* selection corresponds to an index in contents so we must change both *)
+  (* selection corresponds to an index in contents so we must change
+     both *)
   let selection = selection - to_pop in
   (* draw contents of CWD *)
   let n = ref 0 in
-  List.map (fun f ->
-    let y = box_ul_y - 35 - entry_height * !n in
-    (* ensure list is not larger than displayable area *)
-    if !n > max_entries then ()
-    else
-      (draw_text (box_ul_x + 35) y (TOP, LEFT) f;
-      (* draw cursor next to selection *)
-      if !n = selection then
-        draw_text (box_ll_x + 20) y (TOP, LEFT) ">"
-      else ());
-    incr n;
-  )
-  contents |> ignore
+  List.map
+    (fun f ->
+      let y = box_ul_y - 35 - (entry_height * !n) in
+      (* ensure list is not larger than displayable area *)
+      if !n > max_entries then ()
+      else (
+        draw_text (box_ul_x + 35) y (TOP, LEFT) f;
+        (* draw cursor next to selection *)
+        if !n = selection then
+          draw_text (box_ll_x + 20) y (TOP, LEFT) ">"
+        else ());
+      incr n)
+    contents
+  |> ignore
 
 let draw_path (path : World.path) =
   rgb 61 190 255 |> set_color;

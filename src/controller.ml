@@ -49,9 +49,8 @@ let file_browser () : string option =
       folder_browser wd
       @@ min (cursor_pos + 1) (List.length children - 1)
     else if key = 'k' then folder_browser wd @@ max (cursor_pos - 1) 0
-    (* escape key *)
-    else if key = '\x1B' then None
-    (* return key *)
+      (* escape key *)
+    else if key = '\x1B' then None (* return key *)
     else if key = '\r' then (
       (* if selection is file then select otherwise explore folder *)
       let selection = List.nth children cursor_pos in
@@ -293,19 +292,24 @@ let rec edit_mode (world : World.wt) : World.wt =
       };
       {
         text = "Rename";
-        action = (fun w ->
-          w |> World.name |> input "Rename world" |> World.rename w
-          |> edit_mode);
+        action =
+          (fun w ->
+            w |> World.name |> input "Rename world" |> World.rename w
+            |> edit_mode);
         xywh = (660., 900., 100., 40.);
         enabled = true;
       };
       {
         text = "Clear";
-        action = (fun w ->
-          let choice = input "Clear everything? (y/n) " "" |> String.lowercase_ascii in
-          if choice = "yes" || choice = "y"
-          then World.name w |> World.empty |> edit_mode
-          else w |> edit_mode);
+        action =
+          (fun w ->
+            let choice =
+              input "Clear everything? (y/n) " ""
+              |> String.lowercase_ascii
+            in
+            if choice = "yes" || choice = "y" then
+              World.name w |> World.empty |> edit_mode
+            else w |> edit_mode);
         xywh = (770., 900., 100., 40.);
         enabled = true;
       };
@@ -383,23 +387,23 @@ let direction_mode (world : World.wt) : World.wt =
 
 (** [load_mode w] is a user-specified world loaded from JSON *)
 let rec load_mode (world : World.wt) : World.wt =
-  (* it is important to cd to [initial_dir] if loading fails so that the save
-     button saves an open world to the proper CWD *)
+  (* it is important to cd to [initial_dir] if loading fails so that the
+     save button saves an open world to the proper CWD *)
   let initial_dir = Unix.getcwd () in
   match file_browser () with
   | None ->
       Unix.chdir initial_dir;
       world
-  | Some filename ->
-    try filename |> Yojson.Basic.from_file |> World.from_json with
-    | Yojson.Json_error _ ->
-        ("Invalid file! Try again." |> print_endline;
-         Unix.chdir initial_dir;
-         load_mode world)
-    | World.ParseError s ->
-        ("Parse Error: " ^ s |> print_endline;
-         Unix.chdir initial_dir;
-         load_mode world)
+  | Some filename -> (
+      try filename |> Yojson.Basic.from_file |> World.from_json with
+      | Yojson.Json_error _ ->
+          "Invalid file! Try again." |> print_endline;
+          Unix.chdir initial_dir;
+          load_mode world
+      | World.ParseError s ->
+          "Parse Error: " ^ s |> print_endline;
+          Unix.chdir initial_dir;
+          load_mode world)
 
 (** [save_world_file w] saves the world [w] with name [n] to a JSON file
     called [n].json *)
