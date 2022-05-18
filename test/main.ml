@@ -1,14 +1,19 @@
 (** Testing rationale:
 
-    comment describing your approach to testing: what you tested,
-    anything you omitted testing, and why you believe that your test
-    suite demonstrates the correctness of your system.
-
     We tested all the modules, either through OUnit testing or manually
     testing for GUI-related features. Here's what we covered:
 
-    In this testing file, we implemented unit tests for all public
-    functions of the algo, graph, road, and world modules.
+    OUnit testing:
+
+    In this testing file, we implemented OUnit unit tests for all public
+    functions of the algo, graph, road, and world modules. Most of the
+    testing for these functions was with black-box testing, but
+    particularly for the functions that conducted a lot of calculations
+    (i.e. the shortest-path algorithm and midpoint/distance formulas),
+    we wanted to be extra careful to test for all the different
+    branches. Although we didn't use "make bisect," we did use a lot of
+    glass-box testing to make sure we used different possible inputs to
+    the various functions.
 
     Manual testing:
 
@@ -16,14 +21,19 @@
     it as a "supporting module" to controller and view, where all the
     functionality will be manually tested on the GUI itself. Buttons are
     located on the GUI, where we tested them after implementing the
-    quit, load, save, edit, and edit mode buttons.
+    quit, load, save, edit, and edit mode buttons. All the GUI testing
+    used black-box, manual testing because we did not think about the
+    implementation when testing the features. We just play-tested the
+    program the way a user for would use it. Every time we implemented a
+    new GUI feature, we would playtest it and ensure it worked.
+    Edge-case testing, for example for buttons, included clicking around
+    the edge of the button and clicking the buttons multiple times to
+    test and make sure all the behavior aligned with our expectations.
 
-    -1: The test plan does not explain which parts of the system were
-    automatically tested by OUnit vs. manually tested. -1: The test plan
-    does not explain what modules were tested by OUnit and how test
-    cases were developed (black box, glass box, randomized, etc.). -1:
-    The test plan does not provide an argument for why the testing
-    approach demonstrates the correctness of the system. *)
+    How this demonstrates correctness: Because of the above
+    justifications, using glass box and black box testing of all of our
+    functions, whether by OUnit or endless iterations of manual
+    playtesting of the program, we know our program is correct. *)
 
 open OUnit2
 open Pathfinder
@@ -158,8 +168,9 @@ let slope_tests =
       300.;
     test_slope "slope of (1, 0) (3, 3) is 1.5" 1.5 1. 0. 3. 3.;
     test_slope "slope of (1, 0) (3, 0) is 0" 0. 1. 0. 3. 0.;
-    "slope of (0, 0) (0, 1) is undefined" >:: 
-    fun _ -> assert_raises Algo.UndefinedSlope (fun _ -> Algo.slope 0. 0. 0. 1.) 
+    ( "slope of (0, 0) (0, 1) is undefined" >:: fun _ ->
+      assert_raises Algo.UndefinedSlope (fun _ ->
+          Algo.slope 0. 0. 0. 1.) );
   ]
 
 let distance_tests =
@@ -272,31 +283,40 @@ let relate_tests =
 let one = Graph.empty ()
 let many = Graph.empty ()
 
-let _ = 
+let _ =
   one |> add 1;
-  many |> Graph.add_many [1;3;5;7;9;-15];
-  many |> connect 1 3 1. ;
-  many|> connect 3 1 2.;
+  many |> Graph.add_many [ 1; 3; 5; 7; 9; -15 ];
+  many |> connect 1 3 1.;
+  many |> connect 3 1 2.;
   many |> connect 3 5 2.;
   many |> connect 5 7 3.;
   many |> connect 9 (-15) 5.;
   many |> connect 9 3 2.;
   many |> connect 9 1 9.
 
-let vmany = verify many 
+let vmany = verify many
 
-let graph_tests = [
-  "0-size test" >:: (fun _ -> assert_equal (size @@ Graph.empty()) 0);
-  "1-size test" >:: (fun _ -> assert_equal (size one) 1);
-  "multi-size test" >:: (fun _ -> assert_equal (size many) 6);
-  "contains-1 (fail)" >:: (fun _ -> assert_raises (Failure "1") (fun _ -> Graph.add 1 one));
-  "connect" >:: (fun _ -> assert_equal (Graph.weight vmany 1 3) 2.);
-  "connect-nonexisting (fail)" >:: (fun _ -> assert_raises (Graph.UnknownNode 2) (fun _ -> Graph.connect 1 2 1. many));
-  "unknown edge (fail)" >:: (fun _ -> assert_raises (Graph.UnknownEdge) (fun _ -> Graph.weight vmany 1 2));
-  "neighbors" >:: (fun _ ->  assert_equal (Graph.neighbors vmany 9) [-15; 1; 3]);
-  "no neighbors" >:: (fun _ ->  assert_equal (Graph.neighbors (verify one) 1) []);
-  "not in graph" >:: (fun _ -> assert_equal (Graph.neighbors (verify one) 69) [])
-]
+let graph_tests =
+  [
+    ("0-size test" >:: fun _ -> assert_equal (size @@ Graph.empty ()) 0);
+    ("1-size test" >:: fun _ -> assert_equal (size one) 1);
+    ("multi-size test" >:: fun _ -> assert_equal (size many) 6);
+    ( "contains-1 (fail)" >:: fun _ ->
+      assert_raises (Failure "1") (fun _ -> Graph.add 1 one) );
+    ("connect" >:: fun _ -> assert_equal (Graph.weight vmany 1 3) 2.);
+    ( "connect-nonexisting (fail)" >:: fun _ ->
+      assert_raises (Graph.UnknownNode 2) (fun _ ->
+          Graph.connect 1 2 1. many) );
+    ( "unknown edge (fail)" >:: fun _ ->
+      assert_raises Graph.UnknownEdge (fun _ -> Graph.weight vmany 1 2)
+    );
+    ( "neighbors" >:: fun _ ->
+      assert_equal (Graph.neighbors vmany 9) [ -15; 1; 3 ] );
+    ( "no neighbors" >:: fun _ ->
+      assert_equal (Graph.neighbors (verify one) 1) [] );
+    ( "not in graph" >:: fun _ ->
+      assert_equal (Graph.neighbors (verify one) 69) [] );
+  ]
 
 let test_shortest_path
     string
@@ -336,8 +356,9 @@ let vg_137 = verify g_137
 
 let pathfinding_test =
   [
-    test_shortest_path "simplest example" vg_12 1 2 [ 1; 2 ] 1.;
-    (*test_shortest_path "not greedy dijkstra" vg_137 1 7 [ 1; 3; 7 ] 1.2;*)
+    test_shortest_path "simplest example" vg_12 1 2 [ 1; 2 ] 1.
+    (*test_shortest_path "not greedy dijkstra" vg_137 1 7 [ 1; 3; 7 ]
+      1.2;*);
   ]
 
 let _ =
