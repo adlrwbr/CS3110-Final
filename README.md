@@ -31,15 +31,15 @@ instructions on how make it work are provided below:
    opam switch
    ```
 
-   If your version is, for instance `4.10.0`, next run
+   If your switch name is, for instance `cs3110-2022sp`, next run
 
    ```
-   opam switch reinstall 4.10.0
+   opam switch reinstall cs3110-2022sp
    ```
 
    It will take a while, as it re-builds all packages from scratch.
 
-   The `graphics` package has been checked to work with OCaml
+   Note: the `graphics` package has been checked to work with OCaml
    `4.06.1`, `4.07.1`, and `4.10.0`.
 
 4. Next, execute
